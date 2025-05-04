@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>App Usage Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    canvas { width: 100%; height: 400px; }
+  </style>
+</head>
+<body>
+  <h2>App Usage Tracker</h2>
+  <button onclick="loadUsage()">Refresh Usage</button>
+  <canvas id="usageChart"></canvas>
+
+  <script>
+    // Function to fetch usage data from the Flask server and display it on a chart
+    async function loadUsage() {
+      const res = await fetch('http://127.0.0.1:5000/usage');  // Fetch usage data from Flask
+      const data = await res.json();     // Parse the JSON response
+
+      const appNames = data.map(app => app.app);
+      const appTimes = data.map(app => app.time_minutes);
+
+      // Create chart
+      const ctx = document.getElementById('usageChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: appNames,
+          datasets: [{
+            label: 'Usage Time (minutes)',
+            data: appTimes,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    window.onload = loadUsage;  
+  </script>
+</body>
+</html>

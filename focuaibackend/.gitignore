@@ -1,0 +1,10 @@
+# Backend-specific ignores
+node_modules/
+coverage/
+*.log
+dist/
+build/
+
+# Environment files
+.env
+.env.local
