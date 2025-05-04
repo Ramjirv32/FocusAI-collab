@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const TabUsageSchema = new mongoose.Schema({
+const BrowserTabUsageSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -12,28 +12,38 @@ const TabUsageSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  browser: {
+    type: String,
+    required: true,
+    default: 'Chrome'
+  },
   url: {
     type: String,
     required: true
   },
   title: String,
   domain: String,
+  favicon: String,
   duration: {
     type: Number,
     default: 0
+  },
+  date: {
+    type: String,
+    required: true
   },
   timestamp: {
     type: Date,
     default: Date.now
   },
-  isActive: {
-    type: Boolean,
-    default: false
+  lastActive: {
+    type: Date,
+    default: Date.now
   }
 });
 
-// Improved pre-save hook to extract domain from URL
-TabUsageSchema.pre('save', function(next) {
+// Extract domain from URL
+BrowserTabUsageSchema.pre('save', function(next) {
   if (this.url) {
     try {
       // Handle URLs with or without protocol
@@ -49,6 +59,11 @@ TabUsageSchema.pre('save', function(next) {
       if (this.domain.startsWith('www.')) {
         this.domain = this.domain.substring(4);
       }
+      
+      // Set favicon if not already set
+      if (!this.favicon) {
+        this.favicon = `https://www.google.com/s2/favicons?domain=${this.domain}`;
+      }
     } catch (e) {
       console.error('Error parsing URL:', this.url, e);
       this.domain = "unknown";
@@ -57,8 +72,8 @@ TabUsageSchema.pre('save', function(next) {
   next();
 });
 
-// Add index for better query performance
-TabUsageSchema.index({ userId: 1, email: 1, timestamp: -1 });
-TabUsageSchema.index({ userId: 1, domain: 1 });
+// Add indexes for better query performance
+BrowserTabUsageSchema.index({ userId: 1, email: 1, date: 1 });
+BrowserTabUsageSchema.index({ userId: 1, browser: 1, domain: 1 });
 
-module.exports = mongoose.model('TabUsage', TabUsageSchema);
+module.exports = mongoose.model('BrowserTabUsage', BrowserTabUsageSchema);

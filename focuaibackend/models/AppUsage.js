@@ -7,7 +7,7 @@ const AppUsageSchema = new mongoose.Schema({
     required: true
   },
   email: {
-    type: String, 
+    type: String,
     required: true,
     trim: true,
     lowercase: true

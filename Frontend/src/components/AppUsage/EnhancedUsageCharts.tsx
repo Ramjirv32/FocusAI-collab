@@ -36,6 +36,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
   const [error, setError] = useState('');
   const [includeSampleData, setIncludeSampleData] = useState(true);
   const [hasSampleData, setHasSampleData] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
   
   // Helper function to get auth headers
   const getAuthHeader = () => {
@@ -80,8 +81,19 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
         setIsLoading(false);
       }
     };
+
+    const fetchDebugInfo = async () => {
+      try {
+        const headers = getAuthHeader();
+        const response = await axios.get('http://localhost:5000/api/debug/user-data', { headers });
+        setDebugInfo(response.data);
+      } catch (err) {
+        console.error('Failed to fetch debug info:', err);
+      }
+    };
     
     fetchData();
+    fetchDebugInfo();
     
     // Refresh data every 30 seconds
     const interval = setInterval(fetchData, 30000);
@@ -338,10 +350,14 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       
      
       <Card>
+
+
         <CardHeader>
           <CardTitle>Activity Distribution</CardTitle>
         </CardHeader>
         <CardContent>
+          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="h-80">
               {(hasAppData || hasTabData) ? (
@@ -405,16 +421,18 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     <span className="font-medium">
                       {formatDuration(
                         Object.values(usageData.appUsage || {})
-                          .reduce((sum: number, val: any) => sum + Number(val), 0)
+                          .map(val => Number(val))
+                          .reduce((sum: number, val: number) => sum + val, 0)
                       )}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total browsing time:</span>
-                    <span className="font-medium">
+                    <span>
                       {formatDuration(
                         Object.values(usageData.tabUsage || {})
-                          .reduce((sum: number, val: any) => sum + Number(val), 0)
+                          .map(val => Number(val))
+                          .reduce((sum: number, val: number) => sum + val, 0)
                       )}
                     </span>
                   </div>
@@ -478,6 +496,43 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
           </div>
         </CardContent>
       </Card>
+
+      {debugInfo && (
+        <details className="mt-6 border border-gray-200 rounded-md p-2">
+          <summary className="cursor-pointer text-sm font-medium">Debug Information</summary>
+          <div className="mt-2 text-xs p-2 bg-gray-50 rounded overflow-auto max-h-60">
+            <p>User: {debugInfo.user.email} (ID: {debugInfo.user.id})</p>
+            <p>App Usage Records: {debugInfo.counts.appUsage}</p>
+            <p>Tab Usage Records: {debugInfo.counts.tabUsage}</p>
+            
+            {debugInfo.counts.appUsage > 0 && (
+              <>
+                <p className="mt-1 font-semibold">Latest App Usage:</p>
+                <ul className="list-disc list-inside">
+                  {debugInfo.samples.appUsage.map((app, i) => (
+                    <li key={i}>
+                      {app.appName}: {formatDuration(app.duration)} ({app.date})
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            
+            {debugInfo.counts.tabUsage > 0 && (
+              <>
+                <p className="mt-1 font-semibold">Latest Tab Usage:</p>
+                <ul className="list-disc list-inside">
+                  {debugInfo.samples.tabUsage.map((tab, i) => (
+                    <li key={i}>
+                      {tab.domain || 'unknown'}: {formatDuration(tab.duration)}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </details>
+      )}
     </div>
   );
 };

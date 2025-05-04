@@ -2,9 +2,84 @@
 <html>
   <head>
     <title>FocusAI Tabs</title>
+    <style>
+      body {
+        width: 300px;
+        padding: 16px;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 8px 16px;
+        background-color: #4a83fe;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #3a73ee;
+      }
+      .status {
+        margin-top: 16px;
+        padding: 8px;
+        border-radius: 4px;
+        text-align: center;
+      }
+      .connected {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
   </head>
   <body>
-    <h3>FocusAI running...</h3>
+    <div class="container">
+      <h2>FocusAI Tab Tracker</h2>
+      
+      <!-- Login Form -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" placeholder="Enter your email">
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        
+        <button id="loginButton">Login</button>
+      </div>
+      
+      <!-- Status Area (shown after login) -->
+      <div id="statusArea" class="hidden">
+        <div id="status" class="status"></div>
+        <div id="tabsTracked" class="status"></div>
+        <button id="logoutButton">Logout</button>
+      </div>
+    </div>
+    
     <script src="popup.js"></script>
   </body>
 </html>
