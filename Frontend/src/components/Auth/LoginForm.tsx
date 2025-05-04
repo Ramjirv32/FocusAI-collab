@@ -14,6 +14,28 @@ const LoginForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { login } = useAuth(); // Use the login function from context
+  
+  const fetchUserInfoAndSendToExtension = async () => {
+    try {
+  
+      const response = await axios.get('http://localhost:5000/api/user'); // adjust endpoint as needed
+      const user = response.data.user;
+  
+      // Send login data to the Chrome extension
+      if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage('jjjokkpobnafkfomfojdnhgndanjihpl', {
+          action: 'userInfo',
+          userId: user.id,
+          email: user.email,
+          token: user.token,
+        });
+      }
+  
+      console.log('Sent user info to extension:', { id: user.id, email: user.email , token: user.token });
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +46,7 @@ const LoginForm = () => {
       await login(email, password);
       
       // The navigation is now handled in the context
-      
+      fetchUserInfoAndSendToExtension();
       toast({
         title: "Login successful",
         description: "Welcome back!",
@@ -41,6 +63,8 @@ const LoginForm = () => {
       setIsLoading(false);
     }
   };
+
+  
 
   return (
     <Card className="w-full max-w-md mx-auto">

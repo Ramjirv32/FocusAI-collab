@@ -16,24 +16,27 @@ chrome.storage.local.get(['userId', 'email', 'token'], function(result) {
   }
 });
 
-
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.action === 'setCredentials') {
-    userCredentials = {
-      userId: message.userId,
-      email: message.email,
-      token: message.token
-    };
-    console.log('Updated credentials for:', message.email);
-  } else if (message.action === 'clearCredentials') {
-    userCredentials = {
-      userId: null,
-      email: null,
-      token: null
-    };
-    console.log('Cleared credentials');
+chrome.runtime.onMessageExternal.addListener(
+  (message, sender, sendResponse) => {
+    if (message.action === 'userInfo') {
+      console.log('📨 Got user info:', message);
+      sendResponse({ status: 'received ✅' });
+      userCredentials = {
+        userId: message.userId,
+        email: message.email,
+        token: message.token
+      };
+      console.log('Updated user credentials:', userCredentials);
+      chrome.storage.local.set({
+        userId: message.userId,
+        email: message.email,
+        token: message.token
+      }, function() {
+        console.log('User credentials saved to local storage.');
+      });
+    }
   }
-});
+);
 
 
 let activeTabId = null;
