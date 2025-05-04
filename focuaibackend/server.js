@@ -18,6 +18,9 @@ const auth = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Add this near the top with other global variables
+const activeUsers = new Map(); // userId -> {timestamp, email}
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://ramji:vikas2311@cluster0.ln4g5.mongodb.net/focuai?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('MongoDB connected'))
@@ -235,77 +238,150 @@ app.get('/api/user', auth, async (req, res) => {
 
 // ========== TAB TRACKING FUNCTIONALITY ==========
 
-// Update the log-tab endpoint to include email
-app.post('/log-tab', auth, async (req, res) => {
+// Update the log-tab endpoint to work with or without auth
+app.post('/log-tab', async (req, res) => {
   try {
     const data = req.body;
     console.log('Received Tab Data:', data);
     
-    // Find existing tab or create new one
+    // Try to authenticate with token first
+    let userId = null;
+    let userEmail = null;
+    
+    // Check for auth header
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        userId = decoded.userId;
+        userEmail = decoded.email;
+        console.log(`Authenticated tab data for user ${userEmail}`);
+      } catch (err) {
+        console.log('Invalid token in tab data request');
+      }
+    }
+    
+    // Fallback to data in request body if no valid token
+    if (!userId && data.userId) {
+      userId = data.userId;
+      userEmail = data.email;
+    }
+    
+    // If still no user ID, use session data or a default user for demo purposes
+    if (!userId || !userEmail) {
+      // This is just for demo - in production you'd want proper authentication
+      const activeUser = await User.findOne();
+      if (activeUser) {
+        userId = activeUser._id;
+        userEmail = activeUser.email;
+        console.log(`Using default user for tab data: ${userEmail}`);
+      } else {
+        return res.status(400).json({ error: 'No users available and no authentication provided' });
+      }
+    }
+    
+    // Extract domain from URL
+    let domain = 'unknown';
+    try {
+      if (data.url && data.url.startsWith('http')) {
+        const urlObj = new URL(data.url);
+        domain = urlObj.hostname.replace('www.', '');
+      } else if (data.title) {
+        // Try to extract domain-like info from title
+        const titleParts = data.title.split(' - ');
+        if (titleParts.length > 1) {
+          domain = titleParts[titleParts.length - 1].toLowerCase().trim();
+        } else {
+          domain = data.title.toLowerCase().trim();
+        }
+      }
+    } catch (e) {
+      console.log('Error extracting domain, using title instead');
+      domain = data.title || 'unknown';
+    }
+    
+    console.log(`Extracted domain: ${domain} from ${data.url || data.title}`);
+    
+    // Find existing tab usage or create new one (by URL and user)
     let tabUsage = await TabUsage.findOne({
-      userId: req.user._id,
-      email: req.user.email,
+      userId: userId,
       url: data.url
     });
     
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    
     if (tabUsage) {
       // Update existing tab
-      tabUsage.duration += (data.duration || 0);
+      tabUsage.duration += parseFloat(data.duration) || 0;
       tabUsage.title = data.title || tabUsage.title;
-      tabUsage.isActive = data.isActive || false;
-      tabUsage.timestamp = new Date();
+      tabUsage.domain = domain;
+      tabUsage.email = userEmail; // Ensure email is set
+      tabUsage.lastUpdated = now;
       await tabUsage.save();
+      console.log(`Updated tab record for ${domain}: total duration ${tabUsage.duration}s`);
     } else {
       // Create new tab entry
-      tabUsage = new TabUsage({
-        userId: req.user._id,
-        email: req.user.email,
+      const newTab = new TabUsage({
+        userId: userId,
+        email: userEmail,
         url: data.url,
         title: data.title,
-        duration: data.duration || 0,
-        isActive: data.isActive || false
+        domain: domain,
+        duration: parseFloat(data.duration) || 0,
+        date: todayStr,
+        timestamp: now,
+        lastUpdated: now
       });
-      await tabUsage.save();
+      await newTab.save();
+      console.log(`Created new tab record for ${domain}: ${data.duration}s`);
     }
     
-    res.status(200).send("Tab data received");
+    res.status(200).json({ success: true, message: "Tab data recorded" });
   } catch (error) {
     console.error('Error processing tab data:', error);
-    res.status(500).send("Error processing request");
+    res.status(500).json({ error: 'Server error processing tab data' });
   }
 });
 
 // Update the tabs endpoint to filter by email as well
 app.get('/tabs', auth, async (req, res) => {
   try {
-    const { timeFrame } = req.query;
-    let query = { 
-      userId: req.user._id,
-      email: req.user.email
-    };
+    console.log(`User requesting tabs data: ${req.user.email}`);
     
-    // Apply time filtering if specified
-    if (timeFrame) {
-      const now = new Date();
-      let startDate = new Date();
-      
-      if (timeFrame === 'daily') {
-        startDate.setHours(0, 0, 0, 0);
-      } else if (timeFrame === 'weekly') {
-        startDate.setDate(startDate.getDate() - 7);
-      } else if (timeFrame === 'monthly') {
-        startDate.setMonth(startDate.getMonth() - 1);
-      }
-      
-      query.timestamp = { $gte: startDate };
+    // Get time frame from query params
+    const timeFrame = req.query.timeFrame || 'daily';
+    
+    // Calculate date range based on time frame
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    if (timeFrame === 'daily') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeFrame === 'weekly') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (timeFrame === 'monthly') {
+      startDate.setMonth(startDate.getMonth() - 1);
     }
     
-    const tabs = await TabUsage.find(query).sort({ timestamp: -1 });
+    // Find tabs for this user within the date range
+    const tabs = await TabUsage.find({
+      email: req.user.email,
+      $or: [
+        // Match by userId string comparison
+        { userId: req.user._id.toString() },
+        // Match by userId ObjectId
+        { userId: req.user._id }
+      ],
+      lastUpdated: { $gte: startDate, $lte: endDate }
+    });
+    
     console.log(`Found ${tabs.length} tabs for user ${req.user.email}`);
     res.json(tabs);
   } catch (error) {
-    console.error('Error sending tabs:', error);
-    res.status(500).send("Error processing request");
+    console.error('Error fetching tabs:', error);
+    res.status(500).json({ error: 'Failed to fetch tabs' });
   }
 });
 
@@ -529,7 +605,16 @@ app.post('/reset-data', auth, async (req, res) => {
   }
 });
 
-// Update the window tracking to include user info
+// Add this new endpoint for user heartbeats
+app.post('/api/heartbeat', auth, (req, res) => {
+  activeUsers.set(req.user._id.toString(), {
+    timestamp: Date.now(),
+    email: req.user.email
+  });
+  res.status(200).json({ success: true });
+});
+
+// Update the window tracking interval to track both app usage and browser tabs
 setInterval(async () => {
   try {
     const windowInfo = await getActiveWindowTitle();
@@ -541,12 +626,18 @@ setInterval(async () => {
         
         const appName = lastWindow.app;
         
-        // Get the currently active user (this would need proper implementation in a real app)
-        // For demonstration, we'll use a default user if no one is logged in
-        // In production, you should track the active user properly
-        const activeUser = await User.findOne(); // Get any user as fallback
-        const activeUserId = activeUser ? activeUser._id : null;
-        const activeUserEmail = activeUser ? activeUser.email : null;
+        // Find the most recently active user
+        let activeUserId = null;
+        let activeUserEmail = null;
+        let mostRecentTime = 0;
+        
+        for (const [userId, data] of activeUsers.entries()) {
+          if (data.timestamp > mostRecentTime && Date.now() - data.timestamp < 5 * 60 * 1000) { // Active in last 5 minutes
+            mostRecentTime = data.timestamp;
+            activeUserId = userId;
+            activeUserEmail = data.email;
+          }
+        }
         
         if (activeUserId && activeUserEmail) {
           // Update app usage in database
@@ -576,8 +667,62 @@ setInterval(async () => {
               });
               await appUsage.save();
             }
+            
+            // DETECT AND TRACK BROWSER TABS
+            // Check if this is a browser app
+            const browsers = ['Google-chrome', 'firefox_firefox', 'Firefox', 'Safari', 'Edge', 'Opera'];
+            if (browsers.includes(appName) && lastWindow.title) {
+              // Extract the tab name from the title (usually format is "Website - Browser")
+              let tabName = lastWindow.title;
+              
+              // Remove browser name from the end if present
+              browsers.forEach(browser => {
+                if (tabName.endsWith(` - ${browser}`)) {
+                  tabName = tabName.replace(` - ${browser}`, '');
+                }
+                if (tabName.endsWith(` – ${browser}`)) {
+                  tabName = tabName.replace(` – ${browser}`, '');
+                }
+              });
+              
+              // Check for common browser title patterns and extract the website name
+              const titleParts = tabName.split(' - ');
+              if (titleParts.length > 1) {
+                // Usually the website name is the first or last part
+                tabName = titleParts[0].trim();
+              }
+              
+              // Find existing tab record or create a new one
+              let tabUsage = await TabUsage.findOne({
+                userId: activeUserId,
+                email: activeUserEmail,
+                date: today,
+                title: tabName
+              });
+              
+              if (tabUsage) {
+                // Update existing tab record
+                tabUsage.duration += duration;
+                tabUsage.lastUpdated = new Date();
+                await tabUsage.save();
+                console.log(`Updated tab record: ${tabName} for ${activeUserEmail}, total: ${tabUsage.duration}s`);
+              } else {
+                // Create new tab record with simplified data
+                tabUsage = new TabUsage({
+                  userId: activeUserId,
+                  email: activeUserEmail,
+                  date: today,
+                  title: tabName,
+                  domain: tabName.toLowerCase(), // Just use the tab name as the domain for simplicity
+                  duration: duration,
+                  lastUpdated: new Date()
+                });
+                await tabUsage.save();
+                console.log(`Created new tab record: ${tabName} for ${activeUserEmail}, duration: ${duration}s`);
+              }
+            }
           } catch (dbError) {
-            console.error('Database error when tracking app usage:', dbError);
+            console.error('Database error when tracking usage:', dbError);
           }
           
           // Add to current session data (in memory)
@@ -594,9 +739,11 @@ setInterval(async () => {
           if (currentSessionData.length > 100) {
             currentSessionData.shift();
           }
+          
+          console.log(`Tracked: ${appName} (${lastWindow.title}) for ${duration} seconds for user ${activeUserEmail}`);
+        } else {
+          console.log(`Skipping tracking: No active user found in the last 5 minutes`);
         }
-        
-        console.log(`Tracked: ${appName} (${lastWindow.title}) for ${duration} seconds`);
       }
       
       lastWindow = windowInfo;
@@ -607,7 +754,6 @@ setInterval(async () => {
   }
 }, 1000);
 
-// Start the server with better error handling
 try {
   app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
 } catch (error) {
