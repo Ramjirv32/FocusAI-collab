@@ -1,10 +1,78 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>FocusAI Tabs</title>
-  </head>
-  <body>
-    <h3>FocusAI running...</h3>
-    <script src="popup.js"></script>
-  </body>
+<head>
+  <title>FocuAI - Tab Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 300px;
+      padding: 15px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>FocuAI Tab Tracker</h2>
+  
+  <div id="login-form">
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" placeholder="Enter your email">
+    </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" placeholder="Enter your password">
+    </div>
+    <button id="login-button">Log In</button>
+  </div>
+  
+  <div id="logged-in" class="hidden">
+    <p>Logged in as: <strong id="user-email"></strong></p>
+    <p>Tab tracking is active</p>
+    <button id="logout-button">Log Out</button>
+  </div>
+  
+  <div id="status" class="status hidden"></div>
+  
+  <script src="popup.js"></script>
+</body>
 </html>

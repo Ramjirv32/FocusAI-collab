@@ -10,6 +10,7 @@ import AppUsageChart from '@/components/AppUsage/AppUsageChart';
 import CurrentSessionList from '@/components/AppUsage/CurrentSessionList';
 // Import the new enhanced charts component
 import EnhancedUsageCharts from '@/components/AppUsage/EnhancedUsageCharts';
+import TabUsageAnalytics from '@/components/TabInsights/TabUsageAnalytics';
 
 import { fetchTabLogs, filterByTimeFrame, groupByDomain, generateSummary } from '@/services/tabService';
 import { TimeFrame, GroupedTabData } from '@/types';
@@ -64,9 +65,25 @@ const Index = () => {
     const tabInterval = setInterval(() => {
       fetchData();
     }, 30000);
+
+    // Add heartbeat functionality
+    const sendHeartbeat = async () => {
+      try {
+        const headers = getAuthHeader();
+        await axios.post('http://localhost:5000/api/heartbeat', {}, { headers });
+      } catch (err) {
+        console.error('Heartbeat error:', err);
+      }
+    };
     
+    // Send heartbeat every 30 seconds
+    sendHeartbeat(); // Send immediately
+    const heartbeatInterval = setInterval(sendHeartbeat, 30000);
+    
+    // Clean up on component unmount
     return () => {
       clearInterval(tabInterval);
+      clearInterval(heartbeatInterval);
     };
   }, []);
   
@@ -137,9 +154,14 @@ const Index = () => {
               timeFrame={timeFrameDisplays[selectedTimeFrame]} 
             />
             
-            {/* Replace the original charts with the enhanced visualizations */}
+     
             <div className="mt-6">
               <EnhancedUsageCharts />
+            </div>
+            
+            {/* Add the new Tab Usage Analytics component */}
+            <div className="mt-6">
+              <TabUsageAnalytics />
             </div>
             
             {/* You can keep the original components for reference, but they're not needed */}
@@ -192,6 +214,7 @@ const Index = () => {
               
               <CurrentSessionList data={currentSessionData} />
             </div>
+
             */}
           </>
         )}

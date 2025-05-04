@@ -295,7 +295,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Website Usage</CardTitle>
+          <CardTitle></CardTitle>
         </CardHeader>
         <CardContent>
           {hasTabData ? (
@@ -330,7 +330,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">
-              No website usage data available.
+              {/* No website usage data available. */}
             </p>
           )}
         </CardContent>
@@ -405,16 +405,18 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     <span className="font-medium">
                       {formatDuration(
                         Object.values(usageData.appUsage || {})
-                          .reduce((sum: number, val: any) => sum + Number(val), 0)
+                          .map(val => Number(val))
+                          .reduce((sum: number, val: number) => sum + val, 0)
                       )}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Total browsing time:</span>
-                    <span className="font-medium">
+                    <span>
                       {formatDuration(
                         Object.values(usageData.tabUsage || {})
-                          .reduce((sum: number, val: any) => sum + Number(val), 0)
+                          .map(val => Number(val))
+                          .reduce((sum: number, val: number) => sum + val, 0)
                       )}
                     </span>
                   </div>
