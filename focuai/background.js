@@ -5,6 +5,7 @@ let userCredentials = {
   token: null
 };
 
+
 chrome.storage.local.get(['userId', 'email', 'token'], function(result) {
   if (result.userId && result.email && result.token) {
     userCredentials = {
@@ -15,6 +16,7 @@ chrome.storage.local.get(['userId', 'email', 'token'], function(result) {
     console.log('Loaded saved credentials for:', result.email);
   }
 });
+
 
 chrome.runtime.onMessageExternal.addListener(
   (message, sender, sendResponse) => {
@@ -44,6 +46,7 @@ let tabStartTime = {};
 let lastSentTime = {};
 
 
+
 chrome.tabs.onActivated.addListener(activeInfo => {
   const tabId = activeInfo.tabId;
   activeTabId = tabId;
@@ -58,6 +61,7 @@ chrome.tabs.onActivated.addListener(activeInfo => {
 });
 
 
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.active) {
     activeTabId = tabId;
@@ -70,6 +74,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }
   }
 });
+
+
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   if (tabStartTime[tabId]) {
@@ -91,6 +97,8 @@ function extractDomainFromUrl(url) {
   }
 }
 
+
+
 function sendTabData(tab, closedTabId = null) {
   let currentTab = tab;
   let tabId = tab ? tab.id : closedTabId;
@@ -107,6 +115,7 @@ function sendTabData(tab, closedTabId = null) {
         console.log('Tab was closed, cannot access data');
         return;
       }
+
       
       const domain = extractDomainFromUrl(closedTab.url);
       
@@ -125,27 +134,27 @@ function sendTabData(tab, closedTabId = null) {
     return;
   }
   
-  // Handle active tab
+ 
   if (!tab) return;
   
-  // Only send data every few seconds to avoid spamming
+  
   const now = Date.now();
   const timeSinceLastSent = lastSentTime[tabId] ? (now - lastSentTime[tabId]) / 1000 : Infinity;
   
-  // Don't send updates too frequently for the same tab
+  /
   if (timeSinceLastSent < 10) {
     return;
   }
   
   const duration = (now - tabStartTime[tabId]) / 1000;
   
-  // Skip very short durations
+
   if (duration < 1) return;
   
-  // Update last sent time
+  
   lastSentTime[tabId] = now;
   
-  // Get domain
+ 
   const domain = extractDomainFromUrl(tab.url);
   
   const tabData = {
