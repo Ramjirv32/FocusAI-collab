@@ -1,64 +1,31 @@
 const mongoose = require('mongoose');
 
-const TabUsageSchema = new mongoose.Schema({
+const tabUsageSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: mongoose.Schema.Types.Mixed, // Accept both String and ObjectId
     required: true
   },
   email: {
     type: String,
-    required: true,
-    trim: true,
-    lowercase: true
+    required: true
   },
-  url: {
+  title: {
     type: String,
     required: true
   },
-  title: String,
   domain: String,
   duration: {
     type: Number,
     default: 0
   },
-  timestamp: {
+  date: {
+    type: String,
+    default: () => new Date().toISOString().split('T')[0] // YYYY-MM-DD
+  },
+  lastUpdated: {
     type: Date,
     default: Date.now
-  },
-  isActive: {
-    type: Boolean,
-    default: false
   }
 });
 
-// Improved pre-save hook to extract domain from URL
-TabUsageSchema.pre('save', function(next) {
-  if (this.url) {
-    try {
-      // Handle URLs with or without protocol
-      let url = this.url;
-      if (!url.startsWith('http') && !url.startsWith('file:')) {
-        url = 'http://' + url;
-      }
-      
-      const parsedUrl = new URL(url);
-      this.domain = parsedUrl.hostname;
-      
-      // Remove www. prefix for better grouping
-      if (this.domain.startsWith('www.')) {
-        this.domain = this.domain.substring(4);
-      }
-    } catch (e) {
-      console.error('Error parsing URL:', this.url, e);
-      this.domain = "unknown";
-    }
-  }
-  next();
-});
-
-// Add index for better query performance
-TabUsageSchema.index({ userId: 1, email: 1, timestamp: -1 });
-TabUsageSchema.index({ userId: 1, domain: 1 });
-
-module.exports = mongoose.model('TabUsage', TabUsageSchema);
+module.exports = mongoose.model('TabUsage', tabUsageSchema);

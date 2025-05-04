@@ -11,7 +11,6 @@ require('dotenv').config();
 const User = require('./models/User');
 const AppUsage = require('./models/AppUsage');
 const TabUsage = require('./models/TabUsage');
-const BrowserTabUsage = require('./models/BrowserTabUsage');
 
 // Import middleware
 const auth = require('./middleware/auth');
@@ -19,11 +18,8 @@ const auth = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Track current active tokens and their users
-const activeUsers = new Map();
-let lastWindow = null;
-let startTime = Date.now();
-const currentSessionData = [];
+// Add this near the top with other global variables
+const activeUsers = new Map(); // userId -> {timestamp, email}
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://ramji:vikas2311@cluster0.ln4g5.mongodb.net/focuai?retryWrites=true&w=majority&appName=Cluster0')
@@ -44,49 +40,6 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Track active users middleware
-app.use(async (req, res, next) => {
-  // Check for auth header
-  const authHeader = req.header('Authorization');
-  
-  if (authHeader) {
-    // Extract token
-    const token = authHeader.startsWith('Bearer ') 
-      ? authHeader.replace('Bearer ', '') 
-      : authHeader;
-    
-    try {
-      // Verify token without throwing if invalid
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-      
-      if (decoded && decoded.userId && decoded.email) {
-        // Keep token in active users map
-        activeUsers.set(token, { 
-          userId: decoded.userId, 
-          email: decoded.email,
-          lastActive: Date.now()
-        });
-      }
-    } catch (e) {
-      // Invalid token, don't add to active users
-      // But still continue with request
-    }
-  }
-  
-  next();
-});
-
-// Clean up expired tokens every hour
-setInterval(() => {
-  const now = Date.now();
-  for (const [token, userData] of activeUsers.entries()) {
-    // Remove tokens inactive for more than 24 hours
-    if (now - userData.lastActive > 24 * 60 * 60 * 1000) {
-      activeUsers.delete(token);
-    }
-  }
-}, 60 * 60 * 1000);
 
 // Add a simple health check endpoint
 app.get('/', (req, res) => {
@@ -135,12 +88,17 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// Add this simple function before starting the server
+// to make sure there's some data for new users
+
 const ensureUserHasInitialData = async (userId, email) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
     
+    // Check if user has any app usage data
     const appUsageCount = await AppUsage.countDocuments({ userId, email });
     
+    // If no data exists, create some sample data
     if (appUsageCount === 0) {
       console.log(`Creating initial app usage data for user ${email} (${userId})`);
       
@@ -162,7 +120,8 @@ const ensureUserHasInitialData = async (userId, email) => {
         }).save();
       }
     }
-
+    
+    // Create sample tab data if none exists
     const tabCount = await TabUsage.countDocuments({ userId, email });
     if (tabCount === 0) {
       console.log(`Creating initial tab data for user ${email} (${userId})`);
@@ -185,80 +144,15 @@ const ensureUserHasInitialData = async (userId, email) => {
         await tabUsage.save();
       }
     }
-    
-    // Also add sample browser tab data
-    const browserTabCount = await BrowserTabUsage.countDocuments({ userId, email });
-    if (browserTabCount === 0) {
-      console.log(`Creating initial browser tab data for user ${email} (${userId})`);
-      
-      const sampleBrowserTabs = [
-        { 
-          browser: 'Chrome', 
-          url: 'https://youtube.com/watch?v=dQw4w9WgXcQ', 
-          title: 'YouTube - Never Gonna Give You Up', 
-          duration: 750, 
-          domain: 'youtube.com',
-          favicon: 'https://www.google.com/s2/favicons?domain=youtube.com'
-        },
-        { 
-          browser: 'Chrome', 
-          url: 'https://github.com/trending', 
-          title: 'Trending repositories on GitHub', 
-          duration: 900, 
-          domain: 'github.com',
-          favicon: 'https://www.google.com/s2/favicons?domain=github.com' 
-        },
-        { 
-          browser: 'Firefox', 
-          url: 'https://mail.google.com', 
-          title: 'Gmail - Inbox', 
-          duration: 600, 
-          domain: 'gmail.com',
-          favicon: 'https://www.google.com/s2/favicons?domain=gmail.com'
-        },
-        {
-          browser: 'Chrome',
-          url: 'https://stackoverflow.com/questions/tagged/javascript',
-          title: 'Newest javascript questions - Stack Overflow',
-          duration: 450,
-          domain: 'stackoverflow.com',
-          favicon: 'https://www.google.com/s2/favicons?domain=stackoverflow.com'
-        },
-        {
-          browser: 'Chrome',
-          url: 'https://www.reddit.com/r/programming/',
-          title: 'r/programming - Reddit',
-          duration: 300,
-          domain: 'reddit.com',
-          favicon: 'https://www.google.com/s2/favicons?domain=reddit.com'
-        }
-      ];
-      
-      // Make sure to save all tabs
-      for (const tab of sampleBrowserTabs) {
-        const browserTabUsage = new BrowserTabUsage({
-          userId,
-          email,
-          browser: tab.browser,
-          url: tab.url,
-          title: tab.title,
-          domain: tab.domain,
-          favicon: tab.favicon,
-          duration: tab.duration,
-          date: today,
-          timestamp: new Date(),
-          lastActive: new Date()
-        });
-        await browserTabUsage.save();
-        console.log(`  - Created sample browser tab: ${tab.title} (${tab.domain})`);
-      }
-    }
   } catch (error) {
     console.error('Error ensuring initial data:', error);
   }
 };
 
 
+// Update login to use the new token generator
+
+// Update the login endpoint to make sample data optional
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -278,13 +172,7 @@ app.post('/api/login', async (req, res) => {
     // Generate JWT token with email included
     const token = generateToken(user);
     
-    
-    activeUsers.set(token, { 
-      userId: user._id, 
-      email: user.email 
-    });
-    
-   
+    // Only create sample data if this is the user's first login and they have no data
     const shouldCreateSample = req.body.includeSampleData === true;
     const appCount = await AppUsage.countDocuments({ userId: user._id });
     const tabCount = await TabUsage.countDocuments({ userId: user._id });
@@ -313,7 +201,8 @@ app.post('/api/clear-sample-data', auth, async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Delete sample app data
+    // Delete data created before actual tracking started
+    // This assumes sample data was created at account creation and real tracking started later
     const deletedAppUsage = await AppUsage.deleteMany({ 
       userId: req.user._id,
       email: req.user.email,
@@ -321,7 +210,6 @@ app.post('/api/clear-sample-data', auth, async (req, res) => {
       duration: { $in: [1200, 1800, 600, 300] }
     });
     
-    // Delete sample tab data
     const deletedTabUsage = await TabUsage.deleteMany({ 
       userId: req.user._id,
       email: req.user.email,
@@ -329,21 +217,12 @@ app.post('/api/clear-sample-data', auth, async (req, res) => {
       duration: { $in: [900, 600, 450] }
     });
     
-    // Delete sample browser tab data
-    const deletedBrowserTabUsage = await BrowserTabUsage.deleteMany({
-      userId: req.user._id,
-      email: req.user.email,
-      domain: { $in: ['youtube.com', 'github.com', 'gmail.com'] },
-      duration: { $in: [750, 900, 600] }
-    });
-    
-    res.status(200).json({
+    res.status(200).json({ 
       success: true, 
       message: 'Sample data cleared successfully',
       deletedCounts: {
         appUsage: deletedAppUsage.deletedCount,
-        tabUsage: deletedTabUsage.deletedCount,
-        browserTabUsage: deletedBrowserTabUsage.deletedCount
+        tabUsage: deletedTabUsage.deletedCount
       }
     });
   } catch (error) {
@@ -353,126 +232,163 @@ app.post('/api/clear-sample-data', auth, async (req, res) => {
 });
 
 // Get current user
-app.get('/api/user', auth, (req, res) => {
+app.get('/api/user', auth, async (req, res) => {
   res.json({ user: { id: req.user._id, email: req.user.email, name: req.user.name } });
 });
 
 // ========== TAB TRACKING FUNCTIONALITY ==========
 
-// Update the log-tab endpoint to include email
-app.post('/log-tab', auth, async (req, res) => {
+// Update the log-tab endpoint to work with or without auth
+app.post('/log-tab', async (req, res) => {
   try {
     const data = req.body;
-    console.log(`Tab data received from ${req.user.email}:`, data);
+    console.log('Received Tab Data:', data);
     
-    // Security check: Make sure the tab data's email matches authenticated user
-    if (data.email && data.email !== req.user.email) {
-      return res.status(403).json({
-        error: 'Email mismatch. Cannot log tab for a different user.'
-      });
+    // Try to authenticate with token first
+    let userId = null;
+    let userEmail = null;
+    
+    // Check for auth header
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        userId = decoded.userId;
+        userEmail = decoded.email;
+        console.log(`Authenticated tab data for user ${userEmail}`);
+      } catch (err) {
+        console.log('Invalid token in tab data request');
+      }
     }
     
-    // Ensure the data is associated with the logged-in user
-    const tabData = {
-      ...data,
-      userId: req.user._id,
-      email: req.user.email
-    };
+    // Fallback to data in request body if no valid token
+    if (!userId && data.userId) {
+      userId = data.userId;
+      userEmail = data.email;
+    }
     
-    // Find existing tab or create new one
+    // If still no user ID, use session data or a default user for demo purposes
+    if (!userId || !userEmail) {
+      // This is just for demo - in production you'd want proper authentication
+      const activeUser = await User.findOne();
+      if (activeUser) {
+        userId = activeUser._id;
+        userEmail = activeUser.email;
+        console.log(`Using default user for tab data: ${userEmail}`);
+      } else {
+        return res.status(400).json({ error: 'No users available and no authentication provided' });
+      }
+    }
+    
+    // Extract domain from URL
+    let domain = 'unknown';
+    try {
+      if (data.url && data.url.startsWith('http')) {
+        const urlObj = new URL(data.url);
+        domain = urlObj.hostname.replace('www.', '');
+      } else if (data.title) {
+        // Try to extract domain-like info from title
+        const titleParts = data.title.split(' - ');
+        if (titleParts.length > 1) {
+          domain = titleParts[titleParts.length - 1].toLowerCase().trim();
+        } else {
+          domain = data.title.toLowerCase().trim();
+        }
+      }
+    } catch (e) {
+      console.log('Error extracting domain, using title instead');
+      domain = data.title || 'unknown';
+    }
+    
+    console.log(`Extracted domain: ${domain} from ${data.url || data.title}`);
+    
+    // Find existing tab usage or create new one (by URL and user)
     let tabUsage = await TabUsage.findOne({
-      userId: req.user._id,
-      email: req.user.email,
+      userId: userId,
       url: data.url
     });
     
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    
     if (tabUsage) {
       // Update existing tab
-      tabUsage.duration += (data.duration || 0);
+      tabUsage.duration += parseFloat(data.duration) || 0;
       tabUsage.title = data.title || tabUsage.title;
-      tabUsage.isActive = data.isActive || false;
-      tabUsage.timestamp = new Date();
+      tabUsage.domain = domain;
+      tabUsage.email = userEmail; // Ensure email is set
+      tabUsage.lastUpdated = now;
       await tabUsage.save();
+      console.log(`Updated tab record for ${domain}: total duration ${tabUsage.duration}s`);
     } else {
       // Create new tab entry
-      tabUsage = new TabUsage(tabData);
-      await tabUsage.save();
-    }
-    
-    // Also track as browser tab if browser info is provided
-    if (data.browser) {
-      let browserTabUsage = await BrowserTabUsage.findOne({
-        userId: req.user._id,
-        email: req.user.email,
-        browser: data.browser,
-        url: data.url
+      const newTab = new TabUsage({
+        userId: userId,
+        email: userEmail,
+        url: data.url,
+        title: data.title,
+        domain: domain,
+        duration: parseFloat(data.duration) || 0,
+        date: todayStr,
+        timestamp: now,
+        lastUpdated: now
       });
-      
-      const today = new Date().toISOString().slice(0, 10);
-      
-      if (browserTabUsage) {
-        browserTabUsage.duration += (data.duration || 0);
-        browserTabUsage.title = data.title || browserTabUsage.title;
-        browserTabUsage.lastActive = new Date();
-        await browserTabUsage.save();
-      } else {
-        browserTabUsage = new BrowserTabUsage({
-          userId: req.user._id,
-          email: req.user.email,
-          browser: data.browser,
-          url: data.url,
-          title: data.title,
-          date: today,
-          duration: data.duration || 0,
-          timestamp: new Date(),
-          lastActive: new Date()
-        });
-        await browserTabUsage.save();
-      }
+      await newTab.save();
+      console.log(`Created new tab record for ${domain}: ${data.duration}s`);
     }
     
     res.status(200).json({ success: true, message: "Tab data recorded" });
   } catch (error) {
-    console.error(`Error processing tab data for ${req.user.email}:`, error);
-    res.status(500).json({ error: 'Error processing request' });
+    console.error('Error processing tab data:', error);
+    res.status(500).json({ error: 'Server error processing tab data' });
   }
 });
 
 // Update the tabs endpoint to filter by email as well
 app.get('/tabs', auth, async (req, res) => {
   try {
-    const { timeFrame } = req.query;
-    let query = {
-      userId: req.user._id,
-      email: req.user.email
-    };
+    console.log(`User requesting tabs data: ${req.user.email}`);
     
-    // Apply time filtering if specified
-    if (timeFrame) {
-      const now = new Date();
-      let startDate = new Date();
-      
-      if (timeFrame === 'daily') {
-        startDate.setHours(0, 0, 0, 0);
-      } else if (timeFrame === 'weekly') {
-        startDate.setDate(startDate.getDate() - 7);
-      } else if (timeFrame === 'monthly') {
-        startDate.setMonth(startDate.getMonth() - 1);
-      }
-      
-      query.timestamp = { $gte: startDate };
+    // Get time frame from query params
+    const timeFrame = req.query.timeFrame || 'daily';
+    
+    // Calculate date range based on time frame
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    if (timeFrame === 'daily') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeFrame === 'weekly') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (timeFrame === 'monthly') {
+      startDate.setMonth(startDate.getMonth() - 1);
     }
     
-    const tabs = await TabUsage.find(query).sort({ timestamp: -1 });
+    // Find tabs for this user within the date range
+    const tabs = await TabUsage.find({
+      email: req.user.email,
+      $or: [
+        // Match by userId string comparison
+        { userId: req.user._id.toString() },
+        // Match by userId ObjectId
+        { userId: req.user._id }
+      ],
+      lastUpdated: { $gte: startDate, $lte: endDate }
+    });
+    
     console.log(`Found ${tabs.length} tabs for user ${req.user.email}`);
     res.json(tabs);
   } catch (error) {
-    console.error('Error sending tabs:', error);
-    res.status(500).send("Error processing request");
+    console.error('Error fetching tabs:', error);
+    res.status(500).json({ error: 'Failed to fetch tabs' });
   }
 });
 
 // ========== APP TRACKING FUNCTIONALITY ==========
+const currentSessionData = [];
+let lastWindow = null;
+let startTime = Date.now();
 
 async function getActiveWindowTitle() {
   try {
@@ -534,7 +450,8 @@ app.get('/usage', auth, async (req, res) => {
 
 app.get('/current-session', auth, (req, res) => {
   // Filter session data for current user
-  res.json(currentSessionData.filter(s => s.userId === req.user._id.toString()));
+  // In a real implementation, you'd store user ID with each session entry
+  res.json(currentSessionData);
 });
 
 // Update the focus-data endpoint to filter by email
@@ -579,25 +496,10 @@ app.get('/focus-data', auth, async (req, res) => {
       console.error('Error fetching app usage:', appError);
     }
     
-    // Get browser tab data
-    let browserTabs = [];
-    try {
-      browserTabs = await BrowserTabUsage.find({
-        userId: req.user._id,
-        email: req.user.email,
-        date: today
-      }).sort({ duration: -1 });
-      
-      console.log(`Found ${browserTabs.length} browser tabs for today for user ${req.user.email}`);
-    } catch (browserError) {
-      console.error('Error fetching browser tabs:', browserError);
-    }
-    
     // Return the data even if one part failed
     res.json({
       tabs: tabs || [],
       appUsage: appUsageFormatted || {},
-      browserTabs: browserTabs || [],
       currentSession: currentSessionData.filter(session => 
         session.userId === req.user._id.toString() && 
         session.timestamp >= new Date(today).getTime()
@@ -609,12 +511,13 @@ app.get('/focus-data', auth, async (req, res) => {
   }
 });
 
-
+// Update the raw-usage endpoint to filter by email
 app.get('/raw-usage', auth, async (req, res) => {
   try {
-    console.log(`User requesting raw usage data: ${req.user.email} (${req.user._id})`);
+    console.log('User requesting raw usage data:', req.user.email);
     const today = new Date().toISOString().slice(0, 10);
- 
+    
+    // Get today's app usage
     const appUsage = await AppUsage.find({
       userId: req.user._id,
       email: req.user.email,
@@ -623,13 +526,13 @@ app.get('/raw-usage', auth, async (req, res) => {
     
     console.log(`Found ${appUsage.length} app usage records for user ${req.user.email}`);
     
-   
+    // Format app usage
     const appUsageFormatted = appUsage.reduce((acc, item) => {
       acc[item.appName] = item.duration;
       return acc;
     }, {});
     
-    // Get tab usage data - Filter by both userId AND email for extra security
+    // Get tab usage data
     const tabs = await TabUsage.find({
       userId: req.user._id,
       email: req.user.email,
@@ -645,34 +548,10 @@ app.get('/raw-usage', auth, async (req, res) => {
       return acc;
     }, {});
     
-    // Get browser tab usage data
-    const browserTabs = await BrowserTabUsage.find({
-      userId: req.user._id,
-      email: req.user.email,
-      date: today
-    });
-    
-    // Group browser tabs by domain
-    const browserTabsByDomain = browserTabs.reduce((acc, tab) => {
-      const domain = tab.domain || 'unknown';
-      if (!acc[domain]) {
-        acc[domain] = {
-          domain,
-          totalDuration: 0,
-          browser: tab.browser,
-          visits: 0
-        };
-      }
-      acc[domain].totalDuration += tab.duration;
-      acc[domain].visits++;
-      return acc;
-    }, {});
-    
     res.json({
       appUsage: appUsageFormatted,
       tabUsage: tabUsage,
-      browserTabs: Object.values(browserTabsByDomain),
-      userEmail: req.user.email
+      userEmail: req.user.email // Include the user email for the frontend
     });
   } catch (error) {
     console.error('Error fetching raw usage data:', error);
@@ -680,76 +559,7 @@ app.get('/raw-usage', auth, async (req, res) => {
   }
 });
 
-// Add a new endpoint to get browser tab usage
-app.get('/browser-tabs', auth, async (req, res) => {
-  try {
-    console.log(`User requesting browser tab data: ${req.user.email}`);
-    const today = new Date().toISOString().slice(0, 10);
-    
-    // Default to today's data
-    let startDate = today;
-    let endDate = today;
-    
-    const { timeFrame } = req.query;
-    
-    if (timeFrame === 'weekly') {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      startDate = weekAgo.toISOString().slice(0, 10);
-    } else if (timeFrame === 'monthly') {
-      const monthAgo = new Date();
-      monthAgo.setMonth(monthAgo.getMonth() - 1);
-      startDate = monthAgo.toISOString().slice(0, 10);
-    }
-    
-    // Get browser tab data
-    const tabs = await BrowserTabUsage.find({
-      userId: req.user._id,
-      email: req.user.email,
-      date: { $gte: startDate, $lte: endDate }
-    }).sort({ duration: -1 });
-    
-    console.log(`Found ${tabs.length} browser tab records for user ${req.user.email}`);
-    
-    // Group by domain for easier visualization
-    const byDomain = tabs.reduce((acc, tab) => {
-      const domain = tab.domain || 'unknown';
-      
-      if (!acc[domain]) {
-        acc[domain] = {
-          domain,
-          totalDuration: 0,
-          visits: 0,
-          favicon: `https://www.google.com/s2/favicons?domain=${domain}`,
-          pages: []
-        };
-      }
-      
-      acc[domain].totalDuration += tab.duration;
-      acc[domain].visits++;
-      
-      // Store individual page data
-      acc[domain].pages.push({
-        url: tab.url,
-        title: tab.title,
-        duration: tab.duration,
-        lastActive: tab.lastActive
-      });
-      
-      return acc;
-    }, {});
-    
-    res.json({
-      domains: Object.values(byDomain).sort((a, b) => b.totalDuration - a.totalDuration),
-      rawData: tabs
-    });
-  } catch (error) {
-    console.error('Error fetching browser tab data:', error);
-    res.status(500).json({ error: 'Failed to fetch browser tab data' });
-  }
-});
-
-// Update the reset-data endpoint to strictly filter by both userId AND email
+// Update the reset-data endpoint to filter by email
 app.post('/reset-data', auth, async (req, res) => {
   try {
     console.log(`Resetting data for user ${req.user.email} (${req.user._id})`);
@@ -766,16 +576,19 @@ app.post('/reset-data', auth, async (req, res) => {
       email: req.user.email 
     });
     
-    // Remove browser tab usage for the user
-    const deletedBrowserTabUsage = await BrowserTabUsage.deleteMany({
-      userId: req.user._id,
-      email: req.user.email
-    });
+    // Clear current session data for this user
+    // In a real app, you'd maintain session data in the database
+    const beforeLength = currentSessionData.length;
+    const newSessionData = currentSessionData.filter(
+      session => session.userId !== req.user._id.toString()
+    );
+    currentSessionData.length = 0;
+    currentSessionData.push(...newSessionData);
     
     console.log(`Reset completed for user ${req.user.email}:
       - Deleted ${deletedAppUsage.deletedCount} app usage records
       - Deleted ${deletedTabUsage.deletedCount} tab usage records
-      - Deleted ${deletedBrowserTabUsage.deletedCount} browser tab records`);
+      - Removed ${beforeLength - currentSessionData.length} session entries`);
     
     res.status(200).json({ 
       success: true, 
@@ -783,7 +596,7 @@ app.post('/reset-data', auth, async (req, res) => {
       deletedCounts: {
         appUsage: deletedAppUsage.deletedCount,
         tabUsage: deletedTabUsage.deletedCount,
-        browserTabUsage: deletedBrowserTabUsage.deletedCount
+        sessions: beforeLength - currentSessionData.length
       }
     });
   } catch (error) {
@@ -792,246 +605,16 @@ app.post('/reset-data', auth, async (req, res) => {
   }
 });
 
-// Add a debugging endpoint to check user data
-app.get('/api/debug/user-data', auth, async (req, res) => {
-  try {
-    // Get counts for this user
-    const appCount = await AppUsage.countDocuments({
-      userId: req.user._id,
-      email: req.user.email
-    });
-    
-    const tabCount = await TabUsage.countDocuments({
-      userId: req.user._id,
-      email: req.user.email
-    });
-    
-    const browserTabCount = await BrowserTabUsage.countDocuments({
-      userId: req.user._id,
-      email: req.user.email
-    });
-    
-    // Get a sample of each kind of data
-    const appSample = await AppUsage.find({
-      userId: req.user._id,
-      email: req.user.email
-    }).limit(5).sort({ lastUpdated: -1 });
-    
-    const tabSample = await TabUsage.find({
-      userId: req.user._id,
-      email: req.user.email
-    }).limit(5).sort({ timestamp: -1 });
-    
-    const browserTabSample = await BrowserTabUsage.find({
-      userId: req.user._id,
-      email: req.user.email
-    }).limit(5).sort({ lastActive: -1 });
-    
-    // Return diagnostic information
-    res.json({
-      user: {
-        id: req.user._id,
-        email: req.user.email
-      },
-      counts: {
-        appUsage: appCount,
-        tabUsage: tabCount,
-        browserTabUsage: browserTabCount
-      },
-      samples: {
-        appUsage: appSample,
-        tabUsage: tabSample,
-        browserTabUsage: browserTabSample
-      },
-      tokenIsValid: true
-    });
-  } catch (error) {
-    console.error('Debug endpoint error:', error);
-    res.status(500).json({ error: 'Error retrieving debug data' });
-  }
+// Add this new endpoint for user heartbeats
+app.post('/api/heartbeat', auth, (req, res) => {
+  activeUsers.set(req.user._id.toString(), {
+    timestamp: Date.now(),
+    email: req.user.email
+  });
+  res.status(200).json({ success: true });
 });
 
-// Add this endpoint to check browser tab data specifically:
-
-app.get('/api/debug/browser-tabs', auth, async (req, res) => {
-  try {
-    // Count all browser tabs for this user
-    const count = await BrowserTabUsage.countDocuments({
-      userId: req.user._id,
-      email: req.user.email
-    });
-    
-    // Get latest browser tab data
-    const latest = await BrowserTabUsage.find({
-      userId: req.user._id,
-      email: req.user.email
-    })
-    .sort({ lastActive: -1 })
-    .limit(10);
-    
-    // Group by domain
-    const byDomain = {};
-    for (const tab of latest) {
-      const domain = tab.domain || 'unknown';
-      if (!byDomain[domain]) {
-        byDomain[domain] = [];
-      }
-      byDomain[domain].push({
-        url: tab.url,
-        title: tab.title,
-        browser: tab.browser,
-        duration: tab.duration,
-        lastActive: tab.lastActive
-      });
-    }
-    
-    res.json({
-      count,
-      latest,
-      byDomain
-    });
-  } catch (error) {
-    console.error('Debug browser tabs error:', error);
-    res.status(500).json({ error: 'Error fetching browser tab debug data' });
-  }
-});
-
-// Add this endpoint after other browser tab endpoints
-
-// Manual tab tracking API for more reliable tracking from browser extensions
-app.post('/api/track-browser-tab', auth, async (req, res) => {
-  try {
-    const { browser, url, title, duration } = req.body;
-    
-    if (!browser || !url) {
-      return res.status(400).json({ error: 'Browser and URL are required' });
-    }
-    
-    const today = new Date().toISOString().slice(0, 10);
-    
-    // Look for existing tab entry
-    let browserTabUsage = await BrowserTabUsage.findOne({
-      userId: req.user._id,
-      email: req.user.email,
-      date: today,
-      browser,
-      url
-    });
-    
-    if (browserTabUsage) {
-      // Update existing entry
-      browserTabUsage.duration += (duration || 10); // Default to 10 seconds if not provided
-      browserTabUsage.title = title || browserTabUsage.title;
-      browserTabUsage.lastActive = new Date();
-      await browserTabUsage.save();
-      console.log(`Updated manual browser tab for ${req.user.email}: ${url}`);
-    } else {
-      // Create new entry
-      browserTabUsage = new BrowserTabUsage({
-        userId: req.user._id,
-        email: req.user.email,
-        browser,
-        url,
-        title,
-        duration: duration || 10, // Default to 10 seconds if not provided
-        date: today,
-        timestamp: new Date(),
-        lastActive: new Date()
-      });
-      await browserTabUsage.save();
-      console.log(`Created manual browser tab for ${req.user.email}: ${url}`);
-    }
-    
-    res.status(200).json({ 
-      success: true, 
-      message: 'Browser tab tracked successfully' 
-    });
-  } catch (error) {
-    console.error('Error tracking browser tab:', error);
-    res.status(500).json({ error: 'Failed to track browser tab' });
-  }
-});
-
-// Update logout endpoint to remove token from active users
-app.post('/api/logout', auth, (req, res) => {
-  try {
-    // Remove the token from active users
-    const token = req.token;
-    if (token && activeUsers.has(token)) {
-      activeUsers.delete(token);
-    }
-    
-    res.json({ success: true, message: 'Logged out successfully' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ error: 'Server error during logout' });
-  }
-});
-
-// Improved browser tab detection function
-async function getActiveBrowserTab(windowInfo) {
-  if (!windowInfo) return null;
-  
-  // More comprehensive list of browsers
-  const browsers = [
-    'Chrome', 
-    'Google Chrome', 
-    'Firefox', 
-    'Mozilla Firefox',
-    'Safari', 
-    'Edge', 
-    'Microsoft Edge', 
-    'Brave', 
-    'Opera', 
-    'Vivaldi'
-  ];
-  
-  const isBrowser = browsers.some(browser => 
-    windowInfo.app && windowInfo.app.includes(browser)
-  );
-  
-  if (!isBrowser) return null;
-  
-  // Get the browser name
-  const browser = browsers.find(browser => 
-    windowInfo.app && windowInfo.app.includes(browser)
-  ) || windowInfo.app;
-  
-  // Extract possible URL from title
-  let url = null;
-  let title = windowInfo.title || '';
-  
-  // Common URL patterns in browser window titles
-  const urlPattern = /(https?:\/\/[^\s]+)/i;
-  const match = title.match(urlPattern);
-  
-  if (match) {
-    url = match[1];
-  } else {
-    // Look for common domain patterns
-    const domainPattern = /([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/;
-    const domainMatch = title.match(domainPattern);
-    
-    if (domainMatch) {
-      url = 'https://' + domainMatch[1];
-    } else {
-      // If we can't extract a URL, create a placeholder with the title
-      // This allows us to still track the browser activity even without a URL
-      const sanitizedTitle = title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-      url = `browser-page://${sanitizedTitle}`;
-    }
-  }
-  
-  console.log(`Browser detected: ${browser}, URL: ${url}, Title: ${title}`);
-  
-  return {
-    browser,
-    url: url || 'unknown',
-    title: title
-  };
-}
-
-// Update the window tracking interval with improved browser tab handling
+// Update the window tracking interval to track both app usage and browser tabs
 setInterval(async () => {
   try {
     const windowInfo = await getActiveWindowTitle();
@@ -1039,52 +622,44 @@ setInterval(async () => {
     if (windowInfo && JSON.stringify(windowInfo) !== JSON.stringify(lastWindow)) {
       if (lastWindow) {
         const duration = Math.round((Date.now() - startTime) / 1000);
-        if (duration <= 0) return; // Skip if duration is invalid
-        
         const today = new Date().toISOString().slice(0, 10);
+        
         const appName = lastWindow.app;
         
-        // Always check for browser tab info with improved detection
-        const browserInfo = await getActiveBrowserTab(lastWindow);
+        // Find the most recently active user
+        let activeUserId = null;
+        let activeUserEmail = null;
+        let mostRecentTime = 0;
         
-        // Update current session data for UI
-        currentSessionData.unshift({
-          app: appName,
-          title: lastWindow.title,
-          duration,
-          timestamp: Date.now(),
-          url: browserInfo ? browserInfo.url : null
-        });
-        
-        // Keep session data manageable
-        if (currentSessionData.length > 50) {
-          currentSessionData.pop();
+        for (const [userId, data] of activeUsers.entries()) {
+          if (data.timestamp > mostRecentTime && Date.now() - data.timestamp < 5 * 60 * 1000) { // Active in last 5 minutes
+            mostRecentTime = data.timestamp;
+            activeUserId = userId;
+            activeUserEmail = data.email;
+          }
         }
         
-        // For each active user, record their app/tab usage
-        for (const [token, userData] of activeUsers.entries()) {
-          const { userId, email } = userData;
-          
-          // Skip users with invalid data
-          if (!userId || !email) continue;
-          
+        if (activeUserId && activeUserEmail) {
+          // Update app usage in database
           try {
-            // Always track generic app usage
+            // Find existing app usage record or create new one
             let appUsage = await AppUsage.findOne({
-              userId,
-              email,
+              userId: activeUserId,
+              email: activeUserEmail,
               date: today,
               appName
             });
             
             if (appUsage) {
+              // Update existing record
               appUsage.duration += duration;
               appUsage.lastUpdated = new Date();
               await appUsage.save();
             } else {
+              // Create new record
               appUsage = new AppUsage({
-                userId,
-                email,
+                userId: activeUserId,
+                email: activeUserEmail,
                 date: today,
                 appName,
                 duration,
@@ -1093,49 +668,81 @@ setInterval(async () => {
               await appUsage.save();
             }
             
-            // If this is a browser window, track it separately
-            if (browserInfo) {
-              // Handle the possibility that URL might be empty or invalid
-              if (!browserInfo.url || browserInfo.url === 'unknown') {
-                console.log(`Skipping browser tab tracking for ${email}: Invalid URL`);
-                continue;
-              }
+            // DETECT AND TRACK BROWSER TABS
+            // Check if this is a browser app
+            const browsers = ['Google-chrome', 'firefox_firefox', 'Firefox', 'Safari', 'Edge', 'Opera'];
+            if (browsers.includes(appName) && lastWindow.title) {
+              // Extract the tab name from the title (usually format is "Website - Browser")
+              let tabName = lastWindow.title;
               
-              let browserTabUsage = await BrowserTabUsage.findOne({
-                userId,
-                email,
-                date: today,
-                browser: browserInfo.browser,
-                url: browserInfo.url
+              // Remove browser name from the end if present
+              browsers.forEach(browser => {
+                if (tabName.endsWith(` - ${browser}`)) {
+                  tabName = tabName.replace(` - ${browser}`, '');
+                }
+                if (tabName.endsWith(` – ${browser}`)) {
+                  tabName = tabName.replace(` – ${browser}`, '');
+                }
               });
               
-              if (browserTabUsage) {
-                // Update existing browser tab entry
-                browserTabUsage.duration += duration;
-                browserTabUsage.title = browserInfo.title;
-                browserTabUsage.lastActive = new Date();
-                await browserTabUsage.save();
-                console.log(`Updated browser tab for ${email}: ${browserInfo.url} (${duration}s)`);
+              // Check for common browser title patterns and extract the website name
+              const titleParts = tabName.split(' - ');
+              if (titleParts.length > 1) {
+                // Usually the website name is the first or last part
+                tabName = titleParts[0].trim();
+              }
+              
+              // Find existing tab record or create a new one
+              let tabUsage = await TabUsage.findOne({
+                userId: activeUserId,
+                email: activeUserEmail,
+                date: today,
+                title: tabName
+              });
+              
+              if (tabUsage) {
+                // Update existing tab record
+                tabUsage.duration += duration;
+                tabUsage.lastUpdated = new Date();
+                await tabUsage.save();
+                console.log(`Updated tab record: ${tabName} for ${activeUserEmail}, total: ${tabUsage.duration}s`);
               } else {
-                // Create new browser tab entry
-                browserTabUsage = new BrowserTabUsage({
-                  userId,
-                  email,
+                // Create new tab record with simplified data
+                tabUsage = new TabUsage({
+                  userId: activeUserId,
+                  email: activeUserEmail,
                   date: today,
-                  browser: browserInfo.browser,
-                  url: browserInfo.url,
-                  title: browserInfo.title,
-                  duration,
-                  timestamp: new Date(),
-                  lastActive: new Date()
+                  title: tabName,
+                  domain: tabName.toLowerCase(), // Just use the tab name as the domain for simplicity
+                  duration: duration,
+                  lastUpdated: new Date()
                 });
-                await browserTabUsage.save();
-                console.log(`Created new browser tab for ${email}: ${browserInfo.url} (${browserTabUsage._id})`);
+                await tabUsage.save();
+                console.log(`Created new tab record: ${tabName} for ${activeUserEmail}, duration: ${duration}s`);
               }
             }
-          } catch (userError) {
-            console.error(`Error tracking for user ${email}:`, userError);
+          } catch (dbError) {
+            console.error('Database error when tracking usage:', dbError);
           }
+          
+          // Add to current session data (in memory)
+          currentSessionData.push({
+            userId: activeUserId.toString(),
+            email: activeUserEmail,
+            app: appName,
+            title: lastWindow.title,
+            url: lastWindow.url,
+            duration: duration,
+            timestamp: Date.now()
+          });
+          
+          if (currentSessionData.length > 100) {
+            currentSessionData.shift();
+          }
+          
+          console.log(`Tracked: ${appName} (${lastWindow.title}) for ${duration} seconds for user ${activeUserEmail}`);
+        } else {
+          console.log(`Skipping tracking: No active user found in the last 5 minutes`);
         }
       }
       
@@ -1147,19 +754,8 @@ setInterval(async () => {
   }
 }, 1000);
 
-// Start the server with better error handling
 try {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    
-    // Print available routes
-    console.log('Available routes:');
-    app._router.stack.forEach(r => {
-      if (r.route && r.route.path) {
-        console.log(`${Object.keys(r.route.methods).join(', ').toUpperCase()}\t${r.route.path}`);
-      }
-    });
-  });
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
 } catch (error) {
   console.error('Failed to start server:', error);
 }

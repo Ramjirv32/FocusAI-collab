@@ -1,121 +1,97 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('loginForm');
-  const statusArea = document.getElementById('statusArea');
-  const statusEl = document.getElementById('status');
-  const tabsTrackedEl = document.getElementById('tabsTracked');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const loginButton = document.getElementById('loginButton');
-  const logoutButton = document.getElementById('logoutButton');
-
-  // Check if already authenticated
-  chrome.storage.local.get(['authToken', 'userEmail'], (data) => {
-    if (data.authToken && data.userEmail) {
-      showLoggedInState(data.userEmail);
-      checkTabsTracked(data.authToken);
-    } else {
-      showLoginForm();
+document.addEventListener('DOMContentLoaded', function() {
+  const loginForm = document.getElementById('login-form');
+  const loggedInDiv = document.getElementById('logged-in');
+  const userEmailEl = document.getElementById('user-email');
+  const statusDiv = document.getElementById('status');
+  const loginButton = document.getElementById('login-button');
+  const logoutButton = document.getElementById('logout-button');
+  
+  // Check if user is already logged in
+  chrome.storage.local.get(['token', 'userId', 'email'], function(result) {
+    if (result.token && result.userId && result.email) {
+      // User is logged in
+      loginForm.classList.add('hidden');
+      loggedInDiv.classList.remove('hidden');
+      userEmailEl.textContent = result.email;
+      
+      // Send the credentials to background script
+      chrome.runtime.sendMessage({
+        action: 'setCredentials',
+        userId: result.userId,
+        email: result.email,
+        token: result.token
+      });
     }
   });
-
-  // Handle login button click
-  loginButton.addEventListener('click', () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
+  
+  // Handle login
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
     
-    if (!email || !password) {
-      alert('Please enter both email and password');
-      return;
-    }
-    
-    loginButton.textContent = 'Logging in...';
-    loginButton.disabled = true;
-    
-    fetch('http://localhost:5000/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Login failed: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
       if (data.token) {
-        // Save auth data
-        chrome.storage.local.set({ 
-          authToken: data.token,
-          userEmail: email 
-        }, () => {
-          console.log('Authentication saved');
-          showLoggedInState(email);
-          checkTabsTracked(data.token);
+        // Store credentials locally
+        chrome.storage.local.set({
+          userId: data.user.id,
+          email: data.user.email,
+          token: data.token
         });
+        
+        // Send to background script
+        chrome.runtime.sendMessage({
+          action: 'setCredentials',
+          userId: data.user.id,
+          email: data.user.email,
+          token: data.token
+        });
+        
+        // Update UI
+        loginForm.classList.add('hidden');
+        loggedInDiv.classList.remove('hidden');
+        userEmailEl.textContent = data.user.email;
+        showStatus('Logged in! Tab tracking enabled.', 'success');
       } else {
-        throw new Error('No token received');
+        showStatus('Login failed: ' + (data.error || 'Unknown error'), 'error');
       }
-    })
-    .catch(error => {
-      console.error('Login error:', error);
-      alert(error.message);
-      loginButton.textContent = 'Login';
-      loginButton.disabled = false;
-    });
+    } catch (error) {
+      showStatus('Error connecting to server', 'error');
+    }
   });
-
+  
   // Handle logout
-  logoutButton.addEventListener('click', () => {
-    chrome.storage.local.remove(['authToken', 'userEmail'], () => {
-      showLoginForm();
+  logoutButton.addEventListener('click', function() {
+    chrome.storage.local.remove(['token', 'userId', 'email'], function() {
+      // Send message to background script
+      chrome.runtime.sendMessage({ action: 'clearCredentials' });
+      
+      // Update UI
+      loginForm.classList.remove('hidden');
+      loggedInDiv.classList.add('hidden');
+      document.getElementById('email').value = '';
+      document.getElementById('password').value = '';
+      showStatus('Logged out successfully', 'success');
     });
   });
-
-  // Helper to show logged in state
-  function showLoggedInState(email) {
-    loginForm.classList.add('hidden');
-    statusArea.classList.remove('hidden');
-    statusEl.textContent = `Connected as: ${email}`;
-    statusEl.className = 'status connected';
+  
+  function showStatus(message, type) {
+    statusDiv.textContent = message;
+    statusDiv.className = 'status ' + type;
+    statusDiv.classList.remove('hidden');
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+      statusDiv.classList.add('hidden');
+    }, 3000);
   }
-
-  // Helper to show login form
-  function showLoginForm() {
-    loginForm.classList.remove('hidden');
-    statusArea.classList.add('hidden');
-    emailInput.value = '';
-    passwordInput.value = '';
-    loginButton.textContent = 'Login';
-    loginButton.disabled = false;
-  }
-
-  // Check how many tabs we've tracked
-  function checkTabsTracked(token) {
-    fetch('http://localhost:5000/api/debug/browser-tabs', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data && data.count !== undefined) {
-        tabsTrackedEl.textContent = `Tabs tracked: ${data.count}`;
-        tabsTrackedEl.className = 'status';
-      }
-    })
-    .catch(error => {
-      console.error('Error checking tabs:', error);
-      tabsTrackedEl.textContent = 'Could not check tracked tabs';
-      tabsTrackedEl.className = 'status disconnected';
-    });
-  }
-
-  // Show active tab info for debugging
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    console.log("Current active tab:", tabs[0]);
-  });
 });

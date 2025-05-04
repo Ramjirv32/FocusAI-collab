@@ -10,8 +10,7 @@ import AppUsageChart from '@/components/AppUsage/AppUsageChart';
 import CurrentSessionList from '@/components/AppUsage/CurrentSessionList';
 // Import the new enhanced charts component
 import EnhancedUsageCharts from '@/components/AppUsage/EnhancedUsageCharts';
-// Add this import near the top
-import BrowserTabsAnalysis from '@/components/Browser/BrowserTabsAnalysis';
+import TabUsageAnalytics from '@/components/TabInsights/TabUsageAnalytics';
 
 import { fetchTabLogs, filterByTimeFrame, groupByDomain, generateSummary } from '@/services/tabService';
 import { TimeFrame, GroupedTabData } from '@/types';
@@ -66,9 +65,25 @@ const Index = () => {
     const tabInterval = setInterval(() => {
       fetchData();
     }, 30000);
+
+    // Add heartbeat functionality
+    const sendHeartbeat = async () => {
+      try {
+        const headers = getAuthHeader();
+        await axios.post('http://localhost:5000/api/heartbeat', {}, { headers });
+      } catch (err) {
+        console.error('Heartbeat error:', err);
+      }
+    };
     
+    // Send heartbeat every 30 seconds
+    sendHeartbeat(); // Send immediately
+    const heartbeatInterval = setInterval(sendHeartbeat, 30000);
+    
+    // Clean up on component unmount
     return () => {
       clearInterval(tabInterval);
+      clearInterval(heartbeatInterval);
     };
   }, []);
   
@@ -94,24 +109,6 @@ const Index = () => {
     'monthly': 'This Month'
   };
 
-  // Add this function in your component
-  const debugBrowserTabs = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/debug/browser-tabs', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      console.log('Browser tab debug data:', data);
-      alert(`Found ${data.count} browser tab records. Check console for details.`);
-    } catch (error) {
-      console.error('Debug failed:', error);
-      alert('Failed to debug browser tabs. Check console for details.');
-    }
-  };
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -128,14 +125,6 @@ const Index = () => {
             onTimeFrameChange={setSelectedTimeFrame}
           />
         </div>
-        
-        <button 
-          onClick={debugBrowserTabs}
-          className="text-xs text-muted-foreground hover:text-primary"
-          style={{ position: 'absolute', right: '10px', top: '10px' }}
-        >
-          Debug Tabs
-        </button>
         
         {isLoading ? (
           <div className="grid place-items-center py-10">
@@ -165,9 +154,14 @@ const Index = () => {
               timeFrame={timeFrameDisplays[selectedTimeFrame]} 
             />
             
-            {/* Replace the original charts with the enhanced visualizations */}
+     
             <div className="mt-6">
               <EnhancedUsageCharts />
+            </div>
+            
+            {/* Add the new Tab Usage Analytics component */}
+            <div className="mt-6">
+              <TabUsageAnalytics />
             </div>
             
             {/* You can keep the original components for reference, but they're not needed */}
@@ -220,11 +214,8 @@ const Index = () => {
               
               <CurrentSessionList data={currentSessionData} />
             </div>
+
             */}
-            {/* Inside your JSX, after the EnhancedUsageCharts component or wherever appropriate: */}
-            <div className="mt-10">
-              <BrowserTabsAnalysis timeFrame={selectedTimeFrame} />
-            </div>
           </>
         )}
       </div>
