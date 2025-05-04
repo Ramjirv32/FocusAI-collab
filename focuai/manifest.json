@@ -3,9 +3,13 @@
   "name": "FocuAI Tab Tracker",
   "version": "1.0",
   "description": "Track browser tab usage for the FocuAI productivity dashboard",
+  "externally_connectable": {
+   "matches": ["http://localhost:8080/*"]
+  },
   "permissions": [
     "tabs",
     "activeTab",
+    "scripting",
     "storage"
   ],
   "host_permissions": [

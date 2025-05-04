@@ -88,8 +88,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Add this simple function before starting the server
-// to make sure there's some data for new users
 
 const ensureUserHasInitialData = async (userId, email) => {
   try {
@@ -150,7 +148,6 @@ const ensureUserHasInitialData = async (userId, email) => {
 };
 
 
-// Update login to use the new token generator
 
 // Update the login endpoint to make sample data optional
 app.post('/api/login', async (req, res) => {
@@ -233,10 +230,11 @@ app.post('/api/clear-sample-data', auth, async (req, res) => {
 
 // Get current user
 app.get('/api/user', auth, async (req, res) => {
-  res.json({ user: { id: req.user._id, email: req.user.email, name: req.user.name } });
+  res.json({ user: { id: req.user._id, email: req.user.email, name: req.user.name,token : req.token } });
 });
 
 // ========== TAB TRACKING FUNCTIONALITY ==========
+
 
 // Update the log-tab endpoint to work with or without auth
 app.post('/log-tab', async (req, res) => {
