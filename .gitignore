@@ -6,10 +6,13 @@ node_modules/
 .pnp
 .pnp.js
 
+
+
 **/dist/
 **/build/
 **/out/
 
+.pyc
 # Environment files
 
 .env.local
