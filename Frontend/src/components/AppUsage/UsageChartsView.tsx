@@ -45,11 +45,11 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
       
       try {
         // Get raw usage data
-        const rawResponse = await axios.get('http://localhost:5000/raw-usage');
+        const rawResponse = await axios.get('http://localhost:5001/raw-usage');
         setRawData(rawResponse.data);
         
         // Get productivity data
-        const focusResponse = await axios.get('http://localhost:5000/focus-data');
+        const focusResponse = await axios.get('http://localhost:5001/focus-data');
         
         // Calculate productive vs unproductive time
         // This is a simplified version - you would need to implement proper

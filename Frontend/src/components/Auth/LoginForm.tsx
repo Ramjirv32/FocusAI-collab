@@ -18,7 +18,7 @@ const LoginForm = () => {
   const fetchUserInfoAndSendToExtension = async () => {
     try {
   
-      const response = await axios.get('http://localhost:5000/api/user'); // adjust endpoint as needed
+      const response = await axios.get('http://localhost:5001/api/user'); // adjust endpoint as needed
       const user = response.data.user;
   
       // Send login data to the Chrome extension
