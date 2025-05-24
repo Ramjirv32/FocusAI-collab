@@ -50,7 +50,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
         const headers = getAuthHeader();
         
         // Get raw usage data
-        const response = await axios.get('http://localhost:5000/raw-usage', { headers });
+        const response = await axios.get('http://localhost:5001/raw-usage', { headers });
         console.log('Raw usage data:', response.data);
         
         // Check if the data likely contains sample entries

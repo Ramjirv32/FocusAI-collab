@@ -40,11 +40,11 @@ const Index = () => {
         const headers = getAuthHeader();
         
         // Fetch tab logs with authorization header
-        const tabResponse = await axios.get('http://localhost:5000/tabs', { headers });
+        const tabResponse = await axios.get('http://localhost:5001/tabs', { headers });
         setTabLogs(tabResponse.data);
         
         // Fetch app usage data with authorization header
-        const appResponse = await axios.get('http://localhost:5000/focus-data', { headers });
+        const appResponse = await axios.get('http://localhost:5001/focus-data', { headers });
         
         // Debug the response
         console.log('App usage response:', appResponse.data);
@@ -70,7 +70,7 @@ const Index = () => {
     const sendHeartbeat = async () => {
       try {
         const headers = getAuthHeader();
-        await axios.post('http://localhost:5000/api/heartbeat', {}, { headers });
+        await axios.post('http://localhost:5001/api/heartbeat', {}, { headers });
       } catch (err) {
         console.error('Heartbeat error:', err);
       }

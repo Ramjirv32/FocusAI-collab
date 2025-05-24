@@ -45,7 +45,7 @@ const TabUsageAnalytics: React.FC = () => {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         
         // Fetch raw tab data
-        const response = await axios.get(`http://localhost:5000/tabs?timeFrame=${timeRange}`, { headers });
+        const response = await axios.get(`http://localhost:5001/tabs?timeFrame=${timeRange}`, { headers });
         
         // Process the data
         const domainsMap = new Map<string, TabUsageData>();
