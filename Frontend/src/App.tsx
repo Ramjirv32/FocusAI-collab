@@ -12,6 +12,7 @@ import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 
 import React from 'react';
+import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
 
 
 const queryClient = new QueryClient();
@@ -30,7 +31,7 @@ const AppRoutes = () => (
     />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
-    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
@@ -54,6 +55,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <AppRoutes />
+            <ProductivityChatBot />
           </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>

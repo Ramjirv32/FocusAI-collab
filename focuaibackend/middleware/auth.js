@@ -9,10 +9,11 @@ const auth = async (req, res, next) => {
     
     console.log('Auth header received:', authHeader);
     
-    
+
     if (!authHeader) {
       return res.status(401).json({ error: 'No authorization header provided' });
     }
+    
     
    
     const token = authHeader.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : authHeader;
