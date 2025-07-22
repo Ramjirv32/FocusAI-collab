@@ -101,6 +101,91 @@ const ProductivityChatBot = () => {
     }
   }
 
+  // Check if query should use existing flow or new API
+  const shouldUseExistingFlow = (query: string): boolean => {
+    const lowerQuery = query.toLowerCase()
+    return (
+      lowerQuery.includes('focus score') ||
+      lowerQuery.includes('most used') ||
+      lowerQuery.includes('app usage') ||
+      lowerQuery.includes('website usage') ||
+      lowerQuery.includes('show my')
+    )
+  }
+
+  // Mock data functions for existing flow
+  const getMockFocusData = () => {
+    return {
+      focusScore: 72,
+      productivityHours: 4.5,
+      distractionHours: 2.3
+    }
+  }
+
+  const getMockAppUsage = () => {
+    return [
+      { name: "Visual Studio Code", duration: 7200, category: "productive" },
+      { name: "Chrome", duration: 5400, category: "neutral" },
+      { name: "Slack", duration: 3600, category: "communication" },
+      { name: "YouTube", duration: 2100, category: "distracting" },
+      { name: "Terminal", duration: 1800, category: "productive" }
+    ]
+  }
+
+  const getMockWebsiteUsage = () => {
+    return [
+      { name: "github.com", duration: 4200, category: "productive" },
+      { name: "stackoverflow.com", duration: 3600, category: "productive" },
+      { name: "gmail.com", duration: 2400, category: "communication" },
+      { name: "youtube.com", duration: 2100, category: "distracting" },
+      { name: "reddit.com", duration: 1500, category: "distracting" }
+    ]
+  }
+
+  const processExistingFlowQuery = (query: string) => {
+    const lowerQuery = query.toLowerCase()
+    
+    if (lowerQuery.includes('focus score')) {
+      const focusData = getMockFocusData()
+      const botMessage: Message = {
+        id: Date.now() + 1,
+        sender: "bot",
+        content: {
+          type: "focus-score",
+          text: "Here's your current focus score:",
+          focusScore: focusData.focusScore,
+          productivityHours: focusData.productivityHours,
+          distractionHours: focusData.distractionHours,
+        },
+      }
+      setMessages(prev => [...prev, botMessage])
+    } else if (lowerQuery.includes('most used') || lowerQuery.includes('app usage')) {
+      const appUsage = getMockAppUsage()
+      const botMessage: Message = {
+        id: Date.now() + 1,
+        sender: "bot",
+        content: {
+          type: "usage",
+          text: "Here are your most used applications:",
+          usageData: appUsage,
+        },
+      }
+      setMessages(prev => [...prev, botMessage])
+    } else if (lowerQuery.includes('website usage')) {
+      const websiteUsage = getMockWebsiteUsage()
+      const botMessage: Message = {
+        id: Date.now() + 1,
+        sender: "bot",
+        content: {
+          type: "usage",
+          text: "Here are your most visited websites:",
+          usageData: websiteUsage,
+        },
+      }
+      setMessages(prev => [...prev, botMessage])
+    }
+  }
+
   const processQuery = async (query: string) => {
     if (!query.trim()) return
 
@@ -119,136 +204,96 @@ const ProductivityChatBot = () => {
     setMessages((prev) => [...prev, userMessage])
 
     try {
-      const token = localStorage.getItem('token')
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+      // Check if should use existing flow
+      if (shouldUseExistingFlow(query)) {
+        processExistingFlowQuery(query)
+        setIsLoading(false)
+        return
+      }
 
-      if (query.toLowerCase().includes("focus") || query.toLowerCase().includes("score")) {
-        // Fetch focus score data
-        const response = await axios.get('http://localhost:5001/focus-data', { headers })
-        
-        // Calculate productivity metrics
-        let productiveHours = 0
-        let distractionHours = 0
-        let focusScore = 0
-        
-        if (response.data && response.data.summary) {
-          productiveHours = response.data.summary.productiveHours || 0
-          distractionHours = response.data.summary.distractionHours || 0
-          focusScore = response.data.summary.focusScore || 0
-        }
-        
-        const botResponse: Message = {
-          id: Date.now() + 1,
-          sender: "bot",
-          content: {
-            type: "focus-score",
-            text: `Here's your current focus score and productivity breakdown:`,
-            focusScore: focusScore,
-            productivityHours: productiveHours,
-            distractionHours: distractionHours
-          },
-        }
-        
-        setMessages((prev) => [...prev, botResponse])
-      } 
-      else if (query.toLowerCase().includes("app") || query.toLowerCase().includes("application") || query.toLowerCase().includes("usage")) {
-        // Fetch app usage data
-        const response = await axios.get('http://localhost:5001/raw-usage', { headers })
-        
-        // Transform app usage data
-        const appUsageData = Object.entries(response.data.appUsage || {})
-          .map(([name, duration]: [string, number]) => ({ 
-            name, 
-            duration,
-            category: determineAppCategory(name)
-          }))
-          .sort((a, b) => b.duration - a.duration)
-          .slice(0, 5) // Get top 5 apps
-        
-        const botResponse: Message = {
-          id: Date.now() + 1,
-          sender: "bot",
-          content: {
-            type: "usage",
-            text: `Here are your most used applications:`,
-            usageData: appUsageData
-          },
-        }
-        
-        setMessages((prev) => [...prev, botResponse])
+      // For other queries, use the new API
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('No authentication token found')
       }
-      else if (query.toLowerCase().includes("web") || query.toLowerCase().includes("site") || query.toLowerCase().includes("tab") || query.toLowerCase().includes("browser")) {
-        // Fetch tab usage data
-        const response = await axios.get('http://localhost:5001/tabs', { headers })
-        
-        // Process the data - group by domain
-        const domainsMap = new Map<string, {domain: string, duration: number, category: string}>()
-        
-        response.data.forEach((tab: any) => {
-          try {
-            const url = new URL(tab.url)
-            const domain = url.hostname
-            
-            if (!domainsMap.has(domain)) {
-              domainsMap.set(domain, {
-                domain,
-                duration: 0,
-                category: determineWebsiteCategory(domain)
-              })
-            }
-            
-            const domainData = domainsMap.get(domain)!
-            domainData.duration += tab.duration || 0
-          } catch (e) {
-            // Skip invalid URLs
-          }
-        })
-        
-        // Convert map to array and sort by duration
-        const tabUsageData = Array.from(domainsMap.values())
-          .sort((a, b) => b.duration - a.duration)
-          .slice(0, 5) // Get top 5 domains
-        
-        const botResponse: Message = {
-          id: Date.now() + 1,
-          sender: "bot",
-          content: {
-            type: "usage",
-            text: `Here are your most visited websites:`,
-            usageData: tabUsageData.map(({ domain, duration, category }) => ({
-              name: domain,
-              duration,
-              category,
-            })),
-          },
-        }
-        
-        setMessages((prev) => [...prev, botResponse])
+      
+      // Decode the JWT token to get user ID
+      const tokenParts = token.split('.')
+      if (tokenParts.length !== 3) {
+        throw new Error('Invalid token format')
       }
-      else {
-        // Generic response
-        const botResponse: Message = {
-          id: Date.now() + 1,
-          sender: "bot",
-          content: {
-            type: "text",
-            text: "You can ask me about your focus score, app usage, or website activity. Try questions like 'Show my focus score', 'What apps am I using most?', or 'Show my website usage'.",
-          },
-        }
-        
-        setMessages((prev) => [...prev, botResponse])
+      
+      const decoded = JSON.parse(atob(tokenParts[1]))
+      const userId = decoded.userId
+      
+      // Add a thinking message
+      const thinkingMessage: Message = {
+        id: Date.now() + 0.5,
+        sender: "bot",
+        content: {
+          type: "text",
+          text: "Thinking...",
+        },
       }
+      setMessages(prev => [...prev, thinkingMessage])
+
+      // Call the new AI server with CORS support
+      const aiResponse = await axios.post(
+        `http://0.0.0.0:8000/api/v1/chat/ask/${userId}?question=${encodeURIComponent(query)}`,
+        {},
+        { 
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+          withCredentials: false
+        }
+      )
+
+      // Remove the thinking message and add the actual response
+      setMessages(prev => {
+        const filtered = prev.filter(msg => msg.id !== thinkingMessage.id)
+        return [
+          ...filtered,
+          {
+            id: Date.now() + 1,
+            sender: "bot",
+            content: {
+              type: "text",
+              text: aiResponse.data.response || aiResponse.data.answer || "I couldn't process your request at the moment.",
+            },
+          },
+        ]
+      })
+
     } catch (error) {
-      console.error("Error processing query:", error)
-      const botResponse: Message = {
+      console.error('Error processing query:', error)
+      
+      // Remove thinking message if it exists
+      setMessages(prev => prev.filter(msg => msg.content.text !== "Thinking..."))
+      
+      let errorText = "Sorry, I encountered an error while processing your request."
+      
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED' || error.message.includes('Network Error')) {
+          errorText = "Connection error. Please check if the server is running and try again."
+        } else if (error.response?.status === 404) {
+          errorText = "API endpoint not found. Please check the server configuration."
+        } else if (error.response?.status === 422) {
+          errorText = "Invalid request format. Please try rephrasing your question."
+        } else if (error.response?.status === 500) {
+          errorText = "Server error. Please try again later."
+        }
+      }
+      
+      const errorMessage: Message = {
         id: Date.now() + 1,
         sender: "bot",
         content: {
           type: "text",
-          text: "Sorry, I couldn't retrieve your productivity data. Please make sure you're logged in and the server is running.",
+          text: errorText,
         },
       }
-      setMessages((prev) => [...prev, botResponse])
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
@@ -351,7 +396,7 @@ const ProductivityChatBot = () => {
     await processQuery(message)
   }
 
-  // Suggested questions/quick responses
+  // Updated suggested questions
   const suggestedQuestions = [
     "Show my focus score",
     "What apps am I using most?",
