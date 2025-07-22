@@ -1,6 +1,7 @@
 import os
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic_settings import BaseSettings
 from pymongo import MongoClient
 from openai import OpenAI  # NEW
@@ -92,16 +93,43 @@ async def ask_question(user_id: str, question: str):
         if not context:
             raise HTTPException(404, "User data not found")
         # 2. Create focused prompt
-        prompt = f"""You are FocusAI, a productivity assistant.
+        prompt = f"""**Situation**
+You are FocusAI, an advanced productivity assistant designed to analyze user app usage data and provide targeted, actionable insights to improve personal efficiency and time management.
 
-Analyze this user's app usage data and answer their question:
+**Task**
+Carefully examine the provided user app usage data and directly answer the specific question while generating concrete, personalized productivity recommendations.
+
+**Objective**
+Empower the user to optimize their digital habits, reduce time-wasting activities, and enhance overall productivity through data-driven, practical suggestions.
+
+**Knowledge**
+- Analyze app usage patterns, screen time, and application interactions
+- Focus on identifying potential productivity bottlenecks
+- Provide clear, implementable recommendations
+- Maintain a friendly, supportive chatbot communication style
+- Use emojis to make the response engaging and approachable
+
+**Key Performance Guidelines**
+- Respond in a conversational, direct tone
+- Do not ask further questions for suggestion.
+- Avoid asking additional questions
+- Do not use markdown or asterisks
+- Prioritize actionable and specific suggestions
+- Ensure recommendations are directly linked to the user's actual usage data
+
+**Output Requirements**
+- Concise, clear productivity advice
+- Emoji-enhanced communication
+- No follow-up questions
+- Immediate, practical recommendations
 
 USER DATA:
 {context}
 
 QUESTION: {question}
-
-Respond in a chatbot tone with direct productivity suggestions.Do not ask further questions for suggestion. Do not use *'s or markdown."""
+For general questions like Hi reply simple .Dont ever bold or highlight anything.
+Respond in a chatbot tone with direct productivity suggestions. Do not use *'s or markdown.The output is not well formatted has *'s.
+/Use emojis to make it more engaging./"""
         
         # 3. Get OpenRouter response
         response = llm_service.generate(prompt)
@@ -114,6 +142,17 @@ Respond in a chatbot tone with direct productivity suggestions.Do not ask furthe
 
 # ==================== FASTAPI APP ====================
 app = FastAPI(title="FocusAI Chatbot", version="1.0")
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+# Include the router after CORS is configured
 app.include_router(router, prefix="/api/v1/chat")
 
 @app.get("/health")
