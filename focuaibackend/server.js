@@ -452,6 +452,73 @@ app.get('/current-session', auth, (req, res) => {
   res.json(currentSessionData);
 });
 
+// Add a public endpoint for AI server to fetch data without authentication
+app.get('/public/focus-data', async (req, res) => {
+  try {
+    console.log('AI server requesting public focus data');
+    const today = new Date().toISOString().slice(0, 10);
+    
+    // Get the most recent user (or you can specify a specific user ID)
+    const recentUser = await User.findOne().sort({ createdAt: -1 });
+    if (!recentUser) {
+      return res.status(404).json({ error: 'No users found' });
+    }
+    
+    console.log(`Fetching data for user: ${recentUser.email} (${recentUser._id})`);
+    
+    // Get today's tabs with error handling
+    let tabs = [];
+    try {
+      tabs = await TabUsage.find({
+        userId: recentUser._id,
+        email: recentUser.email,
+        timestamp: { 
+          $gte: new Date(today) 
+        }
+      }).sort({ timestamp: -1 });
+      
+      console.log(`Found ${tabs.length} tabs for today for user ${recentUser.email}`);
+    } catch (tabError) {
+      console.error('Error fetching tabs:', tabError);
+    }
+    
+    // Get today's app usage with error handling
+    let appUsageFormatted = {};
+    try {
+      const appUsage = await AppUsage.find({
+        userId: recentUser._id,
+        email: recentUser.email,
+        date: today
+      });
+      
+      console.log(`Found ${appUsage.length} app usage records for today for user ${recentUser.email}`);
+      
+      // Transform app usage to the expected format
+      appUsageFormatted = appUsage.reduce((acc, item) => {
+        acc[item.appName] = item.duration;
+        return acc;
+      }, {});
+    } catch (appError) {
+      console.error('Error fetching app usage:', appError);
+    }
+    
+    // Return the data even if one part failed
+    res.json({
+      userId: recentUser._id.toString(),
+      email: recentUser.email,
+      tabs: tabs || [],
+      appUsage: appUsageFormatted || {},
+      currentSession: currentSessionData.filter(session => 
+        session.userId === recentUser._id.toString() && 
+        session.timestamp >= new Date(today).getTime()
+      ) || []
+    });
+  } catch (error) {
+    console.error('Error fetching public focus data:', error);
+    res.status(500).json({ error: 'Failed to fetch focus data: ' + error.message });
+  }
+});
+
 // Update the focus-data endpoint to filter by email
 app.get('/focus-data', auth, async (req, res) => {
   try {
