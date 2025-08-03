@@ -1,55 +1,241 @@
+# ==========================================
 # Dependencies
+# ==========================================
 node_modules/
+**/node_modules/
 **/package-lock.json
 **/bun.lockb
 **/yarn.lock
 .pnp
 .pnp.js
 
+# Python dependencies
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
 
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.virtualenv
 
+# ==========================================
+# Build outputs
+# ==========================================
 **/dist/
 **/build/
 **/out/
+.next/
+.nuxt/
+.vuepress/dist
 
-.pyc
+# ==========================================
 # Environment files
-
+# ==========================================
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.prod
+.env.development
+.env.staging
+.env.production
 
+# ==========================================
 # Logs
+# ==========================================
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
+# ==========================================
+# Runtime data
+# ==========================================
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==========================================
 # Editor directories and files
+# ==========================================
 .idea/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*~
 
+# ==========================================
 # OS files
+# ==========================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 .directory
+*.tmp
+*.swp
 
+# ==========================================
+# Database files
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ==========================================
+# Machine Learning / AI files
+# ==========================================
+*.pkl
+*.model
+*.h5
+*.hdf5
+*.joblib
+*.sav
+model/
+models/
+checkpoints/
+logs/
+runs/
+.wandb/
+mlruns/
+.mlflow/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# ==========================================
 # Testing
+# ==========================================
 /coverage
+/.coverage
+.nyc_output
 
-# Chrome extension bundled files
+# ==========================================
+# Chrome extension files
+# ==========================================
 *.crx
 *.pem
 
+# ==========================================
 # Electron packaging
+# ==========================================
 /release-builds/
+
+# ==========================================
+# React / Next.js specific
+# ==========================================
+.next/
+out/
+.vercel
+
+# ==========================================
+# Temporary files
+# ==========================================
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# ==========================================
+# Security files
+# ==========================================
+*.key
+*.pem
+*.p12
+*.pfx
+certificate.crt
+private.key
+
+# ==========================================
+# Documentation builds
+# ==========================================
+docs/_build/
+site/
+
+# ==========================================
+# Backup files
+# ==========================================
+*.bak
+*.backup
+*.old
+
+# ==========================================
+# Local configuration
+# ==========================================
+.local
+.config
+local.json
+config.local.json
+
+# ==========================================
+# Package manager files
+# ==========================================
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ==========================================
+# IDE specific files
+# ==========================================
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ==========================================
+# Project specific ignores
+# ==========================================
+# Add any project-specific files you want to ignore here
+/uploads/
+/temp/
+/cache/
