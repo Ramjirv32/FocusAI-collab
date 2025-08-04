@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { toast } from './ui/use-toast';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from './ui/dialog';
 import { runDiagnostics } from '../utils/diagnostics';
-import { AlertCircle, CheckCircle, LifeBuoy } from 'lucide-react';
+import { AlertCircle, CheckCircle, LifeBuoy, Wrench } from 'lucide-react';
+import DiagnosticInfo from './DiagnosticInfo';
 
 const DiagnosticButton = () => {
   const [isRunning, setIsRunning] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const handleRunDiagnostics = async () => {
     if (isRunning) return;
@@ -55,25 +65,45 @@ const DiagnosticButton = () => {
   };
   
   return (
-    <Button 
-      variant="outline" 
-      size="sm"
-      onClick={handleRunDiagnostics}
-      disabled={isRunning}
-      className="gap-1"
-    >
-      {isRunning ? (
-        <>
-          <div className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent"></div>
-          Running...
-        </>
-      ) : (
-        <>
-          <LifeBuoy className="h-3.5 w-3.5" />
-          Diagnostics
-        </>
-      )}
-    </Button>
+    <div className="flex gap-2 fixed bottom-4 left-4 z-50">
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={handleRunDiagnostics}
+        disabled={isRunning}
+        className="gap-1"
+      >
+        {isRunning ? (
+          <>
+            <div className="h-3 w-3 animate-spin rounded-full border border-primary border-t-transparent"></div>
+            Running...
+          </>
+        ) : (
+          <>
+            <LifeBuoy className="h-4 w-4" />
+            Quick Test
+          </>
+        )}
+      </Button>
+      
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Wrench className="h-4 w-4 mr-2" />
+            Full Diagnostics
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>System Diagnostics</DialogTitle>
+            <DialogDescription>
+              Check the status of your FocusAI system components and troubleshoot issues.
+            </DialogDescription>
+          </DialogHeader>
+          <DiagnosticInfo />
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 

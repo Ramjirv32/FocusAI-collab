@@ -7,10 +7,11 @@ import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
-import FA from "./pages/FocusAnalytics"
+import FocusAnalytics from "./pages/FocusAnalytics";
+import Settings from "./pages/Settings";
+import Help from "./pages/Help";
 import React from 'react';
 import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
 
@@ -21,7 +22,6 @@ const queryClient = new QueryClient();
 const AppRoutes = () => (
   <Routes>
     <Route 
-
       path="/" 
       element={
         <ProtectedRoute>
@@ -31,7 +31,30 @@ const AppRoutes = () => (
     />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
-<Route path = "/focus-analytics" element = {<FA/>}/>
+    <Route 
+      path="/focus-analytics" 
+      element={
+        <ProtectedRoute>
+          <FocusAnalytics />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/settings" 
+      element={
+        <ProtectedRoute>
+          <Settings />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/help" 
+      element={
+        <ProtectedRoute>
+          <Help />
+        </ProtectedRoute>
+      }
+    />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

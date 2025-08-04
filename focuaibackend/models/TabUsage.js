@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const tabUsageSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.Mixed, // Accept both String and ObjectId
+    type: mongoose.Schema.Types.Mixed, 
     required: true
   },
   email: {
@@ -20,7 +20,7 @@ const tabUsageSchema = new mongoose.Schema({
   },
   date: {
     type: String,
-    default: () => new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    default: () => new Date().toISOString().split('T')[0] 
   },
   lastUpdated: {
     type: Date,

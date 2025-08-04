@@ -141,7 +141,7 @@ function sendTabData(tab, closedTabId = null) {
   const now = Date.now();
   const timeSinceLastSent = lastSentTime[tabId] ? (now - lastSentTime[tabId]) / 1000 : Infinity;
   
-  /
+  
   if (timeSinceLastSent < 10) {
     return;
   }
@@ -185,7 +185,7 @@ function sendToServer(tabData) {
     headers['Authorization'] = `Bearer ${userCredentials.token}`;
   }
   
-  fetch("http://localhost:5000/log-tab", {
+  fetch("http://localhost:5001/log-tab", {
     method: "POST",
     headers: headers,
     body: JSON.stringify(tabData)

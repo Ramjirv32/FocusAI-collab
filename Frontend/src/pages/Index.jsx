@@ -9,6 +9,7 @@ import DataSummary from '../components/TabInsights/DataSummary';
 import EnhancedUsageCharts from '../components/AppUsage/EnhancedUsageCharts';
 import TabUsageAnalytics from '../components/TabInsights/TabUsageAnalytics';
 import FocusStatusCard from '../components/FocusAI/FocusStatusCard';
+import ChromeExtensionStatus from '../components/Extension/ChromeExtensionStatus';
 import { syncFocusData, getQuickStats, testAiServerConnection, getConsolidatedFocusData } from '../services/activityDataService';
 import { filterByTimeFrame, groupByDomain, generateSummary } from '../services/tabService';
 
@@ -250,10 +251,18 @@ const Index = () => {
               onSync={handleSyncClick}
             />
             
-            <DataSummary 
-              summary={summary} 
-              timeFrame={timeFrameDisplays[selectedTimeFrame]} 
-            />
+            {/* Extension Status and Data Summary Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <DataSummary 
+                  summary={summary} 
+                  timeFrame={timeFrameDisplays[selectedTimeFrame]} 
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <ChromeExtensionStatus />
+              </div>
+            </div>
             
             <div className="mt-6">
               <EnhancedUsageCharts />
