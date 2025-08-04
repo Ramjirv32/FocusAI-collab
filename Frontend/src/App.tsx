@@ -12,6 +12,12 @@ import NotFound from "./pages/NotFound";
 import FocusAnalytics from "./pages/FocusAnalytics";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import Statistics from "./pages/Statistics";
+import ChatAssistant from "./pages/ChatAssistant";
+import Gamification from "./pages/Gamification";
+import Notifications from "./pages/Notifications";
+import Extension from "./pages/Extension";
+import Diagnostics from "./pages/Diagnostics";
 import React from 'react';
 import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
 
@@ -36,6 +42,54 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <FocusAnalytics />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/statistics" 
+      element={
+        <ProtectedRoute>
+          <Statistics />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/chat-assistant" 
+      element={
+        <ProtectedRoute>
+          <ChatAssistant />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/gamification" 
+      element={
+        <ProtectedRoute>
+          <Gamification />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/notifications" 
+      element={
+        <ProtectedRoute>
+          <Notifications />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/extension" 
+      element={
+        <ProtectedRoute>
+          <Extension />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/diagnostics" 
+      element={
+        <ProtectedRoute>
+          <Diagnostics />
         </ProtectedRoute>
       }
     />
