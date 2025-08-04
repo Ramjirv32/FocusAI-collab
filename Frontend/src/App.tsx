@@ -10,7 +10,7 @@ import Login from "./pages/Login";
 
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
-
+import FA from "./pages/FocusAnalytics"
 import React from 'react';
 import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
 
@@ -31,7 +31,7 @@ const AppRoutes = () => (
     />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
-
+<Route path = "/focus-analytics" element = {<FA/>}/>
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

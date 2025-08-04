@@ -11,6 +11,7 @@ require('dotenv').config();
 const User = require('./models/User');
 const AppUsage = require('./models/AppUsage');
 const TabUsage = require('./models/TabUsage');
+const ProductivitySummary = require('./models/ProductivitySummary');
 
 // Import middleware
 const auth = require('./middleware/auth');
@@ -147,7 +148,49 @@ const ensureUserHasInitialData = async (userId, email) => {
   }
 };
 
+const Tabusage = require("./models/TabUsage");
 
+app.get("/g", async (req, res) => {
+  try {
+    const { userId, email, date } = req.query;
+    
+    // Build query filters
+    let appFilter = {};
+    let tabFilter = {};
+    
+    if (userId) {
+      appFilter.userId = userId;
+      tabFilter.userId = userId;
+    }
+    
+    if (email) {
+      appFilter.email = email;
+      tabFilter.email = email;
+    }
+    
+    if (date) {
+      appFilter.date = date;
+      tabFilter.date = date;
+    }
+    
+    console.log(`📊 Fetching data with filters:`, { appFilter, tabFilter });
+    
+    // Fetch data with filters
+    const appUsage = await AppUsage.find(appFilter);
+    const tabUsage = await TabUsage.find(tabFilter);
+    
+    console.log(`✅ Found ${appUsage.length} app records and ${tabUsage.length} tab records`);
+    
+    res.json({ 
+      appUsage: appUsage || [], 
+      tabUsage: tabUsage || [],
+      filters: { userId, email, date }
+    });
+  } catch (e) {
+    console.error('Error fetching data:', e);
+    res.status(500).json({ error: "Internal server error", details: e.message });
+  }
+});
 
 // Update the login endpoint to make sample data optional
 app.post('/api/login', async (req, res) => {
@@ -679,6 +722,263 @@ app.post('/api/heartbeat', auth, (req, res) => {
   res.status(200).json({ success: true });
 });
 
+// Add an endpoint specifically for logged-in user data
+app.get('/api/user-data', auth, async (req, res) => {
+  try {
+    const { date, timeFrame } = req.query;
+    const currentDate = date || new Date().toISOString().slice(0, 10);
+    
+    console.log(`📊 Fetching user data for ${req.user.email} (${req.user._id}) on ${currentDate}`);
+    
+    // Build date filter based on timeFrame
+    let dateFilter = { date: currentDate };
+    
+    if (timeFrame === 'weekly') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      dateFilter = { date: { $gte: weekAgo.toISOString().slice(0, 10) } };
+    } else if (timeFrame === 'monthly') {
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      dateFilter = { date: { $gte: monthAgo.toISOString().slice(0, 10) } };
+    }
+    
+    // Fetch app usage for the authenticated user
+    const appUsage = await AppUsage.find({
+      userId: req.user._id,
+      email: req.user.email,
+      ...dateFilter
+    });
+    
+    // Fetch tab usage for the authenticated user
+    const tabUsage = await TabUsage.find({
+      userId: req.user._id,
+      email: req.user.email,
+      ...dateFilter
+    });
+    
+    console.log(`✅ Found ${appUsage.length} app records and ${tabUsage.length} tab records for user ${req.user.email}`);
+    
+    res.json({
+      userId: req.user._id.toString(),
+      email: req.user.email,
+      appUsage: appUsage || [],
+      tabUsage: tabUsage || [],
+      date: currentDate,
+      timeFrame: timeFrame || 'daily'
+    });
+    
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'Failed to fetch user data', details: error.message });
+  }
+});
+
+// ========== PRODUCTIVITY SUMMARY ENDPOINTS ==========
+
+// Helper function to classify apps as productive or non-productive
+const classifyApp = (appName) => {
+  const productiveApps = [
+    'code', 'vscode', 'terminal', 'gnome-terminal', 'mysql', 'postman', 
+    'slack', 'eclipse', 'intellij', 'pycharm', 'vim', 'emacs', 'git',
+    'docker', 'mongodb compass', 'figma', 'notion', 'jira', 'confluence'
+  ];
+  
+  const nonProductiveApps = [
+    'netflix', 'spotify', 'youtube', 'twitter', 'instagram', 'facebook', 
+    'tiktok', 'reddit', 'gaming', 'steam', 'discord', 'whatsapp', 
+    'telegram', 'snapchat', 'twitch'
+  ];
+  
+  const appLower = appName.toLowerCase();
+  
+  if (productiveApps.some(app => appLower.includes(app))) {
+    return 'productive';
+  } else if (nonProductiveApps.some(app => appLower.includes(app))) {
+    return 'non-productive';
+  } else if (appLower.includes('browser') || appLower.includes('chrome') || appLower.includes('firefox')) {
+    // Browser apps need more context, default to neutral/productive for work browsing
+    return 'productive';
+  }
+  
+  return 'neutral'; // Default to neutral for unknown apps
+};
+
+// Create or update productivity summary
+app.post('/api/productivity-summary', auth, async (req, res) => {
+  try {
+    const { date, appUsageData, tabUsageData } = req.body;
+    const currentDate = date || new Date().toISOString().slice(0, 10);
+    
+    console.log(`📊 Updating productivity summary for ${req.user.email} on ${currentDate}`);
+    
+    // Find existing summary or create new one
+    let summary = await ProductivitySummary.findOne({
+      userId: req.user._id,
+      email: req.user.email,
+      date: currentDate
+    });
+    
+    if (!summary) {
+      summary = new ProductivitySummary({
+        userId: req.user._id,
+        email: req.user.email,
+        date: currentDate
+      });
+    }
+    
+    // Process app usage data
+    if (appUsageData && Array.isArray(appUsageData)) {
+      for (const app of appUsageData) {
+        const appName = app.appName || app.name || 'Unknown';
+        const duration = parseInt(app.duration) || 0;
+        const classification = classifyApp(appName);
+        
+        if (duration > 0) {
+          summary.updateProductivityData(appName, duration, classification === 'productive');
+        }
+      }
+    }
+    
+    // Process tab usage data
+    if (tabUsageData && Array.isArray(tabUsageData)) {
+      for (const tab of tabUsageData) {
+        const domain = tab.domain || tab.title || 'Browser';
+        const duration = parseInt(tab.duration) || 0;
+        
+        if (duration > 0) {
+          // Classify based on domain
+          const classification = classifyApp(domain);
+          summary.updateProductivityData(`Browser - ${domain}`, duration, classification === 'productive');
+          
+          // Update most visited tab
+          if (!summary.mostVisitedTab || duration > (summary.nonProductiveContent.get(summary.mostVisitedTab) || 0)) {
+            summary.mostVisitedTab = domain;
+          }
+        }
+      }
+    }
+    
+    await summary.save();
+    
+    res.json({
+      success: true,
+      summary: {
+        userId: summary.userId,
+        email: summary.email,
+        date: summary.date,
+        productiveContent: Object.fromEntries(summary.productiveContent),
+        nonProductiveContent: Object.fromEntries(summary.nonProductiveContent),
+        maxProductiveApp: summary.maxProductiveApp,
+        totalProductiveTime: summary.totalProductiveTime,
+        totalNonProductiveTime: summary.totalNonProductiveTime,
+        overallTotalUsage: summary.overallTotalUsage,
+        focusScore: summary.focusScore,
+        mostVisitedTab: summary.mostVisitedTab,
+        mostUsedApp: summary.mostUsedApp,
+        distractionApps: Object.fromEntries(summary.distractionApps)
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error updating productivity summary:', error);
+    res.status(500).json({ error: 'Failed to update productivity summary', details: error.message });
+  }
+});
+
+// Get productivity summary for a user
+app.get('/api/productivity-summary', auth, async (req, res) => {
+  try {
+    const { date, timeFrame } = req.query;
+    const currentDate = date || new Date().toISOString().slice(0, 10);
+    
+    let dateFilter = { date: currentDate };
+    
+    if (timeFrame === 'weekly') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      dateFilter = { date: { $gte: weekAgo.toISOString().slice(0, 10) } };
+    } else if (timeFrame === 'monthly') {
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      dateFilter = { date: { $gte: monthAgo.toISOString().slice(0, 10) } };
+    }
+    
+    const summaries = await ProductivitySummary.find({
+      userId: req.user._id,
+      email: req.user.email,
+      ...dateFilter
+    }).sort({ date: -1 });
+    
+    if (summaries.length === 0) {
+      // Create a default summary with current app/tab data
+      const appUsage = await AppUsage.find({
+        userId: req.user._id,
+        email: req.user.email,
+        date: currentDate
+      });
+      
+      const tabUsage = await TabUsage.find({
+        userId: req.user._id,
+        email: req.user.email,
+        date: currentDate
+      });
+      
+      // Auto-generate summary from existing data
+      if (appUsage.length > 0 || tabUsage.length > 0) {
+        const summary = new ProductivitySummary({
+          userId: req.user._id,
+          email: req.user.email,
+          date: currentDate
+        });
+        
+        // Process existing app usage
+        for (const app of appUsage) {
+          const classification = classifyApp(app.appName);
+          summary.updateProductivityData(app.appName, app.duration, classification === 'productive');
+        }
+        
+        // Process existing tab usage
+        for (const tab of tabUsage) {
+          const domain = tab.domain || tab.title || 'Browser';
+          const classification = classifyApp(domain);
+          summary.updateProductivityData(`Browser - ${domain}`, tab.duration, classification === 'productive');
+        }
+        
+        await summary.save();
+        summaries.push(summary);
+      }
+    }
+    
+    const formattedSummaries = summaries.map(summary => ({
+      userId: summary.userId,
+      email: summary.email,
+      date: summary.date,
+      productiveContent: Object.fromEntries(summary.productiveContent),
+      nonProductiveContent: Object.fromEntries(summary.nonProductiveContent),
+      maxProductiveApp: summary.maxProductiveApp,
+      totalProductiveTime: summary.totalProductiveTime,
+      totalNonProductiveTime: summary.totalNonProductiveTime,
+      overallTotalUsage: summary.overallTotalUsage,
+      focusScore: summary.focusScore,
+      mostVisitedTab: summary.mostVisitedTab,
+      mostUsedApp: summary.mostUsedApp,
+      distractionApps: Object.fromEntries(summary.distractionApps),
+      lastUpdated: summary.lastUpdated
+    }));
+    
+    res.json({
+      success: true,
+      summaries: formattedSummaries,
+      timeFrame: timeFrame || 'daily'
+    });
+    
+  } catch (error) {
+    console.error('Error fetching productivity summary:', error);
+    res.status(500).json({ error: 'Failed to fetch productivity summary', details: error.message });
+  }
+});
+
 // Update the window tracking interval to track both app usage and browser tabs
 setInterval(async () => {
   try {
@@ -732,6 +1032,9 @@ setInterval(async () => {
               });
               await appUsage.save();
             }
+            
+            // Auto-update productivity summary after app usage is recorded
+            await updateProductivitySummaryForUser(activeUserId, activeUserEmail, today);
             
             // DETECT AND TRACK BROWSER TABS
             // Check if this is a browser app
@@ -818,6 +1121,56 @@ setInterval(async () => {
     console.error('Error in window tracking:', error);
   }
 }, 1000);
+
+// Helper function to update productivity summary
+async function updateProductivitySummaryForUser(userId, email, date) {
+  try {
+    // Get all app usage for the user on this date
+    const appUsage = await AppUsage.find({ userId, email, date });
+    const tabUsage = await TabUsage.find({ userId, email, date });
+
+    if (appUsage.length === 0 && tabUsage.length === 0) return;
+
+    // Find or create productivity summary
+    let summary = await ProductivitySummary.findOne({ userId, email, date });
+    
+    if (!summary) {
+      summary = new ProductivitySummary({ userId, email, date });
+    }
+
+    // Reset the summary to recalculate from scratch
+    summary.productiveContent.clear();
+    summary.nonProductiveContent.clear();
+    summary.distractionApps.clear();
+    summary.totalProductiveTime = 0;
+    summary.totalNonProductiveTime = 0;
+    summary.overallTotalUsage = 0;
+
+    // Process app usage
+    for (const app of appUsage) {
+      const classification = classifyApp(app.appName);
+      summary.updateProductivityData(app.appName, app.duration, classification === 'productive');
+    }
+
+    // Process tab usage
+    for (const tab of tabUsage) {
+      const domain = tab.domain || tab.title || 'Browser';
+      const classification = classifyApp(domain);
+      summary.updateProductivityData(`Browser - ${domain}`, tab.duration, classification === 'productive');
+      
+      // Update most visited tab
+      if (!summary.mostVisitedTab || tab.duration > (summary.nonProductiveContent.get(summary.mostVisitedTab) || 0)) {
+        summary.mostVisitedTab = domain;
+      }
+    }
+
+    await summary.save();
+    console.log(`✅ Updated productivity summary for ${email} on ${date}`);
+    
+  } catch (error) {
+    console.error('Error updating productivity summary:', error);
+  }
+}
 
 try {
   app.listen(5001, () => console.log(`Server running on http://localhost:${PORT}`));

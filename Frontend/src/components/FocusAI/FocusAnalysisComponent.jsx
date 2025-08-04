@@ -10,8 +10,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
   const [focusData, setFocusData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Format minutes as hours and minutes
+ 
   const formatTime = (minutes) => {
     if (!minutes) return '0m';
     
@@ -22,7 +21,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
     return `${hours}h ${mins}m`;
   };
   
-  // Load focus data
+ 
   const loadFocusData = async () => {
     try {
       setIsLoading(true);
@@ -48,7 +47,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
     }
   };
   
-  // Sync data manually
+
   const handleSync = async () => {
     await loadFocusData();
     toast({
@@ -57,7 +56,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
     });
   };
   
-  // Load data on component mount or date change
+
   useEffect(() => {
     loadFocusData();
   }, [date]);
