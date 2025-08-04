@@ -1,16 +1,11 @@
 import React from 'react';
-// Add this import
-import { Toaster } from '../ui/toast';
+import MainLayout from './MainLayout';
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Your existing layout code */}
+    <MainLayout>
       {children}
-      
-      {/* Add the Toaster component */}
-      <Toaster />
-    </div>
+    </MainLayout>
   );
 };
 
