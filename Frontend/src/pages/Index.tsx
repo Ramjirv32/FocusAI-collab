@@ -11,6 +11,7 @@ import CurrentSessionList from '@/components/AppUsage/CurrentSessionList';
 // Import the new enhanced charts component
 import EnhancedUsageCharts from '@/components/AppUsage/EnhancedUsageCharts';
 import TabUsageAnalytics from '@/components/TabInsights/TabUsageAnalytics';
+import FocusScoreCard from '@/components/FocusAI/FocusScoreCard';
 
 import { fetchTabLogs, filterByTimeFrame, groupByDomain, generateSummary } from '@/services/tabService';
 import { TimeFrame, GroupedTabData } from '@/types';
@@ -154,7 +155,11 @@ const Index = () => {
               timeFrame={timeFrameDisplays[selectedTimeFrame]} 
             />
             
-     
+            {/* Add AI Focus Analysis */}
+            <div className="mt-6">
+              <FocusScoreCard />
+            </div>
+            
             <div className="mt-6">
               <EnhancedUsageCharts />
             </div>
