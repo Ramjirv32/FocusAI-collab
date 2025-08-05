@@ -8,7 +8,7 @@ import TimeFrameSelector from '../components/TabInsights/TimeFrameSelector';
 import DataSummary from '../components/TabInsights/DataSummary';
 import EnhancedUsageCharts from '../components/AppUsage/EnhancedUsageCharts';
 import TabUsageAnalytics from '../components/TabInsights/TabUsageAnalytics';
-import FocusStatusCard from '../components/FocusAI/FocusScoreCard';
+import FocusStatusCard from '../components/FocusAI/FocusStatusCard';
 import ChromeExtensionStatus from '../components/Extension/ChromeExtensionStatus';
 import { syncFocusData, getQuickStats, testAiServerConnection, getConsolidatedFocusData } from '../services/activityDataService';
 import { filterByTimeFrame, groupByDomain, generateSummary } from '../services/tabService';
@@ -16,7 +16,6 @@ import { filterByTimeFrame, groupByDomain, generateSummary } from '../services/t
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ArrowRight, Activity, Layers } from 'lucide-react';
-// import FocusStatusCard from '../components/FocusAI/FocusStatusCard';
 
 // Make sure to add this proper export statement
 const Index = () => {
@@ -37,45 +36,125 @@ const Index = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
+
   // Function to load focus data
   const loadFocusData = async (date = null) => {
     try {
       setFocusError(null);
       const formattedDate = date || new Date().toISOString().split('T')[0];
       
-      // First check if the AI server is running
-      if (!aiServerStatus) {
-        const serverStatus = await testAiServerConnection();
-        setAiServerStatus(serverStatus);
-        
-        if (!serverStatus.status) {
-          setFocusError(`Cannot connect to AI server: ${serverStatus.message}`);
-          console.warn('AI server is not available:', serverStatus.message);
-          return;
-        }
-      }
-      
-      // Get consolidated focus data
+      // First try to use the consolidated data service which has fallback logic
       try {
         const consolidatedData = await getConsolidatedFocusData(formattedDate);
-        // Ensure we're extracting focus score properly from the response
-        const focusStats = {
-          ...consolidatedData.quickStats,
-          focus_score: consolidatedData.quickStats?.focus_score || 
-                      consolidatedData.quickStats?.productivity_score || 0,
-          total_time_minutes: (consolidatedData.quickStats?.focus_time_minutes || 0) + 
-                             (consolidatedData.quickStats?.distraction_time_minutes || 0)
-        };
+        console.log('Consolidated data received:', consolidatedData);
+        
+        // Try to extract focus stats from different possible data structures
+        let focusStats;
+        
+        if (consolidatedData.quickStats?.quick_stats) {
+          // Data from AI server
+          focusStats = {
+            focus_score: consolidatedData.quickStats.quick_stats.focus_score || 
+                        consolidatedData.quickStats.quick_stats.productivity_score || 0,
+            productivity_score: consolidatedData.quickStats.quick_stats.focus_score || 
+                               consolidatedData.quickStats.quick_stats.productivity_score || 0,
+            focus_time_minutes: consolidatedData.quickStats.quick_stats.focus_time_minutes || 0,
+            distraction_time_minutes: consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0,
+            total_time_minutes: (consolidatedData.quickStats.quick_stats.focus_time_minutes || 0) + 
+                               (consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0),
+            total_activities: consolidatedData.quickStats.quick_stats.total_activities || 0,
+            date: formattedDate
+          };
+        } else if (consolidatedData.quickStats) {
+          // Direct stats object
+          focusStats = {
+            focus_score: consolidatedData.quickStats.focus_score || 
+                        consolidatedData.quickStats.productivity_score || 0,
+            productivity_score: consolidatedData.quickStats.focus_score || 
+                               consolidatedData.quickStats.productivity_score || 0,
+            focus_time_minutes: consolidatedData.quickStats.focus_time_minutes || 0,
+            distraction_time_minutes: consolidatedData.quickStats.distraction_time_minutes || 0,
+            total_time_minutes: (consolidatedData.quickStats.focus_time_minutes || 0) + 
+                               (consolidatedData.quickStats.distraction_time_minutes || 0),
+            total_activities: consolidatedData.quickStats.total_activities || 0,
+            date: formattedDate
+          };
+        } else {
+          // Fallback with app/tab data count
+          const appCount = consolidatedData.appUsage?.length || 0;
+          const tabCount = consolidatedData.tabUsage?.length || 0;
+          
+          // Calculate basic stats from available data
+          let totalUsageSeconds = 0;
+          if (consolidatedData.appUsage && Array.isArray(consolidatedData.appUsage)) {
+            totalUsageSeconds = consolidatedData.appUsage.reduce((sum, app) => {
+              return sum + (app.duration || app.usage_time || 0);
+            }, 0);
+          }
+          
+          focusStats = {
+            focus_score: appCount > 0 ? 50 : 0, // Default moderate score if we have data
+            productivity_score: appCount > 0 ? 50 : 0,
+            focus_time_minutes: Math.round(totalUsageSeconds / 60 * 0.7), // Assume 70% productive
+            distraction_time_minutes: Math.round(totalUsageSeconds / 60 * 0.3), // Assume 30% distraction
+            total_time_minutes: Math.round(totalUsageSeconds / 60),
+            total_activities: appCount + tabCount,
+            date: formattedDate
+          };
+        }
+        
         setFocusStats(focusStats);
-        console.log('Consolidated focus data loaded:', consolidatedData);
         console.log('Extracted focus stats:', focusStats);
+        
       } catch (error) {
-        console.warn('Could not load focus data:', error);
-        setFocusError('Could not load focus stats. Please try syncing.');
+        console.warn('Consolidated data service failed, trying direct backend:', error);
+        
+        // Fallback: try to get basic data from backend
+        const headers = getAuthHeader();
+        const appResponse = await axios.get('http://localhost:5001/focus-data', { 
+          headers,
+          params: { date: formattedDate }
+        });
+        
+        const appUsage = appResponse.data?.appUsage || [];
+        const currentSession = appResponse.data?.currentSession || [];
+        
+        // Calculate basic stats from backend data
+        let totalUsageSeconds = 0;
+        if (Array.isArray(appUsage)) {
+          totalUsageSeconds = appUsage.reduce((sum, app) => {
+            return sum + (app.duration || app.usage_time || 0);
+          }, 0);
+        }
+        
+        const focusStats = {
+          focus_score: appUsage.length > 0 ? 50 : 0,
+          productivity_score: appUsage.length > 0 ? 50 : 0,
+          focus_time_minutes: Math.round(totalUsageSeconds / 60 * 0.7),
+          distraction_time_minutes: Math.round(totalUsageSeconds / 60 * 0.3),
+          total_time_minutes: Math.round(totalUsageSeconds / 60),
+          total_activities: appUsage.length + currentSession.length,
+          date: formattedDate
+        };
+        
+        setFocusStats(focusStats);
+        console.log('Backend fallback focus stats:', focusStats);
       }
+      
     } catch (err) {
       console.error('Error in loadFocusData:', err);
-      setFocusError(err.message || 'Error loading focus data');
+      setFocusError('Could not load focus data. AI server may be offline.');
+      
+      // Set minimal default stats so UI doesn't break
+      setFocusStats({
+        focus_score: 0,
+        productivity_score: 0,
+        focus_time_minutes: 0,
+        distraction_time_minutes: 0,
+        total_time_minutes: 0,
+        total_activities: 0,
+        date: date || new Date().toISOString().split('T')[0]
+      });
     }
   };
 
@@ -89,41 +168,118 @@ const Index = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // First check AI server status
-      const serverStatus = await testAiServerConnection();
-      setAiServerStatus(serverStatus);
-      
-      if (!serverStatus.status) {
-        setFocusError(`Cannot connect to AI server: ${serverStatus.message}`);
+      // Try to sync focus data using the consolidated service
+      try {
+        const consolidatedData = await getConsolidatedFocusData(today);
+        console.log('Sync - Consolidated data received:', consolidatedData);
+        
+        // Extract focus stats from the response
+        let focusStats;
+        
+        if (consolidatedData.quickStats?.quick_stats) {
+          // Data from AI server
+          focusStats = {
+            focus_score: consolidatedData.quickStats.quick_stats.focus_score || 
+                        consolidatedData.quickStats.quick_stats.productivity_score || 0,
+            productivity_score: consolidatedData.quickStats.quick_stats.focus_score || 
+                               consolidatedData.quickStats.quick_stats.productivity_score || 0,
+            focus_time_minutes: consolidatedData.quickStats.quick_stats.focus_time_minutes || 0,
+            distraction_time_minutes: consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0,
+            total_time_minutes: (consolidatedData.quickStats.quick_stats.focus_time_minutes || 0) + 
+                               (consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0),
+            total_activities: consolidatedData.quickStats.quick_stats.total_activities || 0,
+            date: today
+          };
+        } else if (consolidatedData.quickStats) {
+          // Direct stats object
+          focusStats = {
+            focus_score: consolidatedData.quickStats.focus_score || 
+                        consolidatedData.quickStats.productivity_score || 0,
+            productivity_score: consolidatedData.quickStats.focus_score || 
+                               consolidatedData.quickStats.productivity_score || 0,
+            focus_time_minutes: consolidatedData.quickStats.focus_time_minutes || 0,
+            distraction_time_minutes: consolidatedData.quickStats.distraction_time_minutes || 0,
+            total_time_minutes: (consolidatedData.quickStats.focus_time_minutes || 0) + 
+                               (consolidatedData.quickStats.distraction_time_minutes || 0),
+            total_activities: consolidatedData.quickStats.total_activities || 0,
+            date: today
+          };
+        } else {
+          // Fallback with app/tab data count
+          const appCount = consolidatedData.appUsage?.length || 0;
+          const tabCount = consolidatedData.tabUsage?.length || 0;
+          
+          // Calculate basic stats from available data
+          let totalUsageSeconds = 0;
+          if (consolidatedData.appUsage && Array.isArray(consolidatedData.appUsage)) {
+            totalUsageSeconds = consolidatedData.appUsage.reduce((sum, app) => {
+              return sum + (app.duration || app.usage_time || 0);
+            }, 0);
+          }
+          
+          focusStats = {
+            focus_score: appCount > 0 ? 50 : 0,
+            productivity_score: appCount > 0 ? 50 : 0,
+            focus_time_minutes: Math.round(totalUsageSeconds / 60 * 0.7),
+            distraction_time_minutes: Math.round(totalUsageSeconds / 60 * 0.3),
+            total_time_minutes: Math.round(totalUsageSeconds / 60),
+            total_activities: appCount + tabCount,
+            date: today
+          };
+        }
+        
+        setFocusStats(focusStats);
+        console.log('Sync - Extracted focus stats:', focusStats);
+        
         toast({
-          title: "Connection Error",
-          description: `Cannot connect to AI server: ${serverStatus.message}`,
-          variant: "destructive"
+          title: "Focus data synced",
+          description: "Your productivity analysis has been updated.",
         });
-        return;
+        
+      } catch (error) {
+        console.warn('Sync failed, AI server may be offline:', error);
+        setFocusError('AI server is offline. Showing available data from backend.');
+        
+        // Fallback: get basic data from backend
+        const headers = getAuthHeader();
+        const appResponse = await axios.get('http://localhost:5001/focus-data', { 
+          headers,
+          params: { date: today }
+        });
+        
+        const appUsage = appResponse.data?.appUsage || [];
+        const currentSession = appResponse.data?.currentSession || [];
+        
+        // Calculate basic stats
+        let totalUsageSeconds = 0;
+        if (Array.isArray(appUsage)) {
+          totalUsageSeconds = appUsage.reduce((sum, app) => {
+            return sum + (app.duration || app.usage_time || 0);
+          }, 0);
+        }
+        
+        const focusStats = {
+          focus_score: appUsage.length > 0 ? 50 : 0,
+          productivity_score: appUsage.length > 0 ? 50 : 0,
+          focus_time_minutes: Math.round(totalUsageSeconds / 60 * 0.7),
+          distraction_time_minutes: Math.round(totalUsageSeconds / 60 * 0.3),
+          total_time_minutes: Math.round(totalUsageSeconds / 60),
+          total_activities: appUsage.length + currentSession.length,
+          date: today
+        };
+        
+        setFocusStats(focusStats);
+        
+        toast({
+          title: "Limited sync completed",
+          description: "AI server is offline. Showing basic usage data.",
+          variant: "default"
+        });
       }
       
-      // Get consolidated focus data, which will trigger a sync if needed
-      const consolidatedData = await getConsolidatedFocusData(today);
-      // Ensure we're extracting focus score properly from the response
-      const focusStats = {
-        ...consolidatedData.quickStats,
-        focus_score: consolidatedData.quickStats?.focus_score || 
-                    consolidatedData.quickStats?.productivity_score || 0,
-        total_time_minutes: (consolidatedData.quickStats?.focus_time_minutes || 0) + 
-                           (consolidatedData.quickStats?.distraction_time_minutes || 0)
-      };
-      setFocusStats(focusStats);
-      console.log('Focus data synced successfully:', consolidatedData);
-      console.log('Extracted focus stats:', focusStats);
-      
-      toast({
-        title: "Focus data synced",
-        description: "Your productivity analysis has been updated.",
-      });
     } catch (err) {
       console.error('Manual sync failed:', err);
-      setFocusError(err.message || 'Failed to sync with AI server');
+      setFocusError(err.message || 'Failed to sync data');
       
       toast({
         title: "Sync failed",
