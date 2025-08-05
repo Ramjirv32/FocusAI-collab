@@ -56,7 +56,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
     {
       title: 'Chat Assistant',
       icon: MessageSquare,
-      path: '/chat',
+      path: '/chat-assistant',
       description: 'AI Productivity Assistant'
     }
   ];
@@ -91,6 +91,13 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       icon: Settings,
       path: '/settings',
       description: 'App Settings'
+    },
+    {
+      title: 'Sign Out',
+      icon: LogOut,
+      path: '/logout',
+      description: 'Log out from your account',
+      isLogout: true
     }
   ];
 
@@ -113,7 +120,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
 
   const MenuItem = ({ item, isActive }) => (
     <button
-      onClick={() => handleMenuClick(item.path)}
+      onClick={() => item.isLogout ? handleLogout() : handleMenuClick(item.path)}
       className={cn(
         "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group text-left",
         isActive 
@@ -215,19 +222,6 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
               isActive={location.pathname === item.path}
             />
           ))}
-          
-          {/* Logout Button */}
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            className={cn(
-              "w-full justify-start gap-3 mt-2 text-muted-foreground hover:text-foreground",
-              collapsed ? "px-2" : "px-3"
-            )}
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            {!collapsed && <span className="text-sm">Sign Out</span>}
-          </Button>
         </div>
       </div>
     </aside>

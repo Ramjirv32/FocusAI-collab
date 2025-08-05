@@ -59,7 +59,7 @@ const FocusAnalytics = () => {
       
       // Fetch focus analysis
       const focusResponse = await fetch(
-        `http://localhost:8000/user/${user.id}/focus-analysis?date=${selectedDate}&email=${user.email}`
+        `http://localhost:8000/user/${user.id}/productivity-analysis?date=${selectedDate}&email=${user.email}`
       );
       
       if (focusResponse.ok) {

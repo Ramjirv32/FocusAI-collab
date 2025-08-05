@@ -5,8 +5,10 @@ import { Button } from '../../components/ui/button';
 import { Progress } from '../../components/ui/progress';
 import { RefreshCw, ArrowUpRight, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { getConsolidatedFocusData } from '../../services/activityDataService';
+import { useAuth } from '../../context/AuthContext';
 
 const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
+  const { user } = useAuth();
   const [focusData, setFocusData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -23,6 +25,12 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
   
  
   const loadFocusData = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      setError('User not authenticated');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -49,6 +57,15 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
   
 
   const handleSync = async () => {
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to sync your focus data.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     await loadFocusData();
     toast({
       title: 'Focus Data Synced',
@@ -58,8 +75,32 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
   
 
   useEffect(() => {
-    loadFocusData();
-  }, [date]);
+    if (user) {
+      loadFocusData();
+    }
+  }, [date, user]);
+  
+  // Check if user is logged in
+  if (!user) {
+    return (
+      <Card className="w-full bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-red-500" />
+            Authentication Required
+          </CardTitle>
+          <CardDescription>Please log in to view your focus analysis</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground">
+              You need to be logged in to access your productivity insights and focus data.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   
   // If loading or error
   if (isLoading) {

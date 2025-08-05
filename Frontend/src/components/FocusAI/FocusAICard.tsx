@@ -4,6 +4,7 @@ import { Activity, ArrowRight, AlertCircle, CheckCircle, RefreshCw } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuth } from '../../context/AuthContext';
 
 interface FocusAICardProps {
   focusStats: any;
@@ -14,6 +15,38 @@ interface FocusAICardProps {
 }
 
 const FocusAICard: React.FC<FocusAICardProps> = ({ focusStats, isSyncing, date, error, onSync }) => {
+  const { user } = useAuth();
+
+  // Check if user is logged in
+  if (!user) {
+    return (
+      <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 shadow-lg hover:shadow-xl transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-red-500" />
+            AI Focus Analysis
+          </CardTitle>
+          <CardDescription>
+            Please log in to view your productivity insights
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              You need to be logged in to access your focus data and AI-powered productivity analysis.
+            </p>
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Authentication required to display personalized focus insights.
+              </AlertDescription>
+            </Alert>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Format minutes as hours and minutes
   const formatTime = (minutes: number | undefined): string => {
     if (!minutes) return '0m';

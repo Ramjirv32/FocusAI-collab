@@ -8,7 +8,7 @@ import TimeFrameSelector from '../components/TabInsights/TimeFrameSelector';
 import DataSummary from '../components/TabInsights/DataSummary';
 import EnhancedUsageCharts from '../components/AppUsage/EnhancedUsageCharts';
 import TabUsageAnalytics from '../components/TabInsights/TabUsageAnalytics';
-import FocusStatusCard from '../components/FocusAI/FocusStatusCard';
+import FocusStatusCard from '../components/FocusAI/FocusScoreCard';
 import ChromeExtensionStatus from '../components/Extension/ChromeExtensionStatus';
 import { syncFocusData, getQuickStats, testAiServerConnection, getConsolidatedFocusData } from '../services/activityDataService';
 import { filterByTimeFrame, groupByDomain, generateSummary } from '../services/tabService';
@@ -16,6 +16,7 @@ import { filterByTimeFrame, groupByDomain, generateSummary } from '../services/t
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { ArrowRight, Activity, Layers } from 'lucide-react';
+// import FocusStatusCard from '../components/FocusAI/FocusStatusCard';
 
 // Make sure to add this proper export statement
 const Index = () => {
@@ -57,11 +58,20 @@ const Index = () => {
       // Get consolidated focus data
       try {
         const consolidatedData = await getConsolidatedFocusData(formattedDate);
-        setFocusStats(consolidatedData.quickStats);
+        // Ensure we're extracting focus score properly from the response
+        const focusStats = {
+          ...consolidatedData.quickStats,
+          focus_score: consolidatedData.quickStats?.focus_score || 
+                      consolidatedData.quickStats?.productivity_score || 0,
+          total_time_minutes: (consolidatedData.quickStats?.focus_time_minutes || 0) + 
+                             (consolidatedData.quickStats?.distraction_time_minutes || 0)
+        };
+        setFocusStats(focusStats);
         console.log('Consolidated focus data loaded:', consolidatedData);
+        console.log('Extracted focus stats:', focusStats);
       } catch (error) {
         console.warn('Could not load focus data:', error);
-        setFocusError('Could not load productivity stats. Please try syncing.');
+        setFocusError('Could not load focus stats. Please try syncing.');
       }
     } catch (err) {
       console.error('Error in loadFocusData:', err);
@@ -95,8 +105,17 @@ const Index = () => {
       
       // Get consolidated focus data, which will trigger a sync if needed
       const consolidatedData = await getConsolidatedFocusData(today);
-      setFocusStats(consolidatedData.quickStats);
+      // Ensure we're extracting focus score properly from the response
+      const focusStats = {
+        ...consolidatedData.quickStats,
+        focus_score: consolidatedData.quickStats?.focus_score || 
+                    consolidatedData.quickStats?.productivity_score || 0,
+        total_time_minutes: (consolidatedData.quickStats?.focus_time_minutes || 0) + 
+                           (consolidatedData.quickStats?.distraction_time_minutes || 0)
+      };
+      setFocusStats(focusStats);
       console.log('Focus data synced successfully:', consolidatedData);
+      console.log('Extracted focus stats:', focusStats);
       
       toast({
         title: "Focus data synced",
@@ -243,7 +262,7 @@ const Index = () => {
           </Card>
         ) : (
           <>
-            {/* Focus AI Stats Card */}
+            {/* AI Focus Analysis Card */}
             <FocusStatusCard
               stats={focusStats}
               isLoading={isSyncing}
