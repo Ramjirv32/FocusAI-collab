@@ -12,12 +12,20 @@ const User = require('./models/User');
 const AppUsage = require('./models/AppUsage');
 const TabUsage = require('./models/TabUsage');
 const ProductivitySummary = require('./models/ProductivitySummary');
+const UserProfile = require('./models/UserProfile');
+const Gamification = require('./models/Gamification');
 
 // Import middleware
 const auth = require('./middleware/auth');
 
+// Import routes
+const profileRoutes = require('./routes/profileRoutes');
+const gamificationRoutes = require('./routes/gamificationRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const newRoutes = require('./routes/new');
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Add this near the top with other global variables
 const activeUsers = new Map(); // userId -> {timestamp, email}
@@ -41,6 +49,12 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Use routes
+app.use('/api', profileRoutes);
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api', settingsRoutes);
+app.use('/api', newRoutes); // New organized routes
 
 // Add a simple health check endpoint
 app.get('/', (req, res) => {
@@ -773,6 +787,348 @@ app.get('/api/user-data', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch user data', details: error.message });
   }
 });
+
+// ========== LEADERBOARD AND STATISTICS ENDPOINTS ==========
+
+// Get leaderboard data - top users by productivity
+app.get('/api/leaderboard', auth, async (req, res) => {
+  try {
+    const { timeFrame = 'weekly', limit = 10 } = req.query;
+    
+    // Calculate date range based on timeFrame
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    if (timeFrame === 'daily') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeFrame === 'weekly') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (timeFrame === 'monthly') {
+      startDate.setMonth(startDate.getMonth() - 1);
+    }
+    
+    const startDateStr = startDate.toISOString().slice(0, 10);
+    const endDateStr = endDate.toISOString().slice(0, 10);
+    
+    console.log(`📊 Fetching leaderboard for ${timeFrame} (${startDateStr} to ${endDateStr})`);
+    
+    // Aggregate productivity data by user
+    const leaderboardData = await ProductivitySummary.aggregate([
+      {
+        $match: {
+          date: { $gte: startDateStr, $lte: endDateStr }
+        }
+      },
+      {
+        $group: {
+          _id: '$userId',
+          email: { $first: '$email' },
+          totalProductiveTime: { $sum: '$totalProductiveTime' },
+          totalNonProductiveTime: { $sum: '$totalNonProductiveTime' },
+          overallTotalUsage: { $sum: '$overallTotalUsage' },
+          avgFocusScore: { $avg: '$focusScore' },
+          daysActive: { $sum: 1 }
+        }
+      },
+      {
+        $addFields: {
+          totalUsageHours: { $divide: ['$overallTotalUsage', 3600] },
+          productiveHours: { $divide: ['$totalProductiveTime', 3600] },
+          distractionHours: { $divide: ['$totalNonProductiveTime', 3600] }
+        }
+      },
+      {
+        $sort: { avgFocusScore: -1, totalProductiveTime: -1 }
+      },
+      {
+        $limit: parseInt(limit)
+      }
+    ]);
+    
+    // Get user details including profiles
+    const userIds = leaderboardData.map(item => item._id);
+    const users = await User.find({ _id: { $in: userIds } }).select('_id name email');
+    const userProfiles = await UserProfile.find({ userId: { $in: userIds } }).select('userId displayName profilePhoto');
+    
+    const userMap = new Map(users.map(user => [user._id.toString(), user.name || user.email.split('@')[0]]));
+    const profileMap = new Map();
+    
+    userProfiles.forEach(profile => {
+      profileMap.set(profile.userId.toString(), {
+        displayName: profile.displayName,
+        profilePhoto: profile.profilePhoto
+      });
+    });
+    
+    // Format the leaderboard with user names and profile photos
+    const formattedLeaderboard = leaderboardData.map((item, index) => {
+      const profile = profileMap.get(item._id.toString());
+      return {
+        rank: index + 1,
+        userId: item._id,
+        name: profile?.displayName || userMap.get(item._id.toString()) || item.email.split('@')[0],
+        email: item.email,
+        profilePhoto: profile?.profilePhoto || null,
+        focusScore: Math.round(item.avgFocusScore || 0),
+        totalUsageHours: Math.round(item.totalUsageHours * 10) / 10,
+        productiveHours: Math.round(item.productiveHours * 10) / 10,
+        distractionHours: Math.round(item.distractionHours * 10) / 10,
+        daysActive: item.daysActive,
+        experiencePoints: Math.round((item.avgFocusScore || 0) * 10 + item.daysActive * 50)
+      };
+    });
+    
+    console.log(`✅ Leaderboard generated with ${formattedLeaderboard.length} users`);
+    res.json({
+      timeFrame,
+      dateRange: { start: startDateStr, end: endDateStr },
+      leaderboard: formattedLeaderboard
+    });
+    
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).json({ error: 'Failed to fetch leaderboard', details: error.message });
+  }
+});
+
+// Get user statistics and achievements
+app.get('/api/user-stats', auth, async (req, res) => {
+  try {
+    const { timeFrame = 'monthly' } = req.query;
+    const userId = req.user._id;
+    const userEmail = req.user.email;
+    
+    // Calculate date range
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    if (timeFrame === 'daily') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeFrame === 'weekly') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (timeFrame === 'monthly') {
+      startDate.setMonth(startDate.getMonth() - 1);
+    }
+    
+    const startDateStr = startDate.toISOString().slice(0, 10);
+    const endDateStr = endDate.toISOString().slice(0, 10);
+    
+    console.log(`📊 Fetching user stats for ${userEmail} (${startDateStr} to ${endDateStr})`);
+    
+    // Get user's productivity summaries
+    const userSummaries = await ProductivitySummary.find({
+      userId,
+      email: userEmail,
+      date: { $gte: startDateStr, $lte: endDateStr }
+    }).sort({ date: -1 });
+    
+    // Calculate aggregated stats
+    const stats = {
+      totalDays: userSummaries.length,
+      totalProductiveTime: userSummaries.reduce((sum, s) => sum + (s.totalProductiveTime || 0), 0),
+      totalNonProductiveTime: userSummaries.reduce((sum, s) => sum + (s.totalNonProductiveTime || 0), 0),
+      totalUsage: userSummaries.reduce((sum, s) => sum + (s.overallTotalUsage || 0), 0),
+      avgFocusScore: userSummaries.length > 0 ? 
+        userSummaries.reduce((sum, s) => sum + (s.focusScore || 0), 0) / userSummaries.length : 0,
+      bestFocusScore: Math.max(...userSummaries.map(s => s.focusScore || 0), 0),
+      streak: calculateCurrentStreak(userSummaries)
+    };
+    
+    // Get top apps
+    const allApps = new Map();
+    const allNonProductiveApps = new Map();
+    
+    userSummaries.forEach(summary => {
+      if (summary.productiveContent) {
+        for (let [app, time] of summary.productiveContent) {
+          allApps.set(app, (allApps.get(app) || 0) + time);
+        }
+      }
+      if (summary.nonProductiveContent) {
+        for (let [app, time] of summary.nonProductiveContent) {
+          allNonProductiveApps.set(app, (allNonProductiveApps.get(app) || 0) + time);
+        }
+      }
+    });
+    
+    const topProductiveApps = Array.from(allApps.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([app, time]) => ({ app: app.replace(/_/g, '.'), time: Math.round(time / 60) }));
+      
+    const topDistractionApps = Array.from(allNonProductiveApps.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([app, time]) => ({ app: app.replace(/_/g, '.'), time: Math.round(time / 60) }));
+    
+    // Calculate achievements and level
+    const experiencePoints = Math.round(stats.avgFocusScore * 10 + stats.totalDays * 50 + stats.streak * 25);
+    const level = Math.floor(experiencePoints / 500) + 1;
+    const xpToNextLevel = (level * 500) - experiencePoints;
+    
+    const achievements = calculateAchievements(stats, userSummaries);
+    
+    // Get user rank in leaderboard
+    const userRank = await getUserRankInLeaderboard(userId, timeFrame);
+    
+    const formattedStats = {
+      level,
+      experiencePoints,
+      xpToNextLevel,
+      focusScore: Math.round(stats.avgFocusScore),
+      bestFocusScore: Math.round(stats.bestFocusScore),
+      totalUsageHours: Math.round(stats.totalUsage / 3600 * 10) / 10,
+      productiveHours: Math.round(stats.totalProductiveTime / 3600 * 10) / 10,
+      distractionHours: Math.round(stats.totalNonProductiveTime / 3600 * 10) / 10,
+      currentStreak: stats.streak,
+      daysActive: stats.totalDays,
+      topProductiveApps,
+      topDistractionApps,
+      achievements,
+      leaderboardRank: userRank,
+      timeFrame,
+      dateRange: { start: startDateStr, end: endDateStr }
+    };
+    
+    console.log(`✅ User stats calculated for ${userEmail}:`, {
+      level: formattedStats.level,
+      xp: formattedStats.experiencePoints,
+      focusScore: formattedStats.focusScore,
+      rank: formattedStats.leaderboardRank
+    });
+    
+    res.json(formattedStats);
+    
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ error: 'Failed to fetch user stats', details: error.message });
+  }
+});
+
+// Helper function to calculate current streak
+function calculateCurrentStreak(summaries) {
+  if (summaries.length === 0) return 0;
+  
+  // Sort by date descending
+  const sortedSummaries = summaries.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  let streak = 0;
+  const today = new Date().toISOString().slice(0, 10);
+  let checkDate = today;
+  
+  for (const summary of sortedSummaries) {
+    if (summary.date === checkDate && summary.focusScore >= 30) { // Minimum score for streak
+      streak++;
+      // Move to previous day
+      const prevDate = new Date(checkDate);
+      prevDate.setDate(prevDate.getDate() - 1);
+      checkDate = prevDate.toISOString().slice(0, 10);
+    } else {
+      break;
+    }
+  }
+  
+  return streak;
+}
+
+// Helper function to calculate achievements
+function calculateAchievements(stats, summaries) {
+  const achievements = [];
+  
+  // Focus Master Achievement
+  if (stats.avgFocusScore >= 85) {
+    achievements.push({
+      id: 'focus_master',
+      name: 'Focus Master',
+      description: 'Maintained 85%+ focus score',
+      xp: 500,
+      icon: 'target',
+      unlockedAt: new Date().toISOString()
+    });
+  }
+  
+  // Consistency Champion
+  if (stats.streak >= 7) {
+    achievements.push({
+      id: 'consistency_champion',
+      name: 'Consistency Champion',
+      description: `${stats.streak} day streak!`,
+      xp: stats.streak * 25,
+      icon: 'calendar',
+      unlockedAt: new Date().toISOString()
+    });
+  }
+  
+  // Productivity Wizard
+  if (stats.totalProductiveTime >= 144000) { // 40+ hours
+    achievements.push({
+      id: 'productivity_wizard',
+      name: 'Productivity Wizard',
+      description: 'Accumulated 40+ productive hours',
+      xp: 750,
+      icon: 'trending-up',
+      unlockedAt: new Date().toISOString()
+    });
+  }
+  
+  // Early Bird (placeholder - would need time tracking)
+  if (summaries.length >= 5) {
+    achievements.push({
+      id: 'dedicated_user',
+      name: 'Dedicated User',
+      description: 'Used FocusAI for 5+ days',
+      xp: 200,
+      icon: 'star',
+      unlockedAt: new Date().toISOString()
+    });
+  }
+  
+  return achievements;
+}
+
+// Helper function to get user rank in leaderboard
+async function getUserRankInLeaderboard(userId, timeFrame = 'weekly') {
+  try {
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    if (timeFrame === 'daily') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeFrame === 'weekly') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (timeFrame === 'monthly') {
+      startDate.setMonth(startDate.getMonth() - 1);
+    }
+    
+    const startDateStr = startDate.toISOString().slice(0, 10);
+    const endDateStr = endDate.toISOString().slice(0, 10);
+    
+    const leaderboardData = await ProductivitySummary.aggregate([
+      {
+        $match: {
+          date: { $gte: startDateStr, $lte: endDateStr }
+        }
+      },
+      {
+        $group: {
+          _id: '$userId',
+          avgFocusScore: { $avg: '$focusScore' },
+          totalProductiveTime: { $sum: '$totalProductiveTime' }
+        }
+      },
+      {
+        $sort: { avgFocusScore: -1, totalProductiveTime: -1 }
+      }
+    ]);
+    
+    const userIndex = leaderboardData.findIndex(item => item._id.toString() === userId.toString());
+    return userIndex >= 0 ? userIndex + 1 : null;
+    
+  } catch (error) {
+    console.error('Error calculating user rank:', error);
+    return null;
+  }
+}
 
 // ========== PRODUCTIVITY SUMMARY ENDPOINTS ==========
 

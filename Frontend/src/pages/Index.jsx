@@ -15,14 +15,20 @@ import { filterByTimeFrame, groupByDomain, generateSummary } from '../services/t
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { ArrowRight, Activity, Layers } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { Badge } from '../components/ui/badge';
+import { ArrowRight, Activity, Layers, User, Trophy, Target, TrendingUp } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 // Make sure to add this proper export statement
 const Index = () => {
+  const { user, token } = useAuth();
   const [tabLogs, setTabLogs] = useState(null);
   const [appUsageData, setAppUsageData] = useState({});
   const [currentSessionData, setCurrentSessionData] = useState([]);
   const [focusStats, setFocusStats] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [gamificationData, setGamificationData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [focusError, setFocusError] = useState(null);
@@ -32,8 +38,30 @@ const Index = () => {
 
   // Helper function to get auth headers
   const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    const authToken = token || localStorage.getItem('token');
+    return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+  };
+
+  // Fetch user profile data
+  const fetchUserProfile = async () => {
+    try {
+      const headers = getAuthHeader();
+      const response = await axios.get('http://localhost:5001/api/profile', { headers });
+      setUserProfile(response.data);
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+    }
+  };
+
+  // Fetch gamification data
+  const fetchGamificationData = async () => {
+    try {
+      const headers = getAuthHeader();
+      const response = await axios.get('http://localhost:5001/api/gamification/data', { headers });
+      setGamificationData(response.data);
+    } catch (err) {
+      console.error('Error fetching gamification data:', err);
+    }
   };
 
 
@@ -299,20 +327,24 @@ const Index = () => {
         // Get token from localStorage for authentication
         const headers = getAuthHeader();
         
-        // Fetch tab logs with authorization header
-        const tabResponse = await axios.get('http://localhost:5001/tabs', { headers });
+        // Fetch all data in parallel
+        const [tabResponse, appResponse] = await Promise.all([
+          axios.get('http://localhost:5001/tabs', { headers }),
+          axios.get('http://localhost:5001/focus-data', { headers })
+        ]);
+        
         setTabLogs(tabResponse.data);
-        
-        // Fetch app usage data with authorization header
-        const appResponse = await axios.get('http://localhost:5001/focus-data', { headers });
-        
         console.log('App usage response:', appResponse.data);
         
         setAppUsageData(appResponse.data.appUsage || {});
         setCurrentSessionData(appResponse.data.currentSession || []);
         
-        // Also load focus data
-        await loadFocusData();
+        // Also load focus data, profile, and gamification data
+        await Promise.all([
+          loadFocusData(),
+          fetchUserProfile(),
+          fetchGamificationData()
+        ]);
         
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -322,10 +354,14 @@ const Index = () => {
       }
     };
     
-    fetchData();
+    if (user) {
+      fetchData();
+    }
     
     const tabInterval = setInterval(() => {
-      fetchData();
+      if (user) {
+        fetchData();
+      }
     }, 30000);
 
     // Add heartbeat functionality
@@ -339,15 +375,21 @@ const Index = () => {
     };
     
     // Send heartbeat every 30 seconds
-    sendHeartbeat(); // Send immediately
-    const heartbeatInterval = setInterval(sendHeartbeat, 30000);
+    if (user) {
+      sendHeartbeat(); // Send immediately
+      const heartbeatInterval = setInterval(sendHeartbeat, 30000);
+      
+      // Clean up on component unmount
+      return () => {
+        clearInterval(tabInterval);
+        clearInterval(heartbeatInterval);
+      };
+    }
     
-    // Clean up on component unmount
     return () => {
       clearInterval(tabInterval);
-      clearInterval(heartbeatInterval);
     };
-  }, []);
+  }, [user]);
   
   const filteredLogs = tabLogs ? filterByTimeFrame(tabLogs, selectedTimeFrame) : [];
   const domainGroups = tabLogs ? groupByDomain(filteredLogs) : {};
@@ -418,6 +460,95 @@ const Index = () => {
           </Card>
         ) : (
           <>
+            {/* User Profile Overview Card */}
+            {(userProfile || gamificationData) && (
+              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage 
+                        src={userProfile?.profilePhoto} 
+                        alt={userProfile?.displayName || user?.email}
+                      />
+                      <AvatarFallback className="text-lg bg-blue-100 text-blue-600">
+                        {(userProfile?.displayName || user?.email || 'U').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <CardTitle className="text-xl">
+                        Welcome back, {userProfile?.displayName || user?.email?.split('@')[0] || 'User'}!
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-4 mt-1">
+                        {gamificationData && (
+                          <>
+                            <span className="flex items-center gap-1">
+                              <Trophy className="h-4 w-4 text-yellow-500" />
+                              Level {gamificationData.level?.current || 1}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Target className="h-4 w-4 text-green-500" />
+                              {gamificationData.points?.total || 0} XP
+                            </span>
+                          </>
+                        )}
+                        {focusStats && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <TrendingUp className="h-4 w-4 text-blue-500" />
+                              {Math.round(focusStats.focus_score || 0)}% Focus Score
+                            </span>
+                          </>
+                        )}
+                      </CardDescription>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-center">
+                      {gamificationData && (
+                        <div>
+                          <div className="text-lg font-bold text-yellow-600">
+                            {gamificationData.streaks?.current || 0}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Day Streak</div>
+                        </div>
+                      )}
+                      {focusStats && (
+                        <div>
+                          <div className="text-lg font-bold text-green-600">
+                            {Math.round((focusStats.focus_time_minutes || 0) / 60 * 10) / 10}h
+                          </div>
+                          <div className="text-xs text-muted-foreground">Focus Time</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {userProfile?.bio && (
+                    <div className="mt-3 text-sm text-muted-foreground">
+                      {userProfile.bio}
+                    </div>
+                  )}
+                  {gamificationData?.badges && gamificationData.badges.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {gamificationData.badges.slice(0, 3).map((badge, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="secondary" 
+                          className="text-xs"
+                        >
+                          {badge.icon || '🏆'} {badge.badgeName}
+                        </Badge>
+                      ))}
+                      {gamificationData.badges.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{gamificationData.badges.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </CardHeader>
+              </Card>
+            )}
+
             {/* AI Focus Analysis Card */}
             <FocusStatusCard
               stats={focusStats}
@@ -434,8 +565,55 @@ const Index = () => {
                   timeFrame={timeFrameDisplays[selectedTimeFrame]} 
                 />
               </div>
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 space-y-4">
                 <ChromeExtensionStatus />
+                
+                {/* Quick Gamification Link */}
+                {gamificationData && (
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="h-5 w-5 text-yellow-500" />
+                          <CardTitle className="text-sm">Your Progress</CardTitle>
+                        </div>
+                        <Link to="/gamification">
+                          <Button variant="ghost" size="sm" className="text-xs">
+                            View All <ArrowRight className="h-3 w-3 ml-1" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Level Progress</span>
+                          <span>{gamificationData.level?.progress || 0}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                            style={{width: `${gamificationData.level?.progress || 0}%`}}
+                          ></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                          <div>
+                            <div className="font-semibold text-blue-600">
+                              {gamificationData.points?.daily || 0}
+                            </div>
+                            <div className="text-muted-foreground">XP Today</div>
+                          </div>
+                          <div>
+                            <div className="font-semibold text-green-600">
+                              {gamificationData.badges?.length || 0}
+                            </div>
+                            <div className="text-muted-foreground">Badges</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
             

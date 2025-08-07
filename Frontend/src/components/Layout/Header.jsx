@@ -5,7 +5,6 @@ import {
   Chrome, 
   CheckCircle, 
   XCircle, 
-  User, 
   BellRing, 
   Menu,
   LifeBuoy,
@@ -14,6 +13,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import DiagnosticInfo from '@/components/DiagnosticInfo';
+import UserMenu from './UserMenu';
 
 const Header = ({ toggleSidebar, isMobile }) => {
   const [extensionStatus, setExtensionStatus] = useState({
@@ -161,10 +161,8 @@ const Header = ({ toggleSidebar, isMobile }) => {
           <BellRing className="h-5 w-5" />
         </Button>
 
-        {/* User Menu */}
-        <Button variant="ghost" size="icon">
-          <User className="h-5 w-5" />
-        </Button>
+        {/* User Profile Menu */}
+        <UserMenu />
       </div>
     </header>
   );
