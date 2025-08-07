@@ -1,25 +1,69 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Trophy, Star, Target, Zap, Award, TrendingUp } from 'lucide-react'
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Trophy, Star, Target, Zap, Award, TrendingUp, Crown, Medal, Users, Camera } from 'lucide-react'
 import { toast } from "sonner"
+import { useAuth } from "@/context/AuthContext"
+
+interface LeaderboardUser {
+  userId: string
+  points: {
+    total: number
+    daily: number
+    weekly: number
+    monthly: number
+  }
+  level: {
+    current: number
+  }
+  badges: Array<{
+    badgeName: string
+    icon: string
+    rarity: string
+  }>
+  statistics: {
+    averageFocusScore: number
+    totalFocusTime: number
+    sessionsCompleted: number
+  }
+  profile: Array<{
+    displayName: string
+    profilePhoto: string
+    location: string
+    jobTitle: string
+    company: string
+  }>
+}
 
 interface GamificationData {
   userId: string
-  points: number
-  level: number
+  points: {
+    total: number
+    daily: number
+    weekly: number
+    monthly: number
+  }
+  level: {
+    current: number
+    progress: number
+    pointsToNext: number
+  }
   badges: Array<{
     badgeName: string
     earnedDate: string
     description: string
     icon: string
+    rarity: string
+    category: string
   }>
   challenges: Array<{
-    id: string
+    challengeId: string
     name: string
     description: string
     progress: number
@@ -27,28 +71,109 @@ interface GamificationData {
     reward: number
     completed: boolean
     claimed?: boolean
+    category: string
   }>
   streaks: {
     current: number
     longest: number
   }
+  statistics: {
+    averageFocusScore: number
+    totalFocusTime: number
+    sessionsCompleted: number
+    bestFocusScore: number
+  }
 }
 
 interface GamificationDashboardProps {
-  gamificationData: GamificationData | null
   compact?: boolean
   onDataUpdate?: () => void
   apiBaseUrl?: string
 }
 
 export function GamificationDashboard({ 
-  gamificationData, 
   compact = false, 
   onDataUpdate,
   apiBaseUrl = "http://localhost:5001"
 }: GamificationDashboardProps) {
+  const { user } = useAuth()
+  const [gamificationData, setGamificationData] = useState<GamificationData | null>(null)
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([])
+  const [userRank, setUserRank] = useState<{ rank: number; total: number; points: number } | null>(null)
   const [selectedBadge, setSelectedBadge] = useState<string | null>(null)
   const [claimingReward, setClaimingReward] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState<'total' | 'daily' | 'weekly' | 'monthly'>('total')
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token')
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
+  const fetchGamificationData = async () => {
+    if (!user) return
+
+    try {
+      const headers = getAuthHeaders()
+      const response = await fetch(`${apiBaseUrl}/api/gamification/data`, { headers })
+      
+      if (!response.ok) throw new Error('Failed to fetch gamification data')
+      
+      const data = await response.json()
+      setGamificationData(data)
+    } catch (error) {
+      console.error('Error fetching gamification data:', error)
+      toast.error('Failed to load gamification data')
+    }
+  }
+
+  const fetchLeaderboard = async () => {
+    if (!user) return
+
+    try {
+      const headers = getAuthHeaders()
+      const response = await fetch(`${apiBaseUrl}/api/gamification/leaderboard?timeFrame=${selectedTimeFrame}&limit=10`, { headers })
+      
+      if (!response.ok) throw new Error('Failed to fetch leaderboard')
+      
+      const data = await response.json()
+      setLeaderboard(data)
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error)
+      toast.error('Failed to load leaderboard')
+    }
+  }
+
+  const fetchUserRank = async () => {
+    if (!user) return
+
+    try {
+      const headers = getAuthHeaders()
+      const response = await fetch(`${apiBaseUrl}/api/gamification/rank?timeFrame=${selectedTimeFrame}`, { headers })
+      
+      if (!response.ok) throw new Error('Failed to fetch user rank')
+      
+      const data = await response.json()
+      setUserRank(data)
+    } catch (error) {
+      console.error('Error fetching user rank:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      const loadData = async () => {
+        setLoading(true)
+        await Promise.all([
+          fetchGamificationData(),
+          fetchLeaderboard(),
+          fetchUserRank()
+        ])
+        setLoading(false)
+      }
+      loadData()
+    }
+  }, [user, selectedTimeFrame])
 
   const badgeIcons = {
     "Focus Master": Trophy,
@@ -57,6 +182,11 @@ export function GamificationDashboard({
     "Streak Champion": Zap,
     "Productivity Pro": Award,
     "Time Optimizer": TrendingUp,
+    "Consistency Champion": Crown,
+    "Productivity Wizard": Medal,
+    "Night Owl": Star,
+    "Marathon Runner": Zap,
+    "Perfectionist": Award
   }
 
   const claimReward = async (challengeId: string) => {
