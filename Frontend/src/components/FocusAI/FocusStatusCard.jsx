@@ -30,8 +30,11 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
   const formatTime = (minutes) => {
     if (!minutes) return '0m';
     
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
+    // Ensure minutes is a reasonable value (max 24 hours)
+    const sanitizedMinutes = Math.min(minutes, 24 * 60);
+    
+    const hours = Math.floor(sanitizedMinutes / 60);
+    const mins = sanitizedMinutes % 60;
     
     if (hours === 0) return `${mins}m`;
     return `${hours}h ${mins}m`;

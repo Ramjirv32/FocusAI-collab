@@ -1,17 +1,20 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, TrendingUp, AlertTriangle } from 'lucide-react';
+import FocusDataInfoAlert from './FocusDataInfoAlert';
 
 interface RecommendationProps {
   focusPercentage: number;
   productiveApps: string[];
   distractingApps: string[];
+  hasData?: boolean;
 }
 
 const AIRecommendations: React.FC<RecommendationProps> = ({ 
   focusPercentage, 
   productiveApps, 
-  distractingApps 
+  distractingApps,
+  hasData = true
 }) => {
   // Generate recommendations based on the focus data
   const getRecommendations = () => {
@@ -75,17 +78,21 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {recommendations.map((rec, index) => (
-            <div key={index} className="border-l-4 border-primary pl-3 py-1">
-              <div className="flex items-center gap-2 mb-1">
-                {rec.icon}
-                <h4 className="font-medium">{rec.title}</h4>
+        {!hasData ? (
+          <FocusDataInfoAlert />
+        ) : (
+          <div className="space-y-4">
+            {recommendations.map((rec, index) => (
+              <div key={index} className="border-l-4 border-primary pl-3 py-1">
+                <div className="flex items-center gap-2 mb-1">
+                  {rec.icon}
+                  <h4 className="font-medium">{rec.title}</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">{rec.description}</p>
               </div>
-              <p className="text-sm text-muted-foreground">{rec.description}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -10,6 +10,7 @@ import Extension from './pages/Extension';
 import Diagnostics from './pages/Diagnostics';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
+import ApplicationAnalytics from './pages/ApplicationAnalytics';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
   {
     path: '/statistics',
     element: <Statistics />,
+  },
+  {
+    path: '/application-analytics',
+    element: <ApplicationAnalytics />,
   },
   {
     path: '/chat-assistant',

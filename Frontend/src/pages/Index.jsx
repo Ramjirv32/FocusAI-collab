@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from '../components/ui/use-toast'; // Changed from '../components/ui/toast'
 
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import TimeFrameSelector from '../components/TabInsights/TimeFrameSelector';
-import DataSummary from '../components/TabInsights/DataSummary';
 import EnhancedUsageCharts from '../components/AppUsage/EnhancedUsageCharts';
 import TabUsageAnalytics from '../components/TabInsights/TabUsageAnalytics';
 import FocusStatusCard from '../components/FocusAI/FocusStatusCard';
@@ -22,6 +21,7 @@ import { useAuth } from '../context/AuthContext';
 
 // Make sure to add this proper export statement
 const Index = () => {
+  const navigate = useNavigate();
   const { user, token } = useAuth();
   const [tabLogs, setTabLogs] = useState(null);
   const [appUsageData, setAppUsageData] = useState({});
@@ -40,6 +40,29 @@ const Index = () => {
   const getAuthHeader = () => {
     const authToken = token || localStorage.getItem('token');
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+  };
+
+  // Fetch app usage data directly from app-usage endpoint
+  const fetchAppUsageData = async () => {
+    try {
+      const headers = getAuthHeader();
+      console.log('Fetching app usage data directly from app-usage endpoint');
+      
+      const response = await axios.get('http://localhost:5001/api/app-usage/app-analytics', { 
+        headers,
+        params: { timeFrame: selectedTimeFrame }
+      });
+      
+      console.log('App usage direct API response:', response.data);
+      
+      if (response.data && response.data.success) {
+        setAppUsageData(response.data);
+      } else {
+        console.log('Response format unexpected:', response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching app usage data:', err);
+    }
   };
 
   // Fetch user profile data
@@ -81,16 +104,21 @@ const Index = () => {
         
         if (consolidatedData.quickStats?.quick_stats) {
           // Data from AI server
+          const rawFocusTimeMinutes = consolidatedData.quickStats.quick_stats.focus_time_minutes || 0;
+          const rawDistractionTimeMinutes = consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0;
+          
+          // Cap values at realistic amounts (max 24 hours)
+          const maxDailyMinutes = 24 * 60; // 24 hours in minutes
+          
           focusStats = {
             focus_score: consolidatedData.quickStats.quick_stats.focus_score || 
                         consolidatedData.quickStats.quick_stats.productivity_score || 0,
             productivity_score: consolidatedData.quickStats.quick_stats.focus_score || 
                                consolidatedData.quickStats.quick_stats.productivity_score || 0,
-            focus_time_minutes: consolidatedData.quickStats.quick_stats.focus_time_minutes || 0,
-            distraction_time_minutes: consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0,
-            total_time_minutes: (consolidatedData.quickStats.quick_stats.focus_time_minutes || 0) + 
-                               (consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0),
-            total_activities: consolidatedData.quickStats.quick_stats.total_activities || 0,
+            focus_time_minutes: Math.min(rawFocusTimeMinutes, maxDailyMinutes),
+            distraction_time_minutes: Math.min(rawDistractionTimeMinutes, maxDailyMinutes),
+            total_time_minutes: Math.min((rawFocusTimeMinutes + rawDistractionTimeMinutes), maxDailyMinutes),
+            total_activities: Math.min(consolidatedData.quickStats.quick_stats.total_activities || 0, 100),
             date: formattedDate
           };
         } else if (consolidatedData.quickStats) {
@@ -206,16 +234,21 @@ const Index = () => {
         
         if (consolidatedData.quickStats?.quick_stats) {
           // Data from AI server
+          const rawFocusTimeMinutes = consolidatedData.quickStats.quick_stats.focus_time_minutes || 0;
+          const rawDistractionTimeMinutes = consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0;
+          
+          // Cap values at realistic amounts (max 24 hours)
+          const maxDailyMinutes = 24 * 60; // 24 hours in minutes
+          
           focusStats = {
             focus_score: consolidatedData.quickStats.quick_stats.focus_score || 
                         consolidatedData.quickStats.quick_stats.productivity_score || 0,
             productivity_score: consolidatedData.quickStats.quick_stats.focus_score || 
                                consolidatedData.quickStats.quick_stats.productivity_score || 0,
-            focus_time_minutes: consolidatedData.quickStats.quick_stats.focus_time_minutes || 0,
-            distraction_time_minutes: consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0,
-            total_time_minutes: (consolidatedData.quickStats.quick_stats.focus_time_minutes || 0) + 
-                               (consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0),
-            total_activities: consolidatedData.quickStats.quick_stats.total_activities || 0,
+            focus_time_minutes: Math.min(rawFocusTimeMinutes, maxDailyMinutes),
+            distraction_time_minutes: Math.min(rawDistractionTimeMinutes, maxDailyMinutes),
+            total_time_minutes: Math.min((rawFocusTimeMinutes + rawDistractionTimeMinutes), maxDailyMinutes),
+            total_activities: Math.min(consolidatedData.quickStats.quick_stats.total_activities || 0, 100),
             date: today
           };
         } else if (consolidatedData.quickStats) {
@@ -343,7 +376,8 @@ const Index = () => {
         await Promise.all([
           loadFocusData(),
           fetchUserProfile(),
-          fetchGamificationData()
+          fetchGamificationData(),
+          fetchAppUsageData() // Added direct app usage data fetch
         ]);
         
       } catch (err) {
@@ -460,170 +494,157 @@ const Index = () => {
           </Card>
         ) : (
           <>
-            {/* User Profile Overview Card */}
-            {(userProfile || gamificationData) && (
-              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-                <CardHeader>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage 
-                        src={userProfile?.profilePhoto} 
-                        alt={userProfile?.displayName || user?.email}
-                      />
-                      <AvatarFallback className="text-lg bg-blue-100 text-blue-600">
-                        {(userProfile?.displayName || user?.email || 'U').charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <CardTitle className="text-xl">
-                        Welcome back, {userProfile?.displayName || user?.email?.split('@')[0] || 'User'}!
-                      </CardTitle>
-                      <CardDescription className="flex items-center gap-4 mt-1">
-                        {gamificationData && (
-                          <>
-                            <span className="flex items-center gap-1">
-                              <Trophy className="h-4 w-4 text-yellow-500" />
-                              Level {gamificationData.level?.current || 1}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Target className="h-4 w-4 text-green-500" />
-                              {gamificationData.points?.total || 0} XP
-                            </span>
-                          </>
-                        )}
-                        {focusStats && (
-                          <>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <TrendingUp className="h-4 w-4 text-blue-500" />
-                              {Math.round(focusStats.focus_score || 0)}% Focus Score
-                            </span>
-                          </>
-                        )}
-                      </CardDescription>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                      {gamificationData && (
-                        <div>
-                          <div className="text-lg font-bold text-yellow-600">
-                            {gamificationData.streaks?.current || 0}
-                          </div>
-                          <div className="text-xs text-muted-foreground">Day Streak</div>
-                        </div>
-                      )}
-                      {focusStats && (
-                        <div>
-                          <div className="text-lg font-bold text-green-600">
-                            {Math.round((focusStats.focus_time_minutes || 0) / 60 * 10) / 10}h
-                          </div>
-                          <div className="text-xs text-muted-foreground">Focus Time</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {userProfile?.bio && (
-                    <div className="mt-3 text-sm text-muted-foreground">
-                      {userProfile.bio}
-                    </div>
-                  )}
-                  {gamificationData?.badges && gamificationData.badges.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {gamificationData.badges.slice(0, 3).map((badge, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="secondary" 
-                          className="text-xs"
-                        >
-                          {badge.icon || '🏆'} {badge.badgeName}
-                        </Badge>
-                      ))}
-                      {gamificationData.badges.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{gamificationData.badges.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </CardHeader>
-              </Card>
-            )}
-
-            {/* AI Focus Analysis Card */}
+           
+       
             <FocusStatusCard
               stats={focusStats}
               isLoading={isSyncing}
               error={focusError}
               onSync={handleSyncClick}
             />
+       
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-shadow" 
+                onClick={() => navigate('/activities')}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                    Activities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">
+                    {(() => {
+                      
+                      let count = focusStats?.total_activities || 
+                        ((Array.isArray(tabLogs) ? tabLogs.length : 0) + 
+                        (Object.keys(appUsageData || {}).length || 0));
+             
+                      return Math.min(count, 100);
+                    })()}
+                  </div>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Total tracked activities
+                  </p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-3 text-xs w-full"
+                  >
+                    View Detailed Activities <ArrowRight className="h-3 w-3 ml-1" />
+                  </Button>
+                </CardContent>
+              </Card>
             
-            {/* Extension Status and Data Summary Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <DataSummary 
-                  summary={summary} 
-                  timeFrame={timeFrameDisplays[selectedTimeFrame]} 
-                />
-              </div>
-              <div className="lg:col-span-1 space-y-4">
-                <ChromeExtensionStatus />
-                
-                {/* Quick Gamification Link */}
-                {gamificationData && (
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Trophy className="h-5 w-5 text-yellow-500" />
-                          <CardTitle className="text-sm">Your Progress</CardTitle>
-                        </div>
-                        <Link to="/gamification">
-                          <Button variant="ghost" size="sm" className="text-xs">
-                            View All <ArrowRight className="h-3 w-3 ml-1" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Level Progress</span>
-                          <span>{gamificationData.level?.progress || 0}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
-                            style={{width: `${gamificationData.level?.progress || 0}%`}}
-                          ></div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-center text-xs">
-                          <div>
-                            <div className="font-semibold text-blue-600">
-                              {gamificationData.points?.daily || 0}
-                            </div>
-                            <div className="text-muted-foreground">XP Today</div>
-                          </div>
-                          <div>
-                            <div className="font-semibold text-green-600">
-                              {gamificationData.badges?.length || 0}
-                            </div>
-                            <div className="text-muted-foreground">Badges</div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
+             
             </div>
             
             <div className="mt-6">
               <EnhancedUsageCharts />
             </div>
             
-            {/* Add the new Tab Usage Analytics component */}
+            {/* Add the Tab Usage Analytics component */}
             <div className="mt-6">
               <TabUsageAnalytics />
+            </div>
+            
+            {/* Recent Activities Section */}
+            <div className="mt-6">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-blue-500" />
+                      <CardTitle className="text-lg">Recent Activities</CardTitle>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate('/application-analytics')}
+                        className="text-xs"
+                      >
+                        App Analytics <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate('/activities')}
+                        className="text-xs"
+                      >
+                        View All Activities <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                  <CardDescription>
+                    Your most recent application and website activity. View detailed analytics to improve productivity.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="py-4 text-center">
+                      <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* App Activities */}
+                      {Object.entries(appUsageData || {}).slice(0, 3).map(([app, duration]) => (
+                        <div key={`app-${app}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-blue-100 p-2 rounded-full">
+                              <Layers className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <div className="font-medium">{app}</div>
+                              <div className="text-xs text-muted-foreground">Application</div>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="ml-auto">
+                            {Math.round(duration / 60)} min
+                          </Badge>
+                        </div>
+                      ))}
+                      
+                      {/* Tab Activities */}
+                      {(tabLogs || []).slice(0, 3).map((tab) => (
+                        <div key={`tab-${tab._id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-purple-100 p-2 rounded-full">
+                              <svg className="h-4 w-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18v10H3z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="font-medium truncate max-w-[200px]">{tab.title || tab.domain || "Unknown"}</div>
+                              <div className="text-xs text-muted-foreground">{tab.domain || "Website"}</div>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="ml-auto">
+                            {Math.round(tab.duration / 60)} min
+                          </Badge>
+                        </div>
+                      ))}
+                      
+                      {Object.entries(appUsageData || {}).length === 0 && (tabLogs || []).length === 0 && (
+                        <div className="text-center py-6">
+                          <p className="text-muted-foreground">No recent activities recorded</p>
+                          <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={handleSyncClick}
+                          >
+                            Sync Data Now
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </>
         )}
