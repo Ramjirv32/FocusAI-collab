@@ -1,747 +1,1157 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import DashboardLayout from "@/components/Layout/DashboardLayout"
+import React, { useState, useEffect } from 'react';
+import DashboardLayout from '@/components/Layout/DashboardLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Trophy, Target, Award, Star, Calendar, TrendingUp, Medal, Crown, RefreshCw, Users, Clock, Zap, ListOrdered, CheckCircle2 } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/context/AuthContext"
-import axios from "axios"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+  Trophy,
+  Medal,
+  Star,
+  CheckCircle,
+  Clock,
+  Award,
+  Flame,
+  Target,
+  Calendar,
+  Zap,
+  Users,
+  Rocket,
+  TrendingUp,
+  RefreshCw,
+  AlertCircle,
+  Lock,
+} from 'lucide-react';
+
+// Define achievement badge types
+type BadgeType = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'legendary';
+
+// Define achievement interface
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  type: BadgeType;
+  progress: number;
+  target: number;
+  completed: boolean;
+  completedAt?: string;
+  pointsAwarded: number;
+  category: string;
+}
+
+// Define challenge interface
+interface Challenge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  type: BadgeType;
+  progress: number;
+  target: number;
+  completed: boolean;
+  deadline?: string;
+  completedAt?: string;
+  pointsAwarded: number;
+  category: string;
+  isActive: boolean;
+}
+
+// Define leaderboard entry interface
+interface LeaderboardEntry {
+  id: string;
+  name: string;
+  avatar?: string;
+  points: number;
+  level: number;
+  position: number;
+  streak: number;
+}
+
+// Define user gamification stats interface
+interface GamificationStats {
+  level: number;
+  points: number;
+  pointsToNextLevel: number;
+  totalPointsForLevel: number;
+  achievements: {
+    total: number;
+    completed: number;
+  };
+  challenges: {
+    total: number;
+    completed: number;
+    active: number;
+  };
+  streak: {
+    current: number;
+    longest: number;
+  };
+  badges: {
+    bronze: number;
+    silver: number;
+    gold: number;
+    platinum: number;
+    diamond: number;
+    master: number;
+    legendary: number;
+  };
+}
 
 const Gamification = () => {
-  const { user, token } = useAuth()
-  const [userStats, setUserStats] = useState<any>(null)
-  const [gamificationData, setGamificationData] = useState<any>(null)
-  const [userProfile, setUserProfile] = useState<any>(null)
-  const [leaderboard, setLeaderboard] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState("weekly")
-
-  // Format hours for display
-  const formatHours = (hours: number) => {
-    if (!hours) return "0h"
-    return `${hours.toFixed(1)}h`
-  }
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [stats, setStats] = useState<GamificationStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeChallengeFilter, setActiveChallengeFilter] = useState<'all' | 'active' | 'completed'>('all');
 
   // Get auth headers
   const getAuthHeader = () => {
-    const authToken = token || (typeof window !== "undefined" ? localStorage.getItem("token") : null)
-    return authToken ? { Authorization: `Bearer ${authToken}` } : {}
-  }
+    const token = localStorage.getItem('token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
-  // Fetch user statistics and gamification data
-  const fetchUserStats = async () => {
+  // Function to fetch gamification data
+  const fetchGamificationData = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const headers = getAuthHeader()
-
-      const [statsResponse, gamificationResponse, profileResponse] = await Promise.all([
-        axios.get("http://localhost:5001/api/user-stats", {
-          headers,
-          params: { timeFrame: selectedTimeFrame },
-        }),
-        axios.get("http://localhost:5001/api/gamification/data", {
-          headers,
-        }).catch(() => ({ data: null })), // Handle if gamification doesn't exist yet
-        axios.get("http://localhost:5001/api/profile", {
-          headers,
-        }).catch(() => ({ data: null })), // Handle if profile doesn't exist yet
-      ])
-
-      setUserStats(statsResponse.data)
-      setGamificationData(gamificationResponse.data)
-      setUserProfile(profileResponse.data)
+      setIsLoading(true);
+      setError('');
+      
+      const [statsResponse, achievementsResponse, challengesResponse, leaderboardResponse] = await Promise.all([
+        axios.get('http://localhost:5001/api/gamification/stats', { headers: getAuthHeader() }),
+        axios.get('http://localhost:5001/api/gamification/achievements', { headers: getAuthHeader() }),
+        axios.get('http://localhost:5001/api/gamification/challenges', { headers: getAuthHeader() }),
+        axios.get('http://localhost:5001/api/gamification/leaderboard', { headers: getAuthHeader() }),
+      ]);
+      
+      setStats(statsResponse.data);
+      setAchievements(achievementsResponse.data);
+      setChallenges(challengesResponse.data);
+      setLeaderboard(leaderboardResponse.data);
     } catch (err) {
-      console.error("Error fetching user data:", err)
-      setError("Failed to load user data. Please try again.")
+      console.error('Failed to fetch gamification data:', err);
+      setError('Failed to fetch gamification data. Please try again.');
+      
+      // Create fallback sample data
+      generateFallbackData();
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  // Fetch leaderboard data
-  const fetchLeaderboard = async () => {
+  // Claim achievement reward
+  const claimAchievementReward = async (achievementId: string) => {
     try {
-      const headers = getAuthHeader()
-      const leaderboardResponse = await axios.get("http://localhost:5001/api/leaderboard", {
-        headers,
-        params: { timeFrame: selectedTimeFrame, limit: 10 },
-      })
-      setLeaderboard(leaderboardResponse.data.leaderboard || [])
+      await axios.post(
+        `http://localhost:5001/api/gamification/achievements/${achievementId}/claim`, 
+        {}, 
+        { headers: getAuthHeader() }
+      );
+      
+      // Update UI
+      setAchievements(achievements.map(achievement => {
+        if (achievement.id === achievementId) {
+          return {
+            ...achievement,
+            claimed: true
+          };
+        }
+        return achievement;
+      }));
+      
+      toast({
+        title: "Achievement Claimed!",
+        description: `You've earned ${achievements.find(a => a.id === achievementId)?.pointsAwarded || 0} points!`,
+      });
+      
+      // Refresh stats
+      fetchGamificationData();
     } catch (err) {
-      console.error("Error fetching leaderboard:", err)
+      console.error('Failed to claim achievement reward:', err);
+      toast({
+        title: "Error",
+        description: "Failed to claim achievement reward. Please try again.",
+        variant: "destructive",
+      });
     }
-  }
+  };
+  
+  // Join challenge function
+  const joinChallenge = async (challengeId: string) => {
+    try {
+      await axios.post(
+        `http://localhost:5001/api/gamification/challenges/${challengeId}/join`, 
+        {}, 
+        { headers: getAuthHeader() }
+      );
+      
+      // Update UI
+      setChallenges(challenges.map(challenge => {
+        if (challenge.id === challengeId) {
+          return {
+            ...challenge,
+            isActive: true
+          };
+        }
+        return challenge;
+      }));
+      
+      toast({
+        title: "Challenge Joined!",
+        description: "You've successfully joined the challenge. Good luck!",
+      });
+    } catch (err) {
+      console.error('Failed to join challenge:', err);
+      toast({
+        title: "Error",
+        description: "Failed to join challenge. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-  // Load data when component mounts or timeframe changes
+  // Generate fallback data for demo/development purposes
+  const generateFallbackData = () => {
+    // Sample stats
+    setStats({
+      level: 5,
+      points: 2750,
+      pointsToNextLevel: 750,
+      totalPointsForLevel: 1000,
+      achievements: {
+        total: 20,
+        completed: 12,
+      },
+      challenges: {
+        total: 15,
+        completed: 8,
+        active: 3,
+      },
+      streak: {
+        current: 4,
+        longest: 7,
+      },
+      badges: {
+        bronze: 7,
+        silver: 3,
+        gold: 1,
+        platinum: 1,
+        diamond: 0,
+        master: 0,
+        legendary: 0,
+      }
+    });
+    
+    // Sample achievements
+    setAchievements([
+      {
+        id: 'a1',
+        name: 'First Steps',
+        description: 'Complete your first hour of focused work',
+        icon: 'Clock',
+        type: 'bronze',
+        progress: 60,
+        target: 60,
+        completed: true,
+        completedAt: '2023-05-15T10:30:00',
+        pointsAwarded: 50,
+        category: 'Focus',
+      },
+      {
+        id: 'a2',
+        name: 'Early Bird',
+        description: 'Start working before 8 AM for 5 days',
+        icon: 'Clock',
+        type: 'silver',
+        progress: 3,
+        target: 5,
+        completed: false,
+        pointsAwarded: 100,
+        category: 'Habits',
+      },
+      {
+        id: 'a3',
+        name: 'Focus Warrior',
+        description: 'Maintain focus score above 80% for a week',
+        icon: 'Target',
+        type: 'gold',
+        progress: 5,
+        target: 7,
+        completed: false,
+        pointsAwarded: 200,
+        category: 'Focus',
+      },
+      {
+        id: 'a4',
+        name: 'App Explorer',
+        description: 'Use the extension for 30 days',
+        icon: 'Calendar',
+        type: 'silver',
+        progress: 28,
+        target: 30,
+        completed: false,
+        pointsAwarded: 150,
+        category: 'Engagement',
+      },
+      {
+        id: 'a5',
+        name: 'Distraction Fighter',
+        description: 'Reduce daily distractions by 50% for a week',
+        icon: 'Zap',
+        type: 'platinum',
+        progress: 7,
+        target: 7,
+        completed: true,
+        completedAt: '2023-06-02T15:45:00',
+        pointsAwarded: 300,
+        category: 'Focus',
+      },
+      {
+        id: 'a6',
+        name: 'Knowledge Seeker',
+        description: 'Spend 10 hours on educational websites',
+        icon: 'Book',
+        type: 'bronze',
+        progress: 6,
+        target: 10,
+        completed: false,
+        pointsAwarded: 75,
+        category: 'Learning',
+      },
+    ]);
+    
+    // Sample challenges
+    setChallenges([
+      {
+        id: 'c1',
+        name: 'Weekend Warrior',
+        description: 'Complete 4 hours of focused work this weekend',
+        icon: 'Calendar',
+        type: 'silver',
+        progress: 2.5,
+        target: 4,
+        completed: false,
+        deadline: '2023-06-25T23:59:59',
+        pointsAwarded: 150,
+        category: 'Focus',
+        isActive: true,
+      },
+      {
+        id: 'c2',
+        name: 'Digital Detox',
+        description: 'Reduce social media usage by 30% this week',
+        icon: 'Zap',
+        type: 'gold',
+        progress: 100,
+        target: 100,
+        completed: true,
+        completedAt: '2023-06-10T17:20:00',
+        pointsAwarded: 250,
+        category: 'Wellbeing',
+        isActive: false,
+      },
+      {
+        id: 'c3',
+        name: 'Morning Routine',
+        description: 'Start work before 9 AM for 5 consecutive days',
+        icon: 'Clock',
+        type: 'bronze',
+        progress: 3,
+        target: 5,
+        completed: false,
+        deadline: '2023-06-30T08:59:59',
+        pointsAwarded: 100,
+        category: 'Habits',
+        isActive: true,
+      },
+    ]);
+    
+    // Sample leaderboard
+    setLeaderboard([
+      {
+        id: 'u1',
+        name: 'Alex Johnson',
+        points: 4250,
+        level: 8,
+        position: 1,
+        streak: 12,
+      },
+      {
+        id: 'u2',
+        name: 'Maria Garcia',
+        points: 3800,
+        level: 7,
+        position: 2,
+        streak: 9,
+      },
+      {
+        id: 'u3',
+        name: 'Sam Wilson',
+        points: 3650,
+        level: 7,
+        position: 3,
+        streak: 5,
+      },
+      {
+        id: 'currentUser',
+        name: 'You',
+        points: 2750,
+        level: 5,
+        position: 4,
+        streak: 4,
+      },
+      {
+        id: 'u5',
+        name: 'Jamie Smith',
+        points: 2500,
+        level: 5,
+        position: 5,
+        streak: 3,
+      },
+    ]);
+  };
+
+  // Fetch data on component mount
   useEffect(() => {
     if (user) {
-      fetchUserStats()
-      fetchLeaderboard()
+      fetchGamificationData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, selectedTimeFrame])
+  }, [user]);
 
-  // Handle refresh
-  const handleRefresh = async () => {
-    await Promise.all([fetchUserStats(), fetchLeaderboard()])
-  }
+  // Filter challenges based on active filter
+  const filteredChallenges = challenges.filter(challenge => {
+    if (activeChallengeFilter === 'all') return true;
+    if (activeChallengeFilter === 'active') return challenge.isActive && !challenge.completed;
+    if (activeChallengeFilter === 'completed') return challenge.completed;
+    return true;
+  });
 
-  // Calculate daily challenges progress (mock data for now)
-  const getDailyChallenges = () => {
-    if (!userStats) return []
-    const focusHours = userStats.productiveHours || 0
-    const distractionHours = userStats.distractionHours || 0
-    return [
-      {
-        title: "Maintain 2 hours of focus time",
-        progress: Math.min(100, (focusHours / 2) * 100),
-        current: focusHours,
-        target: 2,
-        unit: "hours",
-        xp: 100,
-      },
-      {
-        title: "Keep focus score above 70%",
-        progress: userStats.focusScore >= 70 ? 100 : (userStats.focusScore / 70) * 100,
-        current: userStats.focusScore,
-        target: 70,
-        unit: "%",
-        xp: 150,
-      },
-      {
-        title: "Limit distraction time to 1 hour",
-        progress: distractionHours <= 1 ? 100 : Math.max(0, ((2 - distractionHours) / 1) * 100),
-        current: distractionHours,
-        target: 1,
-        unit: "hours",
-        xp: 75,
-      },
-    ]
-  }
-
-  const formatTime = (hours: number) => {
-    if (hours < 1) return `${Math.round(hours * 60)}m`
-    return `${hours.toFixed(1)}h`
-  }
-
-  if (!user) {
+  // Function to render achievement badge with correct styling
+  const renderBadge = (type: BadgeType) => {
+    const badgeColors = {
+      bronze: 'bg-amber-200 text-amber-800',
+      silver: 'bg-gray-300 text-gray-700',
+      gold: 'bg-yellow-300 text-yellow-800',
+      platinum: 'bg-cyan-200 text-cyan-800',
+      diamond: 'bg-indigo-200 text-indigo-800',
+      master: 'bg-purple-200 text-purple-800',
+      legendary: 'bg-rose-200 text-rose-800',
+    };
+    
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-96">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Authentication Required</CardTitle>
-              <CardDescription>Please log in to view your gamification data.</CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </DashboardLayout>
-    )
-  }
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColors[type]}`}>
+        {type.charAt(0).toUpperCase() + type.slice(1)}
+      </span>
+    );
+  };
 
+  // Function to render icon based on name
+  const renderIcon = (iconName: string) => {
+    const icons = {
+      Trophy: <Trophy className="h-5 w-5" />,
+      Medal: <Medal className="h-5 w-5" />,
+      Star: <Star className="h-5 w-5" />,
+      CheckCircle: <CheckCircle className="h-5 w-5" />,
+      Clock: <Clock className="h-5 w-5" />,
+      Award: <Award className="h-5 w-5" />,
+      Flame: <Flame className="h-5 w-5" />,
+      Target: <Target className="h-5 w-5" />,
+      Calendar: <Calendar className="h-5 w-5" />,
+      Zap: <Zap className="h-5 w-5" />,
+      Users: <Users className="h-5 w-5" />,
+      Rocket: <Rocket className="h-5 w-5" />,
+      TrendingUp: <TrendingUp className="h-5 w-5" />,
+    };
+    
+    return icons[iconName as keyof typeof icons] || <Award className="h-5 w-5" />;
+  };
+
+  // Loading UI
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">Loading your achievements...</p>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <Skeleton className="h-10 w-64" />
+              <Skeleton className="h-6 w-32 mt-2" />
+            </div>
+            <Skeleton className="h-10 w-10 rounded-full" />
           </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <Card key={i}>
+                <CardHeader className="pb-2">
+                  <CardTitle><Skeleton className="h-6 w-32" /></CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-16 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle><Skeleton className="h-6 w-64" /></CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="border rounded-lg p-4">
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
-    )
+    );
   }
-
+  
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Gamification Hub</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Gamification Dashboard</h2>
             <p className="text-muted-foreground">
-              Track achievements, compete with others, and earn rewards for staying productive
+              Track your achievements, challenges and level progress
             </p>
           </div>
-
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="min-w-[180px]">
-              <Select
-                value={selectedTimeFrame}
-                onValueChange={(val) => setSelectedTimeFrame(val)}
-              >
-                <SelectTrigger aria-label="Select timeframe" className="w-[180px]">
-                  <SelectValue placeholder="Select timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={handleRefresh} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </div>
+          <Button onClick={fetchGamificationData} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
 
         {error && (
-          <Alert variant="destructive" className="border-destructive/40">
-            <AlertTitle>Failed to load</AlertTitle>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="gap-2">
-              <Star className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="gap-2">
-              <ListOrdered className="h-4 w-4" />
-              Leaderboard
-            </TabsTrigger>
-            <TabsTrigger value="achievements" className="gap-2">
-              <Award className="h-4 w-4" />
-              Achievements
-            </TabsTrigger>
-            <TabsTrigger value="challenges" className="gap-2">
-              <Target className="h-4 w-4" />
-              Challenges
-            </TabsTrigger>
+        
+        {/* User stats cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Level card */}
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-amber-500" /> 
+                Level {stats?.level}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between text-sm text-muted-foreground mb-1">
+                <span>Progress to Level {(stats?.level || 0) + 1}</span>
+                <span>
+                  {stats?.points} / {(stats?.points || 0) + (stats?.pointsToNextLevel || 0)} points
+                </span>
+              </div>
+              <Progress 
+                value={stats?.totalPointsForLevel ? 
+                  ((stats?.points % stats.totalPointsForLevel) / stats.totalPointsForLevel) * 100 : 0} 
+                className="h-2" 
+              />
+              <div className="text-center mt-4">
+                <p className="text-sm text-muted-foreground">
+                  {stats?.pointsToNextLevel} more points to reach level {(stats?.level || 0) + 1}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Achievements card */}
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Medal className="h-5 w-5 text-emerald-500" />
+                Achievements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between mb-1">
+                <span className="text-2xl font-bold">{stats?.achievements.completed}</span>
+                <span className="text-muted-foreground">
+                  of {stats?.achievements.total} completed
+                </span>
+              </div>
+              <Progress 
+                value={stats?.achievements.total ? 
+                  (stats.achievements.completed / stats.achievements.total) * 100 : 0} 
+                className="h-2" 
+              />
+              <div className="flex justify-center gap-4 mt-4">
+                <div className="text-center">
+                  <div className="flex items-center gap-1 justify-center">
+                    <span className="font-medium">{stats?.badges.bronze || 0}</span>
+                    <div className="h-3 w-3 rounded-full bg-amber-300"></div>
+                  </div>
+                  <span className="text-xs text-muted-foreground">Bronze</span>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center gap-1 justify-center">
+                    <span className="font-medium">{stats?.badges.silver || 0}</span>
+                    <div className="h-3 w-3 rounded-full bg-gray-300"></div>
+                  </div>
+                  <span className="text-xs text-muted-foreground">Silver</span>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center gap-1 justify-center">
+                    <span className="font-medium">{stats?.badges.gold || 0}</span>
+                    <div className="h-3 w-3 rounded-full bg-yellow-400"></div>
+                  </div>
+                  <span className="text-xs text-muted-foreground">Gold</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Streak card */}
+          <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Flame className="h-5 w-5 text-orange-500" />
+                Current Streak
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-end mb-2">
+                <div className="text-3xl font-bold">{stats?.streak.current} days</div>
+                <div className="text-muted-foreground text-sm">
+                  Best: {stats?.streak.longest} days
+                </div>
+              </div>
+              <div className="flex gap-1 mt-3">
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <div 
+                    key={i}
+                    className={`flex-1 h-8 rounded-sm ${
+                      i < (stats?.streak.current || 0) % 7 
+                        ? 'bg-orange-400' 
+                        : 'bg-gray-200'
+                    }`}
+                  ></div>
+                ))}
+              </div>
+              <div className="text-center mt-2">
+                <p className="text-xs text-muted-foreground">Last 7 days</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Main tabs for achievements, challenges and leaderboard */}
+        <Tabs defaultValue="achievements" className="space-y-4">
+          <TabsList className="grid grid-cols-3 w-full max-w-md">
+            <TabsTrigger value="achievements">Achievements</TabsTrigger>
+            <TabsTrigger value="challenges">Challenges</TabsTrigger>
+            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            {/* User Profile Card */}
-            <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-blue-200 shadow-lg">
+          
+          {/* Achievements tab */}
+          <TabsContent value="achievements">
+            <Card>
               <CardHeader>
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
-                  <div className="relative">
-                    <Avatar className="h-20 w-20 ring-4 ring-white shadow-lg">
-                      <AvatarImage
-                        src={userProfile?.profilePhoto || "/placeholder.svg"}
-                        alt={userProfile?.displayName || user?.email || "User"}
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="text-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                        {(userProfile?.displayName || user?.email || "U")
-                          .charAt(0)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    {gamificationData?.level?.current &&
-                      gamificationData.level.current > 1 && (
-                        <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-white">
-                          {gamificationData.level.current}
-                        </div>
-                      )}
-                  </div>
-
-                  <div className="flex-1">
-                    <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {userProfile?.displayName ||
-                        user?.email?.split("@")[0] ||
-                        "User"}
-                    </CardTitle>
-
-                    <CardDescription className="flex flex-wrap items-center gap-2 md:gap-4 mt-2 text-lg">
-                      {gamificationData && (
-                        <>
-                          <span className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
-                            <Trophy className="h-4 w-4" />
-                            Level {gamificationData.level?.current || 1}
-                          </span>
-                          <span className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
-                            <Target className="h-4 w-4" />
-                            {gamificationData.points?.total || 0} XP
-                          </span>
-                        </>
-                      )}
-                      {userStats && (
-                        <span className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
-                          <TrendingUp className="h-4 w-4" />
-                          Rank #{userStats.rank || "N/A"}
-                        </span>
-                      )}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Your Achievements</CardTitle>
+                    <CardDescription>
+                      Track your progress and earn rewards
                     </CardDescription>
-
-                    {userProfile?.bio && (
-                      <div className="mt-4 p-3 bg-white/50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-gray-700 italic">
-                          {"\"" + userProfile.bio + "\""}
-                        </p>
-                      </div>
-                    )}
                   </div>
-
-                  <div className="text-right">
-                    <div
-                      className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
-                      aria-live="polite"
-                    >
-                      {Math.round(userStats?.focusScore || 0)}%
-                    </div>
-                    <div className="text-sm text-muted-foreground font-medium">
-                      Focus Score
-                    </div>
-                    <div className="w-56 bg-gray-200 rounded-full h-2 mt-2 ml-auto">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${Math.round(userStats?.focusScore || 0)}%`,
-                        }}
-                        aria-label="Focus score progress"
-                        role="progressbar"
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={Math.round(userStats?.focusScore || 0)}
-                      />
-                    </div>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100">
+                      {stats?.achievements.completed} Completed
+                    </Badge>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100">
+                      {stats?.achievements.total && stats?.achievements.completed 
+                        ? stats.achievements.total - stats.achievements.completed 
+                        : 0} In Progress
+                    </Badge>
                   </div>
                 </div>
-              </CardHeader>
-            </Card>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-yellow-800">
-                    Level Progress
-                  </CardTitle>
-                  <Crown className="h-6 w-6 text-yellow-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-yellow-700">
-                    {gamificationData?.level?.current || 1}
-                  </div>
-                  <div className="w-full bg-yellow-200 rounded-full h-3 mt-3">
-                    <div
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 h-3 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${gamificationData?.level?.progress || 0}%`,
-                      }}
-                      aria-label="Level progress"
-                      role="progressbar"
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={Math.round(
-                        gamificationData?.level?.progress || 0
-                      )}
-                    />
-                  </div>
-                  <p className="text-xs text-yellow-600 mt-2 font-medium">
-                    {gamificationData?.level?.pointsToNext || 100} XP to next
-                    level
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-purple-800">
-                    Total XP
-                  </CardTitle>
-                  <Star className="h-6 w-6 text-purple-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-purple-700">
-                    {gamificationData?.points?.total || 0}
-                  </div>
-                  <p className="text-xs text-purple-600 font-medium">
-                    +{gamificationData?.points?.daily || 0} earned today
-                  </p>
-                  <div className="flex items-center mt-2">
-                    <Zap className="h-3 w-3 text-purple-500 mr-1" />
-                    <span className="text-xs text-purple-600">Keep going!</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-green-800">
-                    Focus Time
-                  </CardTitle>
-                  <Clock className="h-6 w-6 text-green-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-green-700">
-                    {formatHours(userStats?.productiveHours || 0)}
-                  </div>
-                  <p className="text-xs text-green-600 font-medium">
-                    {selectedTimeFrame} total
-                  </p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-                    <span className="text-xs text-green-600">
-                      {userStats?.productiveHours > 0
-                        ? "Great progress!"
-                        : "Start focusing!"}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-orange-800">
-                    Streak
-                  </CardTitle>
-                  <Zap className="h-6 w-6 text-orange-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-orange-700">
-                    {gamificationData?.streaks?.current || 0}
-                  </div>
-                  <p className="text-xs text-orange-600 font-medium">
-                    days (best: {gamificationData?.streaks?.longest || 0})
-                  </p>
-                  <div className="flex items-center mt-2">
-                    <Medal className="h-3 w-3 text-orange-500 mr-1" />
-                    <span className="text-xs text-orange-600">
-                      {(gamificationData?.streaks?.current || 0) > 0
-                        ? "On fire!"
-                        : "Start your streak!"}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Recent Badges */}
-            {gamificationData?.badges && gamificationData.badges.length > 0 && (
-              <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Award className="h-6 w-6 text-amber-600" />
-                    <CardTitle className="text-amber-800">
-                      Recent Achievements
-                    </CardTitle>
-                  </div>
-                  <CardDescription>
-                    Your latest earned badges and milestones
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {gamificationData.badges.slice(0, 6).map((badge: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 p-4 bg-white/70 rounded-xl border border-amber-200 hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
-                        aria-label={`${badge.badgeName} badge`}
-                      >
-                        <div className="text-3xl" aria-hidden="true">
-                          {badge.icon || "🏆"}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-amber-800">
-                            {badge.badgeName}
-                          </div>
-                          <div className="text-sm text-amber-600">
-                            {badge.description}
-                          </div>
-                          <Badge
-                            variant="secondary"
-                            className={`mt-2 text-xs font-medium ${
-                              badge.rarity === "legendary"
-                                ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-white"
-                                : badge.rarity === "epic"
-                                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                                : badge.rarity === "rare"
-                                ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
-                                : "bg-gradient-to-r from-gray-400 to-gray-500 text-white"
-                            }`}
-                          >
-                            ✨ {badge.rarity}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {gamificationData.badges.length > 6 && (
-                    <div className="text-center mt-4">
-                      <Button
-                        variant="outline"
-                        className="border-amber-300 text-amber-700 hover:bg-amber-50"
-                      >
-                        View All {gamificationData.badges.length} Achievements
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="leaderboard" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
-                  Top Performers ({selectedTimeFrame})
-                </CardTitle>
-                <CardDescription>
-                  See how you rank against other users based on productivity
-                  metrics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {leaderboard.length > 0 ? (
-                  <div className="space-y-4">
-                    {leaderboard.map((entry, index) => {
-                      const isMe =
-                        (entry?.email && user?.email && entry.email === user.email) ||
-                        (entry?.userId && (user as any)?.id && entry.userId === (user as any).id)
-
-                      return (
-                        <div
-                          key={entry.userId ?? `${entry.email}-${index}`}
-                          className={`flex flex-col gap-4 p-4 rounded-lg border sm:flex-row sm:items-center ${
-                            isMe
-                              ? "bg-blue-50 border-blue-200"
-                              : "bg-gray-50 border-border/50"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                                index === 0
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : index === 1
-                                  ? "bg-gray-100 text-gray-800"
-                                  : index === 2
-                                  ? "bg-orange-100 text-orange-800"
-                                  : "bg-blue-100 text-blue-800"
-                              }`}
-                              aria-label={`Rank ${index + 1}`}
-                            >
-                              {index < 3
-                                ? index === 0
-                                  ? "🥇"
-                                  : index === 1
-                                  ? "🥈"
-                                  : "🥉"
-                                : entry.rank ?? index + 1}
-                            </div>
-
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage
-                                src={entry.profilePhoto || "/placeholder.svg"}
-                                alt={entry.name}
-                              />
-                              <AvatarFallback>
-                                {entry.name?.charAt(0)?.toUpperCase() || "U"}
-                              </AvatarFallback>
-                            </Avatar>
-
-                            <div>
-                              <div className="font-medium">{entry.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {entry.email}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex-1" />
-
-                          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 text-center">
-                            <div>
-                              <div className="text-lg font-bold text-blue-600">
-                                {entry.focusScore}%
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Focus
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold text-green-600">
-                                {entry.productiveHours}h
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Productive
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold text-purple-600">
-                                {entry.experiencePoints}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                XP
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-lg font-bold text-orange-600">
-                                {entry.daysActive}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Days
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No leaderboard data available</p>
-                    <Button onClick={handleRefresh} variant="outline" className="mt-4">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Load Data
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="achievements" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Achievements</CardTitle>
-                <CardDescription>
-                  Browse all available badges and your progress
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Placeholder content */}
-                  <div className="text-center py-8 text-muted-foreground col-span-full">
-                    <Award className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Achievement system coming soon!</p>
-                  </div>
+                  {achievements.map((achievement) => (
+                    <Card 
+                      key={achievement.id}
+                      className={`border ${
+                        achievement.completed 
+                          ? 'border-green-200 bg-green-50' 
+                          : 'border-gray-200'
+                      }`}
+                    >
+                      <CardHeader className="p-4 pb-0 flex flex-row items-start justify-between space-y-0">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-2 rounded-full ${
+                            achievement.completed 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {renderIcon(achievement.icon)}
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-sm">{achievement.name}</h4>
+                            <div className="mt-1">
+                              {renderBadge(achievement.type)}
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-2">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {achievement.description}
+                        </p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span>Progress</span>
+                            <span className={achievement.completed ? 'text-green-600' : ''}>
+                              {achievement.progress} / {achievement.target}
+                            </span>
+                          </div>
+                          <Progress 
+                            value={(achievement.progress / achievement.target) * 100} 
+                            className={`h-1.5 ${
+                              achievement.completed 
+                                ? 'bg-green-100' 
+                                : 'bg-blue-100'
+                            }`}
+                          />
+                        </div>
+                        
+                        <div className="mt-3 flex justify-between items-center">
+                          <div className="flex items-center gap-1 text-amber-600">
+                            <Star className="h-3.5 w-3.5" fill="currentColor" />
+                            <span className="text-xs font-medium">
+                              {achievement.pointsAwarded} pts
+                            </span>
+                          </div>
+                          {achievement.completedAt && (
+                            <span className="text-xs text-muted-foreground">
+                              Completed: {new Date(achievement.completedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        {achievement.completed ? (
+                          <Button 
+                            className="w-full" 
+                            variant="outline"
+                            size="sm"
+                            disabled
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Completed
+                          </Button>
+                        ) : (
+                          <Button 
+                            className="w-full" 
+                            variant="outline"
+                            size="sm"
+                            disabled
+                          >
+                            In Progress
+                          </Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                  
+                  {achievements.length === 0 && (
+                    <div className="col-span-full text-center py-12">
+                      <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-1">No achievements yet</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Start using the app to earn your first achievement!
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-
-          <TabsContent value="challenges" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Daily Challenges */}
-              <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Target className="h-6 w-6 text-blue-600" />
-                    <CardTitle className="text-blue-800">Daily Challenges</CardTitle>
+          
+          {/* Challenges tab */}
+          <TabsContent value="challenges">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Challenges</CardTitle>
+                    <CardDescription>
+                      Complete challenges to earn points and rewards
+                    </CardDescription>
                   </div>
-                  <CardDescription>
-                    Complete today&apos;s challenges to earn XP and level up
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {getDailyChallenges().map((challenge: any, index: number) => (
-                    <div
-                      key={index}
-                      className="space-y-3 p-4 bg-white/70 rounded-lg border border-blue-200"
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className={activeChallengeFilter === 'all' ? 'bg-primary/10' : ''}
+                      onClick={() => setActiveChallengeFilter('all')}
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium text-blue-800">
-                          {challenge.title}
-                        </span>
-                        <Badge
-                          variant="secondary"
-                          className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium"
-                        >
-                          +{challenge.xp} XP
-                        </Badge>
-                      </div>
-
-                      <div className="w-full bg-blue-200 rounded-full h-3">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-500"
-                          style={{ width: `${challenge.progress}%` }}
-                          aria-label={`${challenge.title} progress`}
-                          role="progressbar"
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-valuenow={Math.round(challenge.progress)}
-                        />
-                      </div>
-
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-blue-600 font-medium">
-                          {challenge.current.toFixed(1)} / {challenge.target}{" "}
-                          {challenge.unit}
-                        </span>
-                        <span className="text-blue-500 font-semibold">
-                          {Math.round(challenge.progress)}% Complete
-                        </span>
-                      </div>
-
-                      {challenge.progress >= 100 && (
-                        <div className="flex items-center gap-1 text-green-600 font-medium text-sm">
-                          <CheckCircle2 className="h-4 w-4" />
-                          Challenge Completed! 🎉
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Weekly Goals */}
-              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-6 w-6 text-purple-600" />
-                    <CardTitle className="text-purple-800">Weekly Goals</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Long-term objectives for sustained growth and productivity
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-purple-600">
-                    <Target className="h-16 w-16 mx-auto mb-4 opacity-60" />
-                    <p className="text-lg font-medium mb-2">
-                      Weekly challenges coming soon!
-                    </p>
-                    <p className="text-sm opacity-75">
-                      We&apos;re preparing exciting weekly goals to help you stay
-                      motivated and productive.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="mt-4 border-purple-300 text-purple-700 hover:bg-purple-50"
+                      All
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className={activeChallengeFilter === 'active' ? 'bg-primary/10' : ''}
+                      onClick={() => setActiveChallengeFilter('active')}
                     >
-                      Get Notified
+                      Active
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className={activeChallengeFilter === 'completed' ? 'bg-primary/10' : ''}
+                      onClick={() => setActiveChallengeFilter('completed')}
+                    >
+                      Completed
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredChallenges.map((challenge) => (
+                    <Card 
+                      key={challenge.id}
+                      className={`border ${
+                        challenge.completed 
+                          ? 'border-green-200 bg-green-50' 
+                          : challenge.isActive
+                            ? 'border-blue-200 bg-blue-50'
+                            : 'border-gray-200'
+                      }`}
+                    >
+                      <CardHeader className="p-4 pb-0 flex flex-row items-start justify-between space-y-0">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-2 rounded-full ${
+                            challenge.completed 
+                              ? 'bg-green-100 text-green-800' 
+                              : challenge.isActive
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {renderIcon(challenge.icon)}
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-sm">{challenge.name}</h4>
+                            <div className="mt-1 flex items-center gap-2">
+                              {renderBadge(challenge.type)}
+                              {challenge.deadline && !challenge.completed && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {new Date(challenge.deadline) > new Date() 
+                                    ? `Ends ${new Date(challenge.deadline).toLocaleDateString()}`
+                                    : 'Expired'
+                                  }
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-2">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {challenge.description}
+                        </p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs">
+                            <span>Progress</span>
+                            <span className={challenge.completed ? 'text-green-600' : ''}>
+                              {challenge.progress} / {challenge.target}
+                            </span>
+                          </div>
+                          <Progress 
+                            value={(challenge.progress / challenge.target) * 100} 
+                            className={`h-1.5 ${
+                              challenge.completed 
+                                ? 'bg-green-100' 
+                                : challenge.isActive
+                                  ? 'bg-blue-100'
+                                  : 'bg-gray-100'
+                            }`}
+                          />
+                        </div>
+                        
+                        <div className="mt-3 flex justify-between items-center">
+                          <div className="flex items-center gap-1 text-amber-600">
+                            <Star className="h-3.5 w-3.5" fill="currentColor" />
+                            <span className="text-xs font-medium">
+                              {challenge.pointsAwarded} pts
+                            </span>
+                          </div>
+                          {challenge.completedAt && (
+                            <span className="text-xs text-muted-foreground">
+                              Completed: {new Date(challenge.completedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        {challenge.completed ? (
+                          <Button 
+                            className="w-full" 
+                            variant="outline"
+                            size="sm"
+                            disabled
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Completed
+                          </Button>
+                        ) : challenge.isActive ? (
+                          <Button 
+                            className="w-full" 
+                            variant="outline"
+                            size="sm"
+                            disabled
+                          >
+                            <Rocket className="h-4 w-4 mr-2" />
+                            In Progress
+                          </Button>
+                        ) : (
+                          <Button 
+                            className="w-full" 
+                            variant="outline"
+                            size="sm"
+                            onClick={() => joinChallenge(challenge.id)}
+                          >
+                            <Zap className="h-4 w-4 mr-2" />
+                            Join Challenge
+                          </Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  ))}
+                  
+                  {filteredChallenges.length === 0 && (
+                    <div className="col-span-full text-center py-12">
+                      <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-1">No challenges available</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {activeChallengeFilter === 'all' 
+                          ? 'Check back later for new challenges!'
+                          : activeChallengeFilter === 'active'
+                            ? 'You have no active challenges. Join some to get started!'
+                            : 'You haven\'t completed any challenges yet.'
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Leaderboard tab */}
+          <TabsContent value="leaderboard">
+            <Card>
+              <CardHeader>
+                <CardTitle>Leaderboard</CardTitle>
+                <CardDescription>
+                  See how you rank compared to other users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {leaderboard.map((entry, index) => (
+                    <div 
+                      key={entry.id}
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        entry.name === 'You' || entry.id === user?.id
+                          ? 'bg-blue-50 border border-blue-100'
+                          : index % 2 === 0
+                            ? 'bg-gray-50'
+                            : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
+                          entry.position === 1
+                            ? 'bg-amber-100 text-amber-800'
+                            : entry.position === 2
+                              ? 'bg-gray-200 text-gray-800'
+                              : entry.position === 3
+                                ? 'bg-orange-100 text-orange-800'
+                                : 'bg-primary/10 text-primary/80'
+                        }`}>
+                          {entry.position}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={entry.avatar} />
+                            <AvatarFallback>
+                              {entry.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">{entry.name}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>Level {entry.level}</span>
+                              <span className="flex items-center gap-1">
+                                <Flame className="h-3 w-3 text-orange-500" />
+                                {entry.streak}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="font-bold">{entry.points.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">points</p>
+                        </div>
+                        {entry.position <= 3 && (
+                          <div>
+                            {entry.position === 1 && (
+                              <Trophy className="h-6 w-6 text-amber-500" />
+                            )}
+                            {entry.position === 2 && (
+                              <Medal className="h-6 w-6 text-gray-400" />
+                            )}
+                            {entry.position === 3 && (
+                              <Medal className="h-6 w-6 text-orange-400" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {leaderboard.length === 0 && (
+                    <div className="text-center py-12">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-1">No leaderboard data available</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Start using the app to compete with other users!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Badges and milestones explanation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Badges and Rewards</CardTitle>
+            <CardDescription>
+              Learn about the different badge types and how to earn them
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 border rounded-lg bg-amber-50 border-amber-100">
+                <div className="flex justify-center mb-2">
+                  <div className="w-12 h-12 rounded-full bg-amber-200 flex items-center justify-center">
+                    <Award className="h-6 w-6 text-amber-700" />
+                  </div>
+                </div>
+                <h3 className="font-medium text-center mb-1">Bronze</h3>
+                <p className="text-xs text-center text-muted-foreground">
+                  Basic achievements for new users
+                </p>
+              </div>
+              
+              <div className="p-4 border rounded-lg bg-gray-50 border-gray-100">
+                <div className="flex justify-center mb-2">
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                    <Award className="h-6 w-6 text-gray-700" />
+                  </div>
+                </div>
+                <h3 className="font-medium text-center mb-1">Silver</h3>
+                <p className="text-xs text-center text-muted-foreground">
+                  Intermediate goals and challenges
+                </p>
+              </div>
+              
+              <div className="p-4 border rounded-lg bg-yellow-50 border-yellow-100">
+                <div className="flex justify-center mb-2">
+                  <div className="w-12 h-12 rounded-full bg-yellow-200 flex items-center justify-center">
+                    <Award className="h-6 w-6 text-yellow-700" />
+                  </div>
+                </div>
+                <h3 className="font-medium text-center mb-1">Gold</h3>
+                <p className="text-xs text-center text-muted-foreground">
+                  Advanced achievements for dedicated users
+                </p>
+              </div>
+              
+              <div className="p-4 border rounded-lg bg-indigo-50 border-indigo-100">
+                <div className="flex justify-center mb-2">
+                  <div className="w-12 h-12 rounded-full bg-indigo-200 flex items-center justify-center">
+                    <Award className="h-6 w-6 text-indigo-700" />
+                  </div>
+                </div>
+                <h3 className="font-medium text-center mb-1">Platinum</h3>
+                <p className="text-xs text-center text-muted-foreground">
+                  Expert level challenges and milestones
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <h3 className="font-medium mb-3">How to Earn Points</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="border rounded-lg p-3 bg-green-50 border-green-100">
+                  <h4 className="font-medium flex items-center gap-2 mb-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    Complete Achievements
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Earn between 50-500 points by completing various achievements
+                  </p>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-blue-50 border-blue-100">
+                  <h4 className="font-medium flex items-center gap-2 mb-2">
+                    <Target className="h-4 w-4 text-blue-600" />
+                    Finish Challenges
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Complete time-limited challenges to earn bonus points
+                  </p>
+                </div>
+                
+                <div className="border rounded-lg p-3 bg-orange-50 border-orange-100">
+                  <h4 className="font-medium flex items-center gap-2 mb-2">
+                    <Flame className="h-4 w-4 text-orange-600" />
+                    Maintain Streaks
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Earn daily streak bonuses for consistent app usage
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
-  )
-}
+  );
+};
 
-export default Gamification
+export default Gamification;
