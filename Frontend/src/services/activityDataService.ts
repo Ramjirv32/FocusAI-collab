@@ -4,7 +4,7 @@ import { getFocusAnalysis } from './focusAnalysisService';
 // Backend API base URL for your existing app tracking service
 const BACKEND_API_URL = 'http://localhost:5001';
 // Focus AI API URL
-const AI_API_URL = 'http://localhost:8000';
+const AI_API_URL = 'http://localhost:5001';
 
 // Helper to get auth headers
 const getAuthHeader = () => {

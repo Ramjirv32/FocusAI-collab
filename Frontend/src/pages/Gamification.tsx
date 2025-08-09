@@ -28,8 +28,10 @@ import {
   Rocket,
   TrendingUp,
   RefreshCw,
+  ServerOff,
   AlertCircle,
-  Lock,
+  PlusCircle,
+  ShieldCheck
 } from 'lucide-react';
 
 // Define achievement badge types
@@ -48,6 +50,7 @@ interface Achievement {
   completedAt?: string;
   pointsAwarded: number;
   category: string;
+  claimed?: boolean;
 }
 
 // Define challenge interface
@@ -118,6 +121,8 @@ const Gamification = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeChallengeFilter, setActiveChallengeFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [backendStatus, setBackendStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [showingFallbackData, setShowingFallbackData] = useState(false);
 
   // Get auth headers
   const getAuthHeader = () => {
@@ -125,29 +130,82 @@ const Gamification = () => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
+  // Check backend connection
+  const checkBackendConnection = async () => {
+    try {
+      await axios.get('http://localhost:5001/api/health', { timeout: 3000 });
+      setBackendStatus('connected');
+      return true;
+    } catch (err) {
+      console.error("Backend connection check failed:", err);
+      setBackendStatus('disconnected');
+      return false;
+    }
+  };
+
   // Function to fetch gamification data
   const fetchGamificationData = async () => {
     try {
       setIsLoading(true);
       setError('');
+      setShowingFallbackData(false);
+      
+      // Check backend connection first
+      const isConnected = await checkBackendConnection();
+      if (!isConnected) {
+        throw new Error('Cannot connect to backend server. Please ensure the server is running at http://localhost:5001');
+      }
       
       const [statsResponse, achievementsResponse, challengesResponse, leaderboardResponse] = await Promise.all([
-        axios.get('http://localhost:5001/api/gamification/stats', { headers: getAuthHeader() }),
-        axios.get('http://localhost:5001/api/gamification/achievements', { headers: getAuthHeader() }),
-        axios.get('http://localhost:5001/api/gamification/challenges', { headers: getAuthHeader() }),
-        axios.get('http://localhost:5001/api/gamification/leaderboard', { headers: getAuthHeader() }),
+        axios.get('http://localhost:5001/api/gamification/stats', { 
+          headers: getAuthHeader(),
+          timeout: 5000
+        }),
+        axios.get('http://localhost:5001/api/gamification/achievements', { 
+          headers: getAuthHeader(),
+          timeout: 5000
+        }),
+        axios.get('http://localhost:5001/api/gamification/challenges', { 
+          headers: getAuthHeader(),
+          timeout: 5000
+        }),
+        axios.get('http://localhost:5001/api/gamification/leaderboard', { 
+          headers: getAuthHeader(),
+          timeout: 5000
+        }),
       ]);
       
       setStats(statsResponse.data);
       setAchievements(achievementsResponse.data);
       setChallenges(challengesResponse.data);
       setLeaderboard(leaderboardResponse.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch gamification data:', err);
-      setError('Failed to fetch gamification data. Please try again.');
+      
+      // Handle different error types
+      if (axios.isAxiosError(err)) {
+        if (err.code === 'ECONNABORTED') {
+          setError('Request timed out. The server is taking too long to respond.');
+        } else if (err.code === 'ERR_NETWORK') {
+          setError('Network error. Please check if the backend server is running.');
+        } else if (err.response) {
+          setError(`Server error: ${err.response.status} - ${err.response.data?.message || 'Unknown error'}`);
+        } else {
+          setError(`Connection error: ${err.message}`);
+        }
+      } else {
+        setError(err.message || 'An unknown error occurred');
+      }
       
       // Create fallback sample data
       generateFallbackData();
+      setShowingFallbackData(true);
+      
+      toast({
+        title: "Showing Sample Data",
+        description: "Unable to connect to the server. Displaying sample data for demonstration.",
+        variant: "default"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -156,6 +214,25 @@ const Gamification = () => {
   // Claim achievement reward
   const claimAchievementReward = async (achievementId: string) => {
     try {
+      if (backendStatus === 'disconnected') {
+        // Simulate claiming with fallback data
+        setAchievements(achievements.map(achievement => {
+          if (achievement.id === achievementId) {
+            return {
+              ...achievement,
+              claimed: true
+            };
+          }
+          return achievement;
+        }));
+        
+        toast({
+          title: "Achievement Claimed (Demo)",
+          description: `This is a demo action since the server is disconnected.`,
+        });
+        return;
+      }
+      
       await axios.post(
         `http://localhost:5001/api/gamification/achievements/${achievementId}/claim`, 
         {}, 
@@ -193,6 +270,25 @@ const Gamification = () => {
   // Join challenge function
   const joinChallenge = async (challengeId: string) => {
     try {
+      if (backendStatus === 'disconnected') {
+        // Simulate joining with fallback data
+        setChallenges(challenges.map(challenge => {
+          if (challenge.id === challengeId) {
+            return {
+              ...challenge,
+              isActive: true
+            };
+          }
+          return challenge;
+        }));
+        
+        toast({
+          title: "Challenge Joined (Demo)",
+          description: `This is a demo action since the server is disconnected.`,
+        });
+        return;
+      }
+      
       await axios.post(
         `http://localhost:5001/api/gamification/challenges/${challengeId}/join`, 
         {}, 
@@ -270,6 +366,7 @@ const Gamification = () => {
         completedAt: '2023-05-15T10:30:00',
         pointsAwarded: 50,
         category: 'Focus',
+        claimed: true
       },
       {
         id: 'a2',
@@ -319,6 +416,7 @@ const Gamification = () => {
         completedAt: '2023-06-02T15:45:00',
         pointsAwarded: 300,
         category: 'Focus',
+        claimed: false
       },
       {
         id: 'a6',
@@ -378,6 +476,34 @@ const Gamification = () => {
         category: 'Habits',
         isActive: true,
       },
+      {
+        id: 'c4',
+        name: 'Deep Work Master',
+        description: 'Complete 3 focus sessions of at least 1 hour each',
+        icon: 'Target',
+        type: 'silver',
+        progress: 1,
+        target: 3,
+        completed: false,
+        deadline: '2023-07-07T23:59:59',
+        pointsAwarded: 150,
+        category: 'Focus',
+        isActive: false,
+      },
+      {
+        id: 'c5',
+        name: 'Learning Sprint',
+        description: 'Visit educational websites for at least 2 hours',
+        icon: 'BookOpen',
+        type: 'bronze',
+        progress: 0.5,
+        target: 2,
+        completed: false,
+        deadline: '2023-07-10T23:59:59',
+        pointsAwarded: 75,
+        category: 'Learning',
+        isActive: false,
+      },
     ]);
     
     // Sample leaderboard
@@ -385,6 +511,7 @@ const Gamification = () => {
       {
         id: 'u1',
         name: 'Alex Johnson',
+        avatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=Alex',
         points: 4250,
         level: 8,
         position: 1,
@@ -393,6 +520,7 @@ const Gamification = () => {
       {
         id: 'u2',
         name: 'Maria Garcia',
+        avatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=Maria',
         points: 3800,
         level: 7,
         position: 2,
@@ -401,6 +529,7 @@ const Gamification = () => {
       {
         id: 'u3',
         name: 'Sam Wilson',
+        avatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=Sam',
         points: 3650,
         level: 7,
         position: 3,
@@ -408,7 +537,8 @@ const Gamification = () => {
       },
       {
         id: 'currentUser',
-        name: 'You',
+        name: user?.email ? user.email.split('@')[0] : 'You',
+        avatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=You',
         points: 2750,
         level: 5,
         position: 4,
@@ -417,10 +547,29 @@ const Gamification = () => {
       {
         id: 'u5',
         name: 'Jamie Smith',
+        avatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=Jamie',
         points: 2500,
         level: 5,
         position: 5,
         streak: 3,
+      },
+      {
+        id: 'u6',
+        name: 'Taylor Green',
+        avatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=Taylor',
+        points: 2350,
+        level: 4,
+        position: 6,
+        streak: 2,
+      },
+      {
+        id: 'u7',
+        name: 'Jordan Lee',
+        avatar: 'https://api.dicebear.com/6.x/avataaars/svg?seed=Jordan',
+        points: 2100,
+        level: 4,
+        position: 7,
+        streak: 5,
       },
     ]);
   };
@@ -429,6 +578,10 @@ const Gamification = () => {
   useEffect(() => {
     if (user) {
       fetchGamificationData();
+    } else {
+      generateFallbackData();
+      setShowingFallbackData(true);
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -461,7 +614,7 @@ const Gamification = () => {
 
   // Function to render icon based on name
   const renderIcon = (iconName: string) => {
-    const icons = {
+    const icons: { [key: string]: JSX.Element } = {
       Trophy: <Trophy className="h-5 w-5" />,
       Medal: <Medal className="h-5 w-5" />,
       Star: <Star className="h-5 w-5" />,
@@ -475,9 +628,11 @@ const Gamification = () => {
       Users: <Users className="h-5 w-5" />,
       Rocket: <Rocket className="h-5 w-5" />,
       TrendingUp: <TrendingUp className="h-5 w-5" />,
+      BookOpen: <ShieldCheck className="h-5 w-5" />,
+      Book: <ShieldCheck className="h-5 w-5" />,
     };
     
-    return icons[iconName as keyof typeof icons] || <Award className="h-5 w-5" />;
+    return icons[iconName] || <Award className="h-5 w-5" />;
   };
 
   // Loading UI
@@ -497,10 +652,12 @@ const Gamification = () => {
             {[1, 2, 3].map(i => (
               <Card key={i}>
                 <CardHeader className="pb-2">
-                  <CardTitle><Skeleton className="h-6 w-32" /></CardTitle>
+                  <Skeleton className="h-4 w-24 mb-2" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-8 w-16 mb-3" />
+                  <Skeleton className="h-2 w-full mb-4" />
+                  <Skeleton className="h-4 w-3/4" />
                 </CardContent>
               </Card>
             ))}
@@ -508,22 +665,27 @@ const Gamification = () => {
           
           <Card>
             <CardHeader>
-              <CardTitle><Skeleton className="h-6 w-64" /></CardTitle>
+              <Skeleton className="h-6 w-40 mb-2" />
+              <Skeleton className="h-4 w-64" />
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="border rounded-lg p-4">
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              ))}
+              <div>
+                <Skeleton className="h-64 w-full rounded-lg" />
+              </div>
+              <div className="space-y-4">
+                <Skeleton className="h-16 w-full rounded-lg" />
+                <Skeleton className="h-16 w-full rounded-lg" />
+                <Skeleton className="h-16 w-full rounded-lg" />
+              </div>
             </CardContent>
           </Card>
         </div>
       </DashboardLayout>
     );
   }
+  
+  // Check if we should display a backend connection error
+  const showConnectionError = backendStatus === 'disconnected' && showingFallbackData;
   
   return (
     <DashboardLayout>
@@ -540,12 +702,42 @@ const Gamification = () => {
             Refresh
           </Button>
         </div>
+        
+        {showConnectionError && (
+          <Alert variant="destructive">
+            <ServerOff className="h-4 w-4" />
+            <AlertTitle>Backend Connection Error</AlertTitle>
+            <AlertDescription>
+              Cannot connect to the backend server. Please make sure it's running at http://localhost:5001.
+              Showing sample data for demonstration purposes.
+              <div className="mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={fetchGamificationData}
+                >
+                  <RefreshCw className="h-3 w-3 mr-2" /> Retry Connection
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
-        {error && (
+        {error && !showConnectionError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
+        {showingFallbackData && !showConnectionError && !error && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Sample Data</AlertTitle>
+            <AlertDescription>
+              Showing sample gamification data for demonstration. Connect to the backend to see your actual progress.
+            </AlertDescription>
           </Alert>
         )}
         
@@ -555,27 +747,28 @@ const Gamification = () => {
           <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-amber-500" /> 
-                Level {stats?.level}
+                <Trophy className="h-5 w-5 text-amber-500" />
+                Level {stats?.level || 0}
               </CardTitle>
+              <CardDescription>
+                {stats?.pointsToNextLevel ? `${stats.pointsToNextLevel} points to next level` : 'Keep earning points to level up'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                <span>Progress to Level {(stats?.level || 0) + 1}</span>
-                <span>
-                  {stats?.points} / {(stats?.points || 0) + (stats?.pointsToNextLevel || 0)} points
-                </span>
+              <div className="flex items-center justify-between mb-1 text-sm">
+                <span>{stats?.points || 0} points</span>
+                <span>{stats?.points && stats?.totalPointsForLevel ? 
+                  `${stats.points % stats.totalPointsForLevel}/${stats.totalPointsForLevel}` : 
+                  '0/1000'}</span>
               </div>
               <Progress 
                 value={stats?.totalPointsForLevel ? 
                   ((stats?.points % stats.totalPointsForLevel) / stats.totalPointsForLevel) * 100 : 0} 
                 className="h-2" 
               />
-              <div className="text-center mt-4">
-                <p className="text-sm text-muted-foreground">
-                  {stats?.pointsToNextLevel} more points to reach level {(stats?.level || 0) + 1}
-                </p>
-              </div>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Complete challenges and achievements to earn points and level up
+              </p>
             </CardContent>
           </Card>
           
@@ -583,16 +776,21 @@ const Gamification = () => {
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Medal className="h-5 w-5 text-emerald-500" />
+                <Medal className="h-5 w-5 text-green-500" />
                 Achievements
               </CardTitle>
+              <CardDescription>
+                {stats?.achievements ? 
+                  `${stats.achievements.completed} of ${stats.achievements.total} completed` : 
+                  'Track your achievements'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between mb-1">
-                <span className="text-2xl font-bold">{stats?.achievements.completed}</span>
-                <span className="text-muted-foreground">
-                  of {stats?.achievements.total} completed
-                </span>
+              <div className="flex items-center justify-between mb-1 text-sm">
+                <span>Progress</span>
+                <span>{stats?.achievements ? 
+                  `${Math.round((stats.achievements.completed / stats.achievements.total) * 100)}%` : 
+                  '0%'}</span>
               </div>
               <Progress 
                 value={stats?.achievements.total ? 

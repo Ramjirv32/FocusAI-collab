@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart3, PieChart, LineChart, RefreshCw, TrendingUp, TrendingDown, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { BarChart3, PieChart, LineChart, RefreshCw, TrendingUp, TrendingDown, Calendar, Clock, AlertCircle, ServerOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
 import { Progress } from '@/components/ui/progress';
@@ -37,6 +37,7 @@ const Statistics = () => {
   const [timelineData, setTimelineData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [showFallbackData, setShowFallbackData] = useState(false);
+  const [backendStatus, setBackendStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
 
   // Colors for charts
   const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4', '#f43f5e'];
@@ -50,6 +51,19 @@ const Statistics = () => {
     }
     console.log('Using token from localStorage:', token.substring(0, 10) + '...');
     return { Authorization: `Bearer ${token}` };
+  };
+
+  // Check backend connection
+  const checkBackendConnection = async () => {
+    try {
+      await axios.get('http://localhost:5001/api/health', { timeout: 3000 });
+      setBackendStatus('connected');
+      return true;
+    } catch (err) {
+      console.error("Backend connection check failed:", err);
+      setBackendStatus('disconnected');
+      return false;
+    }
   };
 
   // Create fallback data for demo purposes
@@ -113,224 +127,135 @@ const Statistics = () => {
     setShowFallbackData(true);
   };
 
+  // Update fetchStatistics function to use the new endpoints and handle all time periods
   const fetchStatistics = async (timeFrame = selectedTimeFrame) => {
     try {
       setIsLoading(true);
       setError(null);
       setShowFallbackData(false);
       
-      // First try the user-stats endpoint
-      try {
-        console.log('Fetching stats with timeframe:', timeFrame);
-        console.log('Auth headers:', getAuthHeader());
+      // Check backend connection first
+      const isConnected = await checkBackendConnection();
+      if (!isConnected) {
+        throw new Error('Backend server is not running or cannot be reached');
+      }
+      
+      // Use our new enhanced statistics endpoint
+      console.log('Fetching stats with timeframe:', timeFrame);
+      console.log('Auth headers:', getAuthHeader());
+      
+      const response = await axios.get(
+        `http://localhost:5001/api/statistics`,
+        { 
+          headers: getAuthHeader(),
+          params: { timeFrame },
+          timeout: 5001
+        }
+      );
+      
+      console.log('Statistics data:', response.data);
+      
+      if (response.data && Object.keys(response.data).length > 0) {
+        setStatistics(response.data);
         
-        const response = await axios.get(
-          `http://localhost:5001/api/user-stats`,
-          { 
-            headers: getAuthHeader(),
-            params: { timeFrame }
-          }
-        );
-        
-        console.log('Statistics data:', response.data);
-        
-        if (response.data && Object.keys(response.data).length > 0) {
-          setStatistics(response.data);
+        // Generate timeline data if available
+        if (response.data.dailyBreakdown && response.data.dailyBreakdown.length > 0) {
+          setTimelineData(response.data.dailyBreakdown.map((day: any) => ({
+            name: day.date,
+            focus: day.focusTime || 0,
+            distraction: day.distractionTime || 0,
+            score: day.focusScore || 0
+          })));
+        } else {
+          // Create empty timeline data with appropriate periods
+          let emptyData = [];
           
-          // Generate timeline data if available
-          if (response.data.dailyBreakdown && response.data.dailyBreakdown.length > 0) {
-            setTimelineData(response.data.dailyBreakdown.map((day: any) => ({
-              name: day.date,
-              focus: day.focusTime || 0,
-              distraction: day.distractionTime || 0,
-              score: day.focusScore || 0
-            })));
-          } else {
-            // Create empty timeline data with current week days
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            setTimelineData(days.map(day => ({
+          if (timeFrame === 'daily') {
+            // 24 hours
+            emptyData = Array.from({ length: 24 }, (_, i) => ({
+              name: `${i}:00`,
+              focus: 0,
+              distraction: 0,
+              score: 0
+            }));
+          } else if (timeFrame === 'weekly') {
+            // 7 days of week
+            emptyData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
               name: day,
               focus: 0,
               distraction: 0,
               score: 0
-            })));
+            }));
+          } else if (timeFrame === 'monthly') {
+            // Days 1-31
+            const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+            emptyData = Array.from({ length: daysInMonth }, (_, i) => ({
+              name: `${i + 1}`,
+              focus: 0,
+              distraction: 0,
+              score: 0
+            }));
+          } else if (timeFrame === 'yearly') {
+            // 12 months
+            emptyData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => ({
+              name: month,
+              focus: 0,
+              distraction: 0,
+              score: 0
+            }));
           }
           
-          // Generate category data if available
-          if (response.data.categoryBreakdown && response.data.categoryBreakdown.length > 0) {
-            setCategoryData(
-              response.data.categoryBreakdown.map((category: any, index: number) => ({
-                name: category.category || 'Uncategorized',
-                value: category.totalTime || 0,
-                color: category.category === 'productive' ? '#22c55e' : 
-                       category.category === 'distraction' ? '#ef4444' : 
-                       COLORS[index % COLORS.length]
-              }))
-            );
-          } else {
-            // Fallback category data
-            setCategoryData([
-              { name: 'Productive', value: response.data.focusTime || 0, color: '#22c55e' },
-              { name: 'Distraction', value: response.data.distractionTime || 0, color: '#ef4444' }
-            ]);
-          }
-        } else {
-          throw new Error('Empty response data');
+          setTimelineData(emptyData);
         }
-      } catch (primaryError) {
-        console.warn('Primary stats endpoint failed, trying secondary:', primaryError);
         
-        // Try the secondary focus analytics endpoint
-        try {
-          const focusResponse = await axios.get(
-            `http://localhost:5001/api/focus-analytics/stats`,
-            { 
-              headers: getAuthHeader(),
-              params: { timeFrame }
-            }
+        // Generate category data if available
+        if (response.data.categoryBreakdown && response.data.categoryBreakdown.length > 0) {
+          setCategoryData(
+            response.data.categoryBreakdown.map((category: any, index: number) => ({
+              name: category.category === 'productive' ? 'Productive' : 
+                    category.category === 'distraction' ? 'Distraction' : 
+                    category.category,
+              value: category.totalTime || 0,
+              color: category.category === 'productive' ? '#22c55e' : 
+                     category.category === 'distraction' ? '#ef4444' : 
+                     COLORS[index % COLORS.length]
+            }))
           );
-          
-          if (focusResponse.data && Object.keys(focusResponse.data).length > 0) {
-            const focusData = focusResponse.data;
-            
-            // Map to our expected format
-            const mappedData = {
-              uniqueApps: focusData.uniqueApps || focusData.appCount || 0,
-              uniqueWebsites: focusData.uniqueWebsites || focusData.websiteCount || 0,
-              totalActiveTime: focusData.totalTime || 0,
-              focusTime: focusData.focusTime || 0,
-              distractionTime: focusData.distractionTime || 0,
-              focusScore: focusData.focusScore || 0,
-              mostProductiveHour: focusData.mostProductiveHour || 'N/A',
-              averageSessionLength: focusData.averageSessionLength || 0,
-              topApps: focusData.topApps || [],
-              topWebsites: focusData.topWebsites || [],
-              dailyBreakdown: focusData.dailyBreakdown || []
-            };
-            
-            setStatistics(mappedData);
-            
-            // Generate timeline data
-            if (focusData.dailyBreakdown && focusData.dailyBreakdown.length > 0) {
-              setTimelineData(focusData.dailyBreakdown);
-            } else {
-              // Create empty timeline data with current week days
-              const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-              setTimelineData(days.map(day => ({
-                name: day,
-                focus: 0,
-                distraction: 0,
-                score: 0
-              })));
-            }
-            
-            // Set category data
-            setCategoryData([
-              { name: 'Productive', value: focusData.focusTime || 0, color: '#22c55e' },
-              { name: 'Distraction', value: focusData.distractionTime || 0, color: '#ef4444' }
-            ]);
-          } else {
-            throw new Error('Empty focus analytics response');
-          }
-        } catch (secondaryError) {
-          console.error('All stats endpoints failed:', secondaryError);
-          
-          // Try to get raw usage data as a last resort
-          try {
-            const rawUsageResponse = await axios.get(
-              `http://localhost:5001/raw-usage`,
-              { 
-                headers: getAuthHeader(),
-                params: { timeFrame }
-              }
-            );
-            
-            if (rawUsageResponse.data) {
-              const rawData = rawUsageResponse.data;
-              
-              // Calculate total app usage time
-              const appTotal = Object.values(rawData.appUsage || {}).reduce((sum: number, time: any) => sum + Number(time), 0);
-              
-              // Calculate total web usage time
-              const webTotal = Object.values(rawData.tabUsage || {}).reduce((sum: number, time: any) => sum + Number(time), 0);
-              
-              // Create basic statistics from raw data
-              const basicStats = {
-                uniqueApps: Object.keys(rawData.appUsage || {}).length,
-                uniqueWebsites: Object.keys(rawData.tabUsage || {}).length,
-                totalActiveTime: Math.round((appTotal + webTotal) / 60), // convert to minutes
-                focusTime: Math.round(appTotal / 60 * 0.7), // assume 70% of app time is focus
-                distractionTime: Math.round(webTotal / 60 * 0.7 + appTotal / 60 * 0.3), // rough estimate
-                focusScore: Math.round((appTotal / (appTotal + webTotal || 1)) * 70), // rough score based on ratio
-                
-                // Create top apps from raw data
-                topApps: Object.entries(rawData.appUsage || {})
-                  .map(([appName, duration]) => ({
-                    _id: appName,
-                    totalTime: Math.round(Number(duration) / 60), // convert seconds to minutes
-                    visitCount: 1
-                  }))
-                  .sort((a, b) => b.totalTime - a.totalTime)
-                  .slice(0, 5),
-                
-                // Create top websites from raw data
-                topWebsites: Object.entries(rawData.tabUsage || {})
-                  .map(([domain, duration]) => ({
-                    _id: domain,
-                    totalTime: Math.round(Number(duration) / 60), // convert seconds to minutes
-                    visitCount: 1
-                  }))
-                  .sort((a, b) => b.totalTime - a.totalTime)
-                  .slice(0, 5),
-              };
-              
-              setStatistics(basicStats);
-              
-              // Create simple timeline data (just for today)
-              const today = new Date().toLocaleDateString('en-US', { weekday: 'short' }).substring(0, 3);
-              setTimelineData([{
-                name: today,
-                focus: basicStats.focusTime,
-                distraction: basicStats.distractionTime,
-                score: basicStats.focusScore
-              }]);
-              
-              // Set category data
-              setCategoryData([
-                { name: 'Productive', value: basicStats.focusTime, color: '#22c55e' },
-                { name: 'Distraction', value: basicStats.distractionTime, color: '#ef4444' }
-              ]);
-              
-              toast({
-                title: "Limited Data Available",
-                description: "Using raw usage data. Some statistics may be estimates.",
-                variant: "default"
-              });
-            } else {
-              throw new Error('No usage data available');
-            }
-          } catch (tertiaryError) {
-            console.error('All data retrieval attempts failed:', tertiaryError);
-            generateFallbackData();
-            setError('Could not retrieve your statistics. Showing sample data for demonstration.');
-            
-            toast({
-              title: "Error Loading Statistics",
-              description: "Failed to load your statistics. Showing sample data for demonstration.",
-              variant: "destructive"
-            });
-          }
+        } else {
+          // Fallback category data
+          setCategoryData([
+            { name: 'Productive', value: response.data.focusTime || 0, color: '#22c55e' },
+            { name: 'Distraction', value: response.data.distractionTime || 0, color: '#ef4444' }
+          ]);
         }
+      } else {
+        throw new Error('Empty response data');
       }
     } catch (err: any) {
       console.error('Error in statistics retrieval process:', err);
+      
+      // Handle different error types
+      if (axios.isAxiosError(err)) {
+        if (err.code === 'ECONNABORTED') {
+          setError('Request timed out. The server is taking too long to respond.');
+        } else if (err.code === 'ERR_NETWORK') {
+          setError('Network error. Please check if the backend server is running.');
+        } else if (err.response) {
+          setError(`Server error: ${err.response.status} - ${err.response.data?.message || 'Unknown error'}`);
+        } else {
+          setError(`Connection error: ${err.message}`);
+        }
+      } else {
+        setError(err.message || 'An unknown error occurred');
+      }
+      
+      // If all else fails, use fallback data
       generateFallbackData();
-      setError('Failed to fetch statistics. Showing sample data.');
       
       toast({
-        title: "Error Loading Statistics",
-        description: "Failed to load your statistics. Showing sample data for demonstration.",
-        variant: "destructive"
+        title: "Showing Sample Data",
+        description: "Unable to connect to the server. Displaying sample data for demonstration.",
+        variant: "default"
       });
     } finally {
       setIsLoading(false);
@@ -432,6 +357,9 @@ const Statistics = () => {
     );
   }
 
+  // If backend is disconnected but we have fallback data, show a special notice
+  const showConnectionError = backendStatus === 'disconnected' && showFallbackData;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -451,6 +379,7 @@ const Statistics = () => {
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
               <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
             </select>
             <Button onClick={handleRefresh} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -459,7 +388,27 @@ const Statistics = () => {
           </div>
         </div>
 
-        {error && (
+        {showConnectionError && (
+          <Alert variant="destructive">
+            <ServerOff className="h-4 w-4" />
+            <AlertTitle>Backend Connection Error</AlertTitle>
+            <AlertDescription>
+              Cannot connect to the backend server. Please make sure it's running at http://localhost:5001.
+              Showing sample data for demonstration purposes.
+              <div className="mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleRefresh}
+                >
+                  <RefreshCw className="h-3 w-3 mr-2" /> Retry Connection
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {error && !showConnectionError && (
           <Alert variant={showFallbackData ? "default" : "destructive"}>
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Notice</AlertTitle>
@@ -467,7 +416,7 @@ const Statistics = () => {
           </Alert>
         )}
         
-        {showFallbackData && !error && (
+        {showFallbackData && !error && !showConnectionError && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Sample Data</AlertTitle>
@@ -538,9 +487,17 @@ const Statistics = () => {
           <CardHeader>
             <CardTitle>Productivity Timeline</CardTitle>
             <CardDescription>
-              Your focus vs distraction time over {selectedTimeFrame === 'daily' ? 'today' : 
-                                                  selectedTimeFrame === 'weekly' ? 'this week' : 
-                                                  'this month'}
+              Your focus vs distraction time over {
+                selectedTimeFrame === 'daily' ? 'today' : 
+                selectedTimeFrame === 'weekly' ? 'this week' : 
+                selectedTimeFrame === 'monthly' ? 'this month' :
+                'this year'
+              }
+              {statistics?.period && (
+                <span className="ml-2 text-xs">
+                  ({new Date(statistics.period.start).toLocaleDateString()} - {new Date(statistics.period.end).toLocaleDateString()})
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -552,11 +509,17 @@ const Statistics = () => {
                     top: 5,
                     right: 30,
                     left: 20,
-                    bottom: 5,
+                    bottom: selectedTimeFrame === 'monthly' || timelineData.length > 20 ? 25 : 5,
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis 
+                    dataKey="name" 
+                    angle={selectedTimeFrame === 'monthly' || timelineData.length > 20 ? -45 : 0}
+                    textAnchor={selectedTimeFrame === 'monthly' || timelineData.length > 20 ? "end" : "middle"}
+                    height={selectedTimeFrame === 'monthly' || timelineData.length > 20 ? 50 : 30}
+                    tick={{ fontSize: selectedTimeFrame === 'monthly' || timelineData.length > 20 ? 10 : 12 }}
+                  />
                   <YAxis yAxisId="left" />
                   <YAxis yAxisId="right" orientation="right" />
                   <Tooltip formatter={formatTimeTooltip} />
@@ -585,6 +548,171 @@ const Statistics = () => {
                   />
                 </RechartsLineChart>
               </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>Focus Score Trends</span>
+              {statistics?.focusScore !== undefined && (
+                <Badge 
+                  className={`text-lg ${
+                    statistics.focusScore >= 70 ? 'bg-green-100 text-green-800' : 
+                    statistics.focusScore >= 50 ? 'bg-amber-100 text-amber-800' : 
+                    'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {statistics.focusScore}%
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Track how your focus performance changes over time
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-sm">Current Period vs Previous</h4>
+                  <span className="flex items-center gap-1 text-sm">
+                    {statistics?.focusScore !== undefined && statistics?.previousFocusScore !== undefined && (
+                      statistics.focusScore >= statistics.previousFocusScore ? (
+                        <span className="text-green-600 flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-1" />
+                          {statistics.previousFocusScore === 0 ? '100' : 
+                            ((statistics.focusScore - statistics.previousFocusScore) / 
+                            (statistics.previousFocusScore || 1) * 100).toFixed(1)}%
+                        </span>
+                      ) : (
+                        <span className="text-red-600 flex items-center">
+                          <TrendingDown className="h-4 w-4 mr-1" />
+                          {statistics.previousFocusScore === 0 ? '0' : 
+                            ((statistics.previousFocusScore - statistics.focusScore) / 
+                            (statistics.previousFocusScore || 1) * 100).toFixed(1)}%
+                        </span>
+                      )
+                    )}
+                  </span>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Current Period</span>
+                    <span>{statistics?.focusScore || 0}%</span>
+                  </div>
+                  <Progress 
+                    value={statistics?.focusScore || 0} 
+                    className="h-2 bg-slate-100"
+                  />
+                  
+                  <div className="flex justify-between text-sm mt-4">
+                    <span>Previous Period</span>
+                    <span>{statistics?.previousFocusScore || 0}%</span>
+                  </div>
+                  <Progress 
+                    value={statistics?.previousFocusScore || 0} 
+                    className="h-2 bg-slate-100"
+                  />
+                </div>
+                
+                <div className="mt-6 space-y-4">
+                  <h4 className="font-medium text-sm">Productivity Insights</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="border rounded-md p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium">Active Time</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Current</span>
+                        <span>{formatTime(statistics?.totalActiveTime)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Previous</span>
+                        <span>{formatTime(statistics?.previousActiveTime)}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Calendar className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-medium">Daily Streak</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Current</span>
+                        <span>{statistics?.currentStreak || 0} days</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Best</span>
+                        <span>{statistics?.longestStreak || statistics?.currentStreak || 0} days</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="font-medium text-sm mb-2">Focus Score Rating</h4>
+                <div className={`p-4 rounded-md mb-4 ${
+                  statistics?.focusScore >= 80 ? 'bg-green-50 border border-green-100' :
+                  statistics?.focusScore >= 60 ? 'bg-blue-50 border border-blue-100' :
+                  statistics?.focusScore >= 40 ? 'bg-amber-50 border border-amber-100' :
+                  'bg-red-50 border border-red-100'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium">{
+                      statistics?.focusScore >= 80 ? 'Excellent Focus' :
+                      statistics?.focusScore >= 60 ? 'Good Focus' :
+                      statistics?.focusScore >= 40 ? 'Moderate Focus' :
+                      'Needs Improvement'
+                    }</h5>
+                    <span className={`text-lg font-bold ${
+                      statistics?.focusScore >= 80 ? 'text-green-700' :
+                      statistics?.focusScore >= 60 ? 'text-blue-700' :
+                      statistics?.focusScore >= 40 ? 'text-amber-700' :
+                      'text-red-700'
+                    }`}>{statistics?.focusScore || 0}%</span>
+                  </div>
+                  
+                  <p className="text-sm mt-2">{
+                    statistics?.focusScore >= 80 ? 'Your focus performance is excellent! Keep up the great work.' :
+                    statistics?.focusScore >= 60 ? 'You\'re showing good focus habits. With a few adjustments, you could reach excellence.' :
+                    statistics?.focusScore >= 40 ? 'You\'re maintaining moderate focus. Consider ways to minimize distractions.' :
+                    'Your focus could use improvement. Try to identify and minimize distractions.'
+                  }</p>
+                </div>
+                
+                <h4 className="font-medium text-sm mb-2">Productivity Tips</h4>
+                <ul className="text-sm space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    {statistics?.mostProductiveHour ? 
+                      `Schedule important tasks around your most productive hour (${statistics.mostProductiveHour}).` :
+                      'Track your productivity to discover your most productive hours.'
+                    }
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    {statistics?.averageSessionLength ? 
+                      `Your average focus session is ${formatTime(statistics.averageSessionLength)}. Try the Pomodoro technique with ${
+                        statistics.averageSessionLength < 25 ? 'longer' : 'similar'
+                      } intervals.` :
+                      'Try the Pomodoro technique with 25-minute focus intervals.'
+                    }
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    {statistics?.topApps && statistics.topApps.length > 0 ?
+                      `Your most used app is ${statistics.topApps[0]._id}. Ensure it aligns with your productivity goals.` :
+                      'Track your application usage to identify potential productivity boosters or distractions.'
+                    }
+                  </li>
+                </ul>
+              </div>
             </div>
           </CardContent>
         </Card>

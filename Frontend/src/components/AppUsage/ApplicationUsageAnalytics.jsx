@@ -33,7 +33,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
   const demoData = {
     timeFrame: 'daily',
     dateRange: { start: new Date().toISOString().split('T')[0], end: new Date().toISOString().split('T')[0] },
-    totalTime: 18000, // 5 hours in seconds
+    totalTime: 15001, // 5 hours in seconds
     totalApps: 5,
     mostUsedApp: 'Visual Studio Code',
     appUsage: [
