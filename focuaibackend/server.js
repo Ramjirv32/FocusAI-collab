@@ -23,6 +23,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const newRoutes = require('./routes/new');
+const appUsageRoutes = require('./routes/appUsageRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -55,6 +56,9 @@ app.use('/api', profileRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api', newRoutes); // New organized routes
+app.use('/api/app-usage', appUsageRoutes); // App usage analytics routes
+
+console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoutes, newRoutes, appUsageRoutes');
 
 // Add a simple health check endpoint
 app.get('/', (req, res) => {

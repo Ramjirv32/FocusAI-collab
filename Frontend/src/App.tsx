@@ -18,6 +18,7 @@ import Gamification from "./pages/Gamification";
 import Notifications from "./pages/Notifications";
 import Extension from "./pages/Extension";
 import Diagnostics from "./pages/Diagnostics";
+import Activities from "./pages/Activities";
 import React from 'react';
 import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
 
@@ -90,6 +91,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Diagnostics />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/activities" 
+      element={
+        <ProtectedRoute>
+          <Activities />
         </ProtectedRoute>
       }
     />

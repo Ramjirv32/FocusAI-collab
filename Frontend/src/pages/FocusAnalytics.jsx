@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/Layout/DashboardLayout';
+import AIRecommendations from '../components/FocusAnalysis/AIRecommendations';
+import FocusDistractionsChart from '../components/FocusAnalysis/FocusDistractionsChart';
 
 const FocusAnalytics = () => {
   const { user } = useAuth();
@@ -385,19 +387,22 @@ const FocusAnalytics = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={focusChartData.areas}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [formatTime(value), 'Duration']} />
-                      <Bar dataKey="duration">
-                        {focusChartData.areas.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <FocusDistractionsChart 
+                    data={
+                      focusData ? [
+                        ...Object.entries(focusData.focus_areas || []).map(([_, area]) => ({
+                          name: area.category || area.name,
+                          duration: area.total_duration || area.duration,
+                          type: "Focused"
+                        })),
+                        ...Object.entries(focusData.distraction_areas || []).map(([_, area]) => ({
+                          name: area.category || area.name,
+                          duration: area.total_duration || area.duration,
+                          type: "Distracted"
+                        }))
+                      ] : []
+                    }
+                  />
                 </CardContent>
               </Card>
 
@@ -553,42 +558,32 @@ const FocusAnalytics = () => {
                 </CardContent>
               </Card>
 
-              {/* Recommendations */}
+              {/* AI Recommendations */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-orange-600" />
-                    Recommendations
+                    AI Recommendations
                   </CardTitle>
                   <CardDescription>
                     Personalized suggestions to improve your focus
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {productivityData?.focus_score < 50 && (
-                    <div className="p-4 bg-orange-50 rounded-lg">
-                      <h4 className="font-semibold text-orange-900 mb-2">🎯 Improve Focus</h4>
-                      <p className="text-sm text-orange-800">
-                        Consider using time-blocking techniques and reducing distracting applications
-                      </p>
-                    </div>
-                  )}
-
-                  {(productivityData?.total_non_productive_time || 0) > (productivityData?.total_productive_time || 0) && (
-                    <div className="p-4 bg-red-50 rounded-lg">
-                      <h4 className="font-semibold text-red-900 mb-2">⚠️ Reduce Distractions</h4>
-                      <p className="text-sm text-red-800">
-                        Try to limit time spent on non-productive applications during work hours
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-semibold text-green-900 mb-2">✨ Keep It Up!</h4>
-                    <p className="text-sm text-green-800">
-                      Continue using {productivityData?.max_productive_app || 'productive tools'} to maintain your productivity streak
-                    </p>
-                  </div>
+                <CardContent>
+                  <AIRecommendations 
+                    focusPercentage={productivityData?.focus_score || 0}
+                    productiveApps={
+                      productivityData?.productive_content 
+                        ? Object.keys(productivityData.productive_content) 
+                        : []
+                    }
+                    distractingApps={
+                      productivityData?.non_productive_content 
+                        ? Object.keys(productivityData.non_productive_content) 
+                        : []
+                    }
+                    hasData={!!productivityData}
+                  />
                 </CardContent>
               </Card>
             </div>
