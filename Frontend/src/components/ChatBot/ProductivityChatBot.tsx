@@ -239,7 +239,7 @@ const ProductivityChatBot = () => {
 
       // Call the new AI server with CORS support
       const aiResponse = await axios.post(
-        `http://0.0.0.0:8000/api/v1/chat/ask/${userId}?question=${encodeURIComponent(query)}`,
+        `http://0.0.0.0:8001/api/v1/chat/ask/${userId}?question=${encodeURIComponent(query)}`,
         {},
         { 
           headers: { 
