@@ -58,11 +58,8 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       icon: MessageSquare,
       path: '/chat-assistant',
       description: 'AI Productivity Assistant'
-    }
-  ];
-
-  const bottomMenuItems = [
-    {
+    },
+     {
       title: 'Notifications',
       icon: Bell,
       path: '/notifications',
@@ -99,6 +96,10 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       description: 'Log out from your account',
       isLogout: true
     }
+  ];
+
+  const bottomMenuItems = [
+   
   ];
 
   const handleLogout = async () => {
