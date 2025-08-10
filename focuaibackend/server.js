@@ -26,6 +26,7 @@ const newRoutes = require('./routes/new');
 const appUsageRoutes = require('./routes/appUsageRoutes');
 const statisticsRoutes = require('./routes/statisticsRoutes');
 const healthRoutes = require('./routes/healthRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -61,6 +62,7 @@ app.use('/api', newRoutes); // New organized routes
 app.use('/api/app-usage', appUsageRoutes); // App usage analytics routes
 app.use('/api', statisticsRoutes);
 app.use('/api', healthRoutes);
+app.use('/api/chat', chatRoutes);
 
 console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoutes, newRoutes, appUsageRoutes');
 
