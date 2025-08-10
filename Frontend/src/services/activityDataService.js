@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configure API endpoints
 const AI_API_URL = 'http://localhost:8000'; // Python AI server
-const MODEL_API_URL = 'http://localhost:5000'; // Model AI Train server
+const MODEL_API_URL = 'http://localhost:8001'; // Model AI Train server
 const BACKEND_API_URL = 'http://localhost:5001'; // Your app backend
 
 /**
