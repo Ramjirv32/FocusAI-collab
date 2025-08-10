@@ -1,285 +1,186 @@
-import React, { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Trophy, Target, Award, Star, Calendar, TrendingUp, Medal, Crown, SendHorizontal, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { getFallbackResponse, getMockProductivityMetrics } from '@/services/productivityAssistantService';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { chatService } from '../services/chatService';
 
-const ChatAssistant = () => {
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: 'Hi! I\'m FocusAI, your productivity assistant. How can I help you improve your productivity today?' }
+interface Message {
+  id: string;
+  content: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
+const ChatAssistant: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      content: "Hi! I'm your FocusAI assistant. I'm here to help you with anything you need. How can I assist you today?",
+      isUser: false,
+      timestamp: new Date()
+    }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [productivityMetrics, setProductivityMetrics] = useState({
-    productivityScore: 91,
-    distractedScore: 22,
-    distractedApps: ['Twitter', 'YouTube', 'Instagram'],
-    productiveApps: ['VS Code', 'GitHub', 'Notion', 'Slack'],
-    focusTime: '3h 45m',
-    totalBrowsingTime: '5h 30m'
-  });
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Function to handle sending messages to the AI assistant
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
-    
-    // Add user message to chat
-    const userMessage = inputMessage;
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: inputMessage,
+      isUser: true,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-    
+
     try {
-      // In a real implementation, you'd fetch this from your API
-      // For now, we'll use mock data
-      const metrics = {
-        productivityScore: productivityMetrics.productivityScore,
-        distractedScore: productivityMetrics.distractedScore,
-        distractedApps: productivityMetrics.distractedApps,
-        productiveApps: productivityMetrics.productiveApps,
-        focusTime: productivityMetrics.focusTime,
-        totalBrowsingTime: productivityMetrics.totalBrowsingTime
-      };
+      const response = await chatService.sendMessage(inputMessage);
       
-      // Format the prompt with user metrics for the Phi model
-      const prompt = `
-You are FocusAI, a friendly productivity assistant. 
+      if (response.success) {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: response.response,
+          isUser: false,
+          timestamp: new Date()
+        };
 
-User question: "${userMessage}"
-
-User's productivity metrics:
-- Productivity Score: ${metrics.productivityScore}/100
-- Distracted Score: ${metrics.distractedScore}/100
-- Productive Apps: ${metrics.productiveApps.join(', ')}
-- Distracting Apps: ${metrics.distractedApps.join(', ')}
-- Focus Time Today: ${metrics.focusTime}
-- Total Browsing Time: ${metrics.totalBrowsingTime}
-
-Instructions:
-- If user greets you (hi, hello, hey), respond warmly as FocusAI
-- For productivity questions, reference their specific score of ${metrics.productivityScore}%
-- For improvement requests, suggest specific actions based on their distracting apps
-- Always be encouraging and provide actionable advice
-- Keep responses concise but helpful
-
-Respond as FocusAI:
-`;
-
-      try {
-        // Try to call Ollama API
-        const response = await fetch('http://localhost:11434/api/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'phi',
-            prompt: prompt,
-            stream: false
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-        } else {
-          throw new Error('Failed to get response from Ollama');
-        }
-      } catch (error) {
-        console.error('Error communicating with Ollama:', error);
-        // Use the enhanced fallback response
-        const fallbackResponse = getFallbackResponse(userMessage, metrics);
-        setMessages(prev => [...prev, { role: 'assistant', content: fallbackResponse }]);
+        setMessages(prev => [...prev, aiMessage]);
       }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Sorry, I'm having trouble connecting right now. Please try again.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle clicking on suggested questions
-  const handleSuggestedQuestion = (question: string) => {
-    setInputMessage(question);
-    // Optionally auto-send the message
-    setTimeout(() => {
-      if (question) {
-        setMessages(prev => [...prev, { role: 'user', content: question }]);
-        setInputMessage('');
-        setIsLoading(true);
-        
-        // Use fallback response for demonstration
-        const fallbackResponse = getFallbackResponse(question, productivityMetrics);
-        setTimeout(() => {
-          setMessages(prev => [...prev, { role: 'assistant', content: fallbackResponse }]);
-          setIsLoading(false);
-        }, 1000);
-      }
-    }, 100);
-  };
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputMessage(e.target.value);
-  };
-
-  // Handle pressing Enter to send message
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !isLoading) {
-      handleSendMessage();
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">AI Productivity Assistant</h2>
-          <p className="text-muted-foreground">
-            Get personalized productivity advice and insights from your AI assistant
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="h-[600px] flex flex-col">
-              <CardHeader>
-                <CardTitle>Productivity Assistant</CardTitle>
-                <CardDescription>
-                  Ask questions about your productivity or get advice
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                <div className="flex-1 bg-muted/30 rounded-md p-4 mb-4 overflow-auto">
-                  <div className="space-y-4">
-                    {messages.map((message, index) => (
-                      message.role === 'assistant' ? (
-                        // AI Message
-                        <div key={index} className="flex gap-3 max-w-[80%]">
-                          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                            <Trophy className="h-4 w-4 text-primary-foreground" />
-                          </div>
-                          <div className="bg-muted p-3 rounded-lg">
-                            <p className="text-sm whitespace-pre-line">
-                              {message.content}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        // User Message
-                        <div key={index} className="flex flex-row-reverse gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                            <div className="h-4 w-4 text-primary" />
-                          </div>
-                          <div className="bg-primary text-primary-foreground p-3 rounded-lg">
-                            <p className="text-sm">
-                              {message.content}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    ))}
-                    
-                    {isLoading && (
-                      <div className="flex gap-3 max-w-[80%]">
-                        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                          <Loader2 className="h-4 w-4 text-primary-foreground animate-spin" />
-                        </div>
-                        <div className="bg-muted p-3 rounded-lg">
-                          <p className="text-sm">Thinking...</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Message Input */}
-                <div className="flex gap-2">
-                  <Input 
-                    value={inputMessage}
-                    onChange={handleInputChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask something about your productivity..." 
-                    className="flex-1"
-                    disabled={isLoading}
-                  />
-                  <Button 
-                    onClick={handleSendMessage}
-                    disabled={isLoading || !inputMessage.trim()}
-                    className="flex items-center gap-2"
-                  >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <SendHorizontal className="h-4 w-4" />}
-                    <span>Send</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="space-y-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Suggested Questions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <button 
-                  onClick={() => handleSuggestedQuestion('Hello')}
-                  className="w-full text-left p-2 hover:bg-muted rounded-md text-sm"
-                >
-                  Hello (Try greeting FocusAI)
-                </button>
-                <button 
-                  onClick={() => handleSuggestedQuestion('What is my productivity score?')}
-                  className="w-full text-left p-2 hover:bg-muted rounded-md text-sm"
-                >
-                  What is my productivity score?
-                </button>
-                <button 
-                  onClick={() => handleSuggestedQuestion('How can I improve my productivity?')}
-                  className="w-full text-left p-2 hover:bg-muted rounded-md text-sm"
-                >
-                  How can I improve my productivity?
-                </button>
-                <button 
-                  onClick={() => handleSuggestedQuestion('What apps distract me the most?')}
-                  className="w-full text-left p-2 hover:bg-muted rounded-md text-sm"
-                >
-                  What apps distract me the most?
-                </button>
-                <button 
-                  onClick={() => handleSuggestedQuestion('Give me a productivity tip')}
-                  className="w-full text-left p-2 hover:bg-muted rounded-md text-sm"
-                >
-                  Give me a productivity tip
-                </button>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Productivity Tips</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-start gap-2">
-                  <Star className="h-4 w-4 text-yellow-500 mt-1" />
-                  <p className="text-sm">Take regular breaks to maintain high focus levels</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Star className="h-4 w-4 text-yellow-500 mt-1" />
-                  <p className="text-sm">Block distracting apps during your peak productivity hours</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Star className="h-4 w-4 text-yellow-500 mt-1" />
-                  <p className="text-sm">Group similar tasks together to reduce context switching</p>
-                </div>
-              </CardContent>
-            </Card>
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Page Header - matching your other pages */}
+      <div className="mb-6">
+        <div className="flex items-center space-x-3 mb-2">
+          <Bot className="w-8 h-8 text-blue-600" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Chat Assistant</h1>
+            <p className="text-gray-600 mt-1">AI Productivity Assistant</p>
           </div>
         </div>
       </div>
-    </DashboardLayout>
+
+      {/* Chat Container */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        {/* Chat Messages Area */}
+        <div className="h-[600px] flex flex-col">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`flex items-start space-x-2 max-w-2xl ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                    message.isUser 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {message.isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  </div>
+                  <div className={`rounded-lg p-3 ${
+                    message.isUser 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-50 text-gray-900 border border-gray-100'
+                  }`}>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+                    <p className="text-xs mt-2 opacity-70">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 flex items-center space-x-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-gray-600 text-sm">Thinking...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="flex space-x-3">
+              <div className="flex-1 relative">
+                <textarea
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me anything..."
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                  rows={1}
+                  style={{ minHeight: '44px', maxHeight: '120px' }}
+                />
+              </div>
+              <button
+                onClick={sendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200"
+                style={{ minHeight: '44px', minWidth: '44px' }}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Tips Card */}
+      <div className="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-100">
+        <h3 className="font-semibold text-blue-900 mb-2">💡 Try asking me about:</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-sm text-blue-800">
+          <div>• Productivity tips</div>
+          <div>• Time management</div>
+          <div>• Work organization</div>
+          <div>• Goal setting</div>
+          <div>• Focus techniques</div>
+          <div>• General questions</div>
+        </div>
+      </div>
+    </div>
   );
 };
 
