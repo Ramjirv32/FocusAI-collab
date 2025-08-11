@@ -31,8 +31,16 @@ import {
   ServerOff,
   AlertCircle,
   PlusCircle,
-  ShieldCheck
+  ShieldCheck,
+  BarChart,
+  History,
+  BookOpen,
+  Timer,
+  Coffee,
+  Lightbulb,
+  BadgeCheck
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 // Define achievement badge types
 type BadgeType = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'legendary';
@@ -111,6 +119,23 @@ interface GamificationStats {
   };
 }
 
+// Define timeline event interface
+interface TimelineEvent {
+  id: string;
+  type: 'badge' | 'challenge' | 'improvement' | 'streak' | 'level';
+  title: string;
+  description: string;
+  icon: string;
+  date: string;
+  category: string;
+  points?: number;
+  level?: number;
+  badgeType?: BadgeType;
+  focusScore?: number;
+  improvement?: number;
+  streak?: number;
+}
+
 const Gamification = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -118,6 +143,7 @@ const Gamification = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [stats, setStats] = useState<GamificationStats | null>(null);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeChallengeFilter, setActiveChallengeFilter] = useState<'all' | 'active' | 'completed'>('all');
@@ -156,30 +182,57 @@ const Gamification = () => {
         throw new Error('Cannot connect to backend server. Please ensure the server is running at http://localhost:5001');
       }
       
-      const [statsResponse, achievementsResponse, challengesResponse, leaderboardResponse] = await Promise.all([
-        axios.get('http://localhost:5001/api/gamification/stats', { 
-          headers: getAuthHeader(),
-          timeout: 5000
-        }),
-        axios.get('http://localhost:5001/api/gamification/achievements', { 
-          headers: getAuthHeader(),
-          timeout: 5000
-        }),
-        axios.get('http://localhost:5001/api/gamification/challenges', { 
-          headers: getAuthHeader(),
-          timeout: 5000
-        }),
-        axios.get('http://localhost:5001/api/gamification/leaderboard', { 
-          headers: getAuthHeader(),
-          timeout: 5000
-        }),
-      ]);
+      console.log('Fetching gamification data...');
       
-      setStats(statsResponse.data);
-      setAchievements(achievementsResponse.data);
-      setChallenges(challengesResponse.data);
-      setLeaderboard(leaderboardResponse.data);
-    } catch (err: any) {
+      // Fetch data sequentially to better identify which endpoint fails
+      const statsResponse = await axios.get('http://localhost:5001/api/gamification/stats', { 
+        headers: getAuthHeader(),
+        timeout: 5000
+      });
+      console.log('Stats data fetched successfully');
+      
+      const achievementsResponse = await axios.get('http://localhost:5001/api/gamification/achievements', { 
+        headers: getAuthHeader(),
+        timeout: 5000
+      });
+      console.log('Achievements data fetched successfully');
+      
+      const challengesResponse = await axios.get('http://localhost:5001/api/gamification/challenges', { 
+        headers: getAuthHeader(),
+        timeout: 5000
+      });
+      console.log('Challenges data fetched successfully');
+      
+      const leaderboardResponse = await axios.get('http://localhost:5001/api/gamification/leaderboard', { 
+        headers: getAuthHeader(),
+        timeout: 5000
+      });
+      console.log('Leaderboard data fetched successfully');
+      
+      // Handle the response data properly
+      setStats(statsResponse.data.stats);
+      setAchievements(achievementsResponse.data.achievements || []);
+      setChallenges(challengesResponse.data.challenges || []);
+      setLeaderboard(leaderboardResponse.data.leaderboard || []);
+      
+      // Try to fetch timeline data but don't fail if it's not available
+      try {
+        const timelineResponse = await axios.get('http://localhost:5001/api/gamification/timeline', { 
+          headers: getAuthHeader(),
+          timeout: 5000
+        });
+        console.log('Timeline data fetched successfully');
+        setTimeline(timelineResponse.data.timeline || []);
+      } catch (err) {
+        console.log("Timeline endpoint not available, using empty timeline");
+        setTimeline([]);
+      }
+      
+      // Update backend status and reset fallback flag
+      setBackendStatus('connected');
+      setShowingFallbackData(false);
+      
+    } catch (err) {
       console.error('Failed to fetch gamification data:', err);
       
       // Handle different error types
@@ -233,6 +286,8 @@ const Gamification = () => {
         return;
       }
       
+      // Use the correct endpoint for claiming achievements
+      // This endpoint is likely /api/gamification/achievements/:id/claim
       await axios.post(
         `http://localhost:5001/api/gamification/achievements/${achievementId}/claim`, 
         {}, 
@@ -271,7 +326,7 @@ const Gamification = () => {
   const joinChallenge = async (challengeId: string) => {
     try {
       if (backendStatus === 'disconnected') {
-        // Simulate joining with fallback data
+        // Simulation logic for offline mode
         setChallenges(challenges.map(challenge => {
           if (challenge.id === challengeId) {
             return {
@@ -284,37 +339,152 @@ const Gamification = () => {
         
         toast({
           title: "Challenge Joined (Demo)",
-          description: `This is a demo action since the server is disconnected.`,
+          description: "This is a demo action since the server is disconnected.",
         });
         return;
       }
       
-      await axios.post(
+      // Show loading toast
+      toast({
+        title: "Joining Challenge...",
+        description: "Please wait while we process your request.",
+      });
+      
+      // Use the correct endpoint for joining challenges
+      const response = await axios.post(
         `http://localhost:5001/api/gamification/challenges/${challengeId}/join`, 
         {}, 
         { headers: getAuthHeader() }
       );
       
-      // Update UI
-      setChallenges(challenges.map(challenge => {
-        if (challenge.id === challengeId) {
-          return {
-            ...challenge,
-            isActive: true
-          };
-        }
-        return challenge;
-      }));
-      
-      toast({
-        title: "Challenge Joined!",
-        description: "You've successfully joined the challenge. Good luck!",
-      });
+      // Check if response was successful
+      if (response.data.success) {
+        // Update UI
+        setChallenges(challenges.map(challenge => {
+          if (challenge.id === challengeId) {
+            return {
+              ...challenge,
+              isActive: true
+            };
+          }
+          return challenge;
+        }));
+        
+        toast({
+          title: "Challenge Joined!",
+          description: "You've successfully joined the challenge. Good luck!",
+        });
+        
+        // Refresh data to show updated challenges
+        fetchGamificationData();
+      } else {
+        // Handle unexpected success=false response
+        toast({
+          title: "Error",
+          description: response.data.error || "Failed to join challenge for an unknown reason.",
+          variant: "destructive",
+        });
+      }
     } catch (err) {
       console.error('Failed to join challenge:', err);
+      
+      // Provide more specific error messages
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 404) {
+          toast({
+            title: "Challenge Not Found",
+            description: "The challenge you're trying to join doesn't exist or has been removed.",
+            variant: "destructive",
+          });
+        } else if (err.response?.status === 403) {
+          toast({
+            title: "Not Authorized",
+            description: "You don't have permission to join this challenge.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Server Error",
+            description: err.response?.data?.error || "Failed to join challenge. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to join challenge. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  // Complete challenge function
+  const completeChallenge = async (challengeId: string) => {
+    try {
+      if (backendStatus === 'disconnected') {
+        // Simulate completing with fallback data
+        setChallenges(challenges.map(challenge => {
+          if (challenge.id === challengeId) {
+            return {
+              ...challenge,
+              completed: true,
+              completedAt: new Date().toISOString()
+            };
+          }
+          return challenge;
+        }));
+        
+        toast({
+          title: "Challenge Completed (Demo)",
+          description: `This is a demo action since the server is disconnected.`,
+        });
+        return;
+      }
+      
+      // Use the correct endpoint for completing challenges
+      const response = await axios.post(
+        'http://localhost:5001/api/gamification/challenge/complete',
+        { challengeId },
+        { headers: getAuthHeader() }
+      );
+      
+      if (response.data.success || response.status === 200) {
+        // Update challenges list
+        setChallenges(challenges.map(challenge => {
+          if (challenge.id === challengeId) {
+            return {
+              ...challenge,
+              completed: true,
+              completedAt: new Date().toISOString()
+            };
+          }
+          return challenge;
+        }));
+        
+        // Show toast notification
+        toast({
+          title: "Challenge Completed!",
+          description: `You've earned ${response.data.pointsAwarded} points!`,
+        });
+        
+        // If user leveled up, show special notification
+        if (response.data.leveledUp) {
+          toast({
+            title: "Level Up!",
+            description: `Congratulations! You've reached level ${response.data.newLevel}!`,
+            variant: "default",
+          });
+        }
+        
+        // Refresh stats
+        fetchGamificationData();
+      }
+    } catch (err) {
+      console.error('Failed to complete challenge:', err);
       toast({
         title: "Error",
-        description: "Failed to join challenge. Please try again.",
+        description: "Failed to complete challenge. Please try again.",
         variant: "destructive",
       });
     }
@@ -863,6 +1033,7 @@ const Gamification = () => {
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
             <TabsTrigger value="challenges">Challenges</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
           </TabsList>
           
           {/* Achievements tab */}
@@ -1055,7 +1226,7 @@ const Gamification = () => {
                           </div>
                           <div>
                             <h4 className="font-medium text-sm">{challenge.name}</h4>
-                            <div className="mt-1 flex items-center gap-2">
+                            <div className="mt-1 flex items-center gap-2 flex-wrap">
                               {renderBadge(challenge.type)}
                               {challenge.deadline && !challenge.completed && (
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -1074,23 +1245,43 @@ const Gamification = () => {
                         <p className="text-sm text-muted-foreground mb-3">
                           {challenge.description}
                         </p>
-                        <div className="space-y-2">
+                        
+                        {/* Progress visualization */}
+                        <div className="space-y-3">
                           <div className="flex justify-between text-xs">
                             <span>Progress</span>
-                            <span className={challenge.completed ? 'text-green-600' : ''}>
+                            <span className={challenge.completed ? 'text-green-600 font-medium' : ''}>
                               {challenge.progress} / {challenge.target}
+                              {challenge.target >= 60 && challenge.target % 60 === 0 && (
+                                <span className="text-xs text-muted-foreground ml-1">
+                                  ({Math.floor(challenge.progress / 60)}h / {Math.floor(challenge.target / 60)}h)
+                                </span>
+                              )}
                             </span>
                           </div>
-                          <Progress 
-                            value={(challenge.progress / challenge.target) * 100} 
-                            className={`h-1.5 ${
-                              challenge.completed 
-                                ? 'bg-green-100' 
-                                : challenge.isActive
-                                  ? 'bg-blue-100'
-                                  : 'bg-gray-100'
-                            }`}
-                          />
+                          
+                          {/* Enhanced progress bar */}
+                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden relative">
+                            <div 
+                              className={`h-full rounded-full absolute left-0 top-0 ${
+                                challenge.completed 
+                                  ? 'bg-green-500' 
+                                  : challenge.isActive
+                                    ? 'bg-blue-500'
+                                    : 'bg-gray-300'
+                              }`}
+                              style={{ width: `${Math.min(100, Math.floor((challenge.progress / challenge.target) * 100))}%` }}
+                            ></div>
+                            
+                            {/* Milestone markers */}
+                            {[25, 50, 75].map(milestone => (
+                              <div 
+                                key={milestone} 
+                                className="absolute top-0 h-full border-l border-white"
+                                style={{ left: `${milestone}%` }}
+                              ></div>
+                            ))}
+                          </div>
                         </div>
                         
                         <div className="mt-3 flex justify-between items-center">
@@ -1121,12 +1312,22 @@ const Gamification = () => {
                         ) : challenge.isActive ? (
                           <Button 
                             className="w-full" 
-                            variant="outline"
+                            variant={challenge.progress >= challenge.target ? "default" : "outline"}
                             size="sm"
-                            disabled
+                            disabled={challenge.progress < challenge.target}
+                            onClick={() => completeChallenge(challenge.id)}
                           >
-                            <Rocket className="h-4 w-4 mr-2" />
-                            In Progress
+                            {challenge.progress >= challenge.target ? (
+                              <>
+                                <BadgeCheck className="h-4 w-4 mr-2" />
+                                Complete Challenge
+                              </>
+                            ) : (
+                              <>
+                                <Rocket className="h-4 w-4 mr-2" />
+                                {Math.floor((challenge.progress / challenge.target) * 100)}% Complete
+                              </>
+                            )}
                           </Button>
                         ) : (
                           <Button 
@@ -1176,15 +1377,15 @@ const Gamification = () => {
                   {leaderboard.map((entry, index) => (
                     <div 
                       key={entry.id}
-                      className={`flex items-center justify-between p-3 rounded-lg ${
-                        entry.name === 'You' || entry.id === user?.id
+                      className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg ${
+                        entry.name.includes('(You)') || entry.isCurrentUser
                           ? 'bg-blue-50 border border-blue-100'
                           : index % 2 === 0
                             ? 'bg-gray-50'
                             : ''
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 w-full sm:w-auto mb-2 sm:mb-0">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
                           entry.position === 1
                             ? 'bg-amber-100 text-amber-800'
@@ -1215,11 +1416,35 @@ const Gamification = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+                        {/* Focus score tag */}
+                        {entry.focusScore !== undefined && (
+                          <div className="flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full text-xs">
+                            <Target className="h-3 w-3 text-blue-600" />
+                            <span className="font-medium text-blue-700">{entry.focusScore}%</span>
+                          </div>
+                        )}
+                        
+                        {/* Productive time tag */}
+                        {entry.productiveTime !== undefined && (
+                          <div className="flex items-center gap-1 bg-green-50 px-2 py-0.5 rounded-full text-xs">
+                            <Clock className="h-3 w-3 text-green-600" />
+                            <span className="font-medium text-green-700">
+                              {entry.productiveTime >= 60 
+                                ? `${Math.floor(entry.productiveTime / 60)}h ${entry.productiveTime % 60}m` 
+                                : `${entry.productiveTime}m`}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Points */}
                         <div className="text-right">
                           <p className="font-bold">{entry.points.toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">points</p>
                         </div>
+                        
+                        {/* Trophy for top 3 */}
                         {entry.position <= 3 && (
                           <div>
                             {entry.position === 1 && (
@@ -1247,6 +1472,117 @@ const Gamification = () => {
                     </div>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Timeline tab */}
+          <TabsContent value="timeline">
+            <Card>
+              <CardHeader>
+                <CardTitle>Activity Timeline</CardTitle>
+                <CardDescription>
+                  Track your gamification journey and achievements over time
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {timeline.length === 0 ? (
+                  <div className="text-center py-12">
+                    <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-1">No timeline events yet</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Start using the app more to see your journey unfold here!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="relative pl-8 pb-2">
+                    {/* Vertical line */}
+                    <div className="absolute left-3 top-3 bottom-0 w-0.5 bg-gray-200"></div>
+                    
+                    {/* Timeline items */}
+                    <div className="space-y-8">
+                      {timeline.map((event) => (
+                        <div key={event.id} className="relative">
+                          {/* Dot */}
+                          <div className={`absolute -left-6 w-6 h-6 rounded-full flex items-center justify-center ${
+                            event.type === 'badge' ? 'bg-amber-100' :
+                            event.type === 'challenge' ? 'bg-green-100' :
+                            event.type === 'improvement' ? 'bg-blue-100' :
+                            event.type === 'streak' ? 'bg-orange-100' :
+                            'bg-purple-100'
+                          }`}>
+                            {event.type === 'badge' && <Award className="h-3 w-3 text-amber-600" />}
+                            {event.type === 'challenge' && <Target className="h-3 w-3 text-green-600" />}
+                            {event.type === 'improvement' && <TrendingUp className="h-3 w-3 text-blue-600" />}
+                            {event.type === 'streak' && <Flame className="h-3 w-3 text-orange-600" />}
+                            {event.type === 'level' && <Trophy className="h-3 w-3 text-purple-600" />}
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="bg-white p-4 rounded-lg border shadow-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                              <h4 className="font-medium">{event.title}</h4>
+                              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(event.date).toLocaleDateString()} • {new Date(event.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              </div>
+                            </div>
+                            
+                            <p className="text-sm text-muted-foreground mb-3">{event.description}</p>
+                            
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {event.points && event.points > 0 && (
+                                <Badge variant="secondary" className="bg-amber-50 text-amber-700 hover:bg-amber-100">
+                                  <Star className="h-3 w-3 mr-1 fill-amber-500 text-amber-500" />
+                                  {event.points} points
+                                </Badge>
+                              )}
+                              
+                              {event.badgeType && (
+                                <Badge variant="outline" className={`
+                                  ${event.badgeType === 'bronze' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                                    event.badgeType === 'silver' ? 'bg-gray-100 text-gray-700 border-gray-200' :
+                                    event.badgeType === 'gold' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                    event.badgeType === 'platinum' ? 'bg-cyan-50 text-cyan-700 border-cyan-200' :
+                                    event.badgeType === 'diamond' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    event.badgeType === 'master' ? 'bg-violet-50 text-violet-700 border-violet-200' :
+                                    'bg-rose-50 text-rose-700 border-rose-200'}
+                                `}>
+                                  {event.badgeType.charAt(0).toUpperCase() + event.badgeType.slice(1)}
+                                </Badge>
+                              )}
+                              
+                              {event.level && (
+                                <Badge variant="secondary" className="bg-purple-50 text-purple-700 hover:bg-purple-100">
+                                  <Trophy className="h-3 w-3 mr-1" />
+                                  Level {event.level}
+                                </Badge>
+                              )}
+                              
+                              {event.focusScore && (
+                                <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+                                  <Target className="h-3 w-3 mr-1" />
+                                  {event.focusScore}% Focus
+                                </Badge>
+                              )}
+                              
+                              {event.streak && (
+                                <Badge variant="secondary" className="bg-orange-50 text-orange-700 hover:bg-orange-100">
+                                  <Flame className="h-3 w-3 mr-1" />
+                                  {event.streak} day streak
+                                </Badge>
+                              )}
+                              
+                              <Badge variant="outline" className="bg-gray-50 border-gray-100">
+                                {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1344,6 +1680,101 @@ const Gamification = () => {
                   </p>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Timeline section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Activity Timeline</CardTitle>
+            <CardDescription>
+              Monitor your recent activities, achievements, and challenges
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {timeline.length === 0 && (
+                <div className="text-center py-12">
+                  <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-1">No recent activity</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your activity will appear here as you complete challenges and earn achievements.
+                  </p>
+                </div>
+              )}
+              
+              {timeline.map((event) => (
+                <div key={event.id} className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10">
+                    {renderIcon(event.icon)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">
+                      {event.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(event.date).toLocaleString()}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {event.description}
+                    </p>
+                    
+                    {/* Points, level, badge, focus score, improvement, streak details */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {event.points && (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-amber-500" />
+                          <span className="text-xs font-medium">{event.points} pts</span>
+                        </div>
+                      )}
+                      
+                      {event.level && (
+                        <div className="flex items-center gap-1">
+                          <Trophy className="h-4 w-4 text-emerald-500" />
+                          <span className="text-xs font-medium">Level {event.level}</span>
+                        </div>
+                      )}
+                      
+                      {event.badgeType && (
+                        <div className="flex items-center gap-1">
+                          <Award className="h-4 w-4 text-indigo-500" />
+                          <span className="text-xs font-medium">
+                            {event.badgeType.charAt(0).toUpperCase() + event.badgeType.slice(1)} Badge
+                          </span>
+                        </div>
+                      )}
+                      
+                      {event.focusScore !== undefined && (
+                        <div className="flex items-center gap-1">
+                          <Lightbulb className="h-4 w-4 text-yellow-500" />
+                          <span className="text-xs font-medium">
+                            Focus: {event.focusScore}%
+                          </span>
+                        </div>
+                      )}
+                      
+                      {event.improvement !== undefined && (
+                        <div className="flex items-center gap-1">
+                          <BadgeCheck className="h-4 w-4 text-green-500" />
+                          <span className="text-xs font-medium">
+                            Improvement: {event.improvement}%
+                          </span>
+                        </div>
+                      )}
+                      
+                      {event.streak !== undefined && (
+                        <div className="flex items-center gap-1">
+                          <Flame className="h-4 w-4 text-orange-500" />
+                          <span className="text-xs font-medium">
+                            Streak: {event.streak} days
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
