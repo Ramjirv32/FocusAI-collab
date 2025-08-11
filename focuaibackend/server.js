@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
-// Import models
+
 const User = require('./models/User');
 const AppUsage = require('./models/AppUsage');
 const TabUsage = require('./models/TabUsage');
@@ -15,10 +15,9 @@ const ProductivitySummary = require('./models/ProductivitySummary');
 const UserProfile = require('./models/UserProfile');
 const Gamification = require('./models/Gamification');
 
-// Import middleware
 const auth = require('./middleware/auth');
 
-// Import routes
+
 const profileRoutes = require('./routes/profileRoutes');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
@@ -30,20 +29,19 @@ const healthRoutes = require('./routes/healthRoutes');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Add this near the top with other global variables
+
 const activeUsers = new Map(); // userId -> {timestamp, email}
 
-// Connect to MongoDB
+
 mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://ramji:vikas2311@cluster0.ln4g5.mongodb.net/focuai?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// More detailed error handling
+
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
 });
 
-// Middleware setup
 app.use(cors({
   origin: ['http://localhost:8080', 'http://localhost:3000'],
   credentials: true,
@@ -53,25 +51,21 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Use routes
 app.use('/api', profileRoutes);
-app.use('/api/gamification', gamificationRoutes);
+app.use('/api/gamification', gamificationRoutes); // Make sure this is using gamificationRoutes.js, not gamificationRoutess.js
 app.use('/api', settingsRoutes);
-app.use('/api', newRoutes); // New organized routes
-app.use('/api/app-usage', appUsageRoutes); // App usage analytics routes
+app.use('/api', newRoutes);
+app.use('/api/app-usage', appUsageRoutes); 
 app.use('/api', statisticsRoutes);
 app.use('/api', healthRoutes);
 
-console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoutes, newRoutes, appUsageRoutes');
+console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoutes, newRoutes, appUsageRoutes, statisticsRoutes, healthRoutes');
 
-// Add a simple health check endpoint
+
 app.get('/', (req, res) => {
   res.status(200).json({ status: 'Server is running' });
 });
 
-// ========== AUTH ENDPOINTS ==========
-
-// Update the JWT token creation to include email
 const generateToken = (user) => {
   return jwt.sign(
     { 
@@ -83,22 +77,19 @@ const generateToken = (user) => {
   );
 };
 
-// Update register to use the new token generator
+
 app.post('/api/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
     
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists with this email' });
     }
     
-    // Create new user
     const user = new User({ email, password, name });
     await user.save();
     
-    // Generate JWT token with email included
     const token = generateToken(user);
     
     res.status(201).json({ 
@@ -115,11 +106,8 @@ app.post('/api/register', async (req, res) => {
 const ensureUserHasInitialData = async (userId, email) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
-    
-    // Check if user has any app usage data
     const appUsageCount = await AppUsage.countDocuments({ userId, email });
-    
-    // If no data exists, create some sample data
+   
     if (appUsageCount === 0) {
       console.log(`Creating initial app usage data for user ${email} (${userId})`);
       
@@ -141,12 +129,11 @@ const ensureUserHasInitialData = async (userId, email) => {
         }).save();
       }
     }
-    
-    // Create sample tab data if none exists
+  
     const tabCount = await TabUsage.countDocuments({ userId, email });
     if (tabCount === 0) {
       console.log(`Creating initial tab data for user ${email} (${userId})`);
-      
+
       const sampleTabs = [
         { url: 'https://github.com', title: 'GitHub', duration: 900 },
         { url: 'https://stackoverflow.com', title: 'Stack Overflow', duration: 600 },
@@ -176,28 +163,21 @@ app.get("/g", async (req, res) => {
   try {
     const { userId, email, date } = req.query;
     
-    // Build query filters
     let appFilter = {};
     let tabFilter = {};
-    
     if (userId) {
       appFilter.userId = userId;
       tabFilter.userId = userId;
     }
-    
     if (email) {
       appFilter.email = email;
       tabFilter.email = email;
     }
-    
     if (date) {
       appFilter.date = date;
       tabFilter.date = date;
     }
-    
     console.log(`📊 Fetching data with filters:`, { appFilter, tabFilter });
-    
-    // Fetch data with filters
     const appUsage = await AppUsage.find(appFilter);
     const tabUsage = await TabUsage.find(tabFilter);
     
@@ -214,27 +194,22 @@ app.get("/g", async (req, res) => {
   }
 });
 
-// Update the login endpoint to make sample data optional
+
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
     
-    // Verify password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
     
-    // Generate JWT token with email included
     const token = generateToken(user);
     
-    // Only create sample data if this is the user's first login and they have no data
     const shouldCreateSample = req.body.includeSampleData === true;
     const appCount = await AppUsage.countDocuments({ userId: user._id });
     const tabCount = await TabUsage.countDocuments({ userId: user._id });
@@ -254,17 +229,13 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Add a new endpoint to clear only sample data
 app.post('/api/clear-sample-data', auth, async (req, res) => {
   try {
     console.log(`Clearing sample data for user ${req.user.email}`);
     
-    // Find the current date at midnight
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Delete data created before actual tracking started
-    // This assumes sample data was created at account creation and real tracking started later
     const deletedAppUsage = await AppUsage.deleteMany({ 
       userId: req.user._id,
       email: req.user.email,
@@ -293,25 +264,19 @@ app.post('/api/clear-sample-data', auth, async (req, res) => {
   }
 });
 
-// Get current user
 app.get('/api/user', auth, async (req, res) => {
   res.json({ user: { id: req.user._id, email: req.user.email, name: req.user.name,token : req.token } });
 });
 
-// ========== TAB TRACKING FUNCTIONALITY ==========
 
-
-// Update the log-tab endpoint to work with or without auth
 app.post('/log-tab', async (req, res) => {
   try {
     const data = req.body;
     console.log('Received Tab Data:', data);
     
-    // Try to authenticate with token first
     let userId = null;
     let userEmail = null;
     
-    // Check for auth header
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
@@ -325,15 +290,12 @@ app.post('/log-tab', async (req, res) => {
       }
     }
     
-    // Fallback to data in request body if no valid token
     if (!userId && data.userId) {
       userId = data.userId;
       userEmail = data.email;
     }
     
-    // If still no user ID, use session data or a default user for demo purposes
     if (!userId || !userEmail) {
-      // This is just for demo - in production you'd want proper authentication
       const activeUser = await User.findOne();
       if (activeUser) {
         userId = activeUser._id;
@@ -344,14 +306,12 @@ app.post('/log-tab', async (req, res) => {
       }
     }
     
-    // Extract domain from URL
     let domain = 'unknown';
     try {
       if (data.url && data.url.startsWith('http')) {
         const urlObj = new URL(data.url);
         domain = urlObj.hostname.replace('www.', '');
       } else if (data.title) {
-        // Try to extract domain-like info from title
         const titleParts = data.title.split(' - ');
         if (titleParts.length > 1) {
           domain = titleParts[titleParts.length - 1].toLowerCase().trim();
@@ -366,7 +326,6 @@ app.post('/log-tab', async (req, res) => {
     
     console.log(`Extracted domain: ${domain} from ${data.url || data.title}`);
     
-    // Find existing tab usage or create new one (by URL and user)
     let tabUsage = await TabUsage.findOne({
       userId: userId,
       url: data.url
@@ -376,7 +335,6 @@ app.post('/log-tab', async (req, res) => {
     const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
     
     if (tabUsage) {
-      // Update existing tab
       tabUsage.duration += parseFloat(data.duration) || 0;
       tabUsage.title = data.title || tabUsage.title;
       tabUsage.domain = domain;
@@ -385,7 +343,6 @@ app.post('/log-tab', async (req, res) => {
       await tabUsage.save();
       console.log(`Updated tab record for ${domain}: total duration ${tabUsage.duration}s`);
     } else {
-      // Create new tab entry
       const newTab = new TabUsage({
         userId: userId,
         email: userEmail,
@@ -408,15 +365,12 @@ app.post('/log-tab', async (req, res) => {
   }
 });
 
-// Update the tabs endpoint to filter by email as well
 app.get('/tabs', auth, async (req, res) => {
   try {
     console.log(`User requesting tabs data: ${req.user.email}`);
     
-    // Get time frame from query params
     const timeFrame = req.query.timeFrame || 'daily';
     
-    // Calculate date range based on time frame
     const endDate = new Date();
     let startDate = new Date();
     
@@ -428,13 +382,10 @@ app.get('/tabs', auth, async (req, res) => {
       startDate.setMonth(startDate.getMonth() - 1);
     }
     
-    // Find tabs for this user within the date range
     const tabs = await TabUsage.find({
       email: req.user.email,
       $or: [
-        // Match by userId string comparison
         { userId: req.user._id.toString() },
-        // Match by userId ObjectId
         { userId: req.user._id }
       ],
       lastUpdated: { $gte: startDate, $lte: endDate }
@@ -448,7 +399,6 @@ app.get('/tabs', auth, async (req, res) => {
   }
 });
 
-// ========== APP TRACKING FUNCTIONALITY ==========
 const currentSessionData = [];
 let lastWindow = null;
 let startTime = Date.now();
@@ -467,13 +417,11 @@ async function getActiveWindowTitle() {
   }
 }
 
-// Update usage endpoint to filter by email
 app.get('/usage', auth, async (req, res) => {
   try {
     const { timeFrame } = req.query;
     const today = new Date().toISOString().slice(0, 10);
     
-    // Default to today's data
     let startDate = today;
     
     if (timeFrame === 'weekly') {
@@ -486,7 +434,6 @@ app.get('/usage', auth, async (req, res) => {
       startDate = monthAgo.toISOString().slice(0, 10);
     }
     
-    // Find app usage for the specified time range
     const appUsage = await AppUsage.find({
       userId: req.user._id,
       email: req.user.email,
@@ -495,7 +442,6 @@ app.get('/usage', auth, async (req, res) => {
     
     console.log(`Found ${appUsage.length} app usage records for user ${req.user.email}`);
     
-    // Group by date
     const groupedByDate = appUsage.reduce((acc, item) => {
       if (!acc[item.date]) {
         acc[item.date] = {};
@@ -512,18 +458,14 @@ app.get('/usage', auth, async (req, res) => {
 });
 
 app.get('/current-session', auth, (req, res) => {
-  // Filter session data for current user
-  // In a real implementation, you'd store user ID with each session entry
   res.json(currentSessionData);
 });
 
-// Add a public endpoint for AI server to fetch data without authentication
 app.get('/public/focus-data', async (req, res) => {
   try {
     console.log('AI server requesting public focus data');
     const today = new Date().toISOString().slice(0, 10);
     
-    // Get the most recent user (or you can specify a specific user ID)
     const recentUser = await User.findOne().sort({ createdAt: -1 });
     if (!recentUser) {
       return res.status(404).json({ error: 'No users found' });
@@ -531,7 +473,6 @@ app.get('/public/focus-data', async (req, res) => {
     
     console.log(`Fetching data for user: ${recentUser.email} (${recentUser._id})`);
     
-    // Get today's tabs with error handling
     let tabs = [];
     try {
       tabs = await TabUsage.find({
@@ -547,7 +488,6 @@ app.get('/public/focus-data', async (req, res) => {
       console.error('Error fetching tabs:', tabError);
     }
     
-    // Get today's app usage with error handling
     let appUsageFormatted = {};
     try {
       const appUsage = await AppUsage.find({
@@ -558,7 +498,6 @@ app.get('/public/focus-data', async (req, res) => {
       
       console.log(`Found ${appUsage.length} app usage records for today for user ${recentUser.email}`);
       
-      // Transform app usage to the expected format
       appUsageFormatted = appUsage.reduce((acc, item) => {
         acc[item.appName] = item.duration;
         return acc;
@@ -567,7 +506,6 @@ app.get('/public/focus-data', async (req, res) => {
       console.error('Error fetching app usage:', appError);
     }
     
-    // Return the data even if one part failed
     res.json({
       userId: recentUser._id.toString(),
       email: recentUser.email,
@@ -584,13 +522,11 @@ app.get('/public/focus-data', async (req, res) => {
   }
 });
 
-// Update the focus-data endpoint to filter by email
 app.get('/focus-data', auth, async (req, res) => {
   try {
     console.log('User requesting focus data:', req.user.email);
     const today = new Date().toISOString().slice(0, 10);
     
-    // Get today's tabs with error handling
     let tabs = [];
     try {
       tabs = await TabUsage.find({
@@ -606,7 +542,6 @@ app.get('/focus-data', auth, async (req, res) => {
       console.error('Error fetching tabs:', tabError);
     }
     
-    // Get today's app usage with error handling
     let appUsageFormatted = {};
     try {
       const appUsage = await AppUsage.find({
@@ -617,7 +552,6 @@ app.get('/focus-data', auth, async (req, res) => {
       
       console.log(`Found ${appUsage.length} app usage records for today for user ${req.user.email}`);
       
-      // Transform app usage to the expected format
       appUsageFormatted = appUsage.reduce((acc, item) => {
         acc[item.appName] = item.duration;
         return acc;
@@ -626,7 +560,6 @@ app.get('/focus-data', auth, async (req, res) => {
       console.error('Error fetching app usage:', appError);
     }
     
-    // Return the data even if one part failed
     res.json({
       tabs: tabs || [],
       appUsage: appUsageFormatted || {},
@@ -641,37 +574,51 @@ app.get('/focus-data', auth, async (req, res) => {
   }
 });
 
-// Update the raw-usage endpoint to filter by email
 app.get('/raw-usage', auth, async (req, res) => {
   try {
     console.log('User requesting raw usage data:', req.user.email);
-    const today = new Date().toISOString().slice(0, 10);
+    const { timeFrame } = req.query;
     
-    // Get today's app usage
+    // Calculate the correct date range based on timeFrame
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setHours(23, 59, 59, 999);
+    
+    let startDate = new Date(today);
+    startDate.setHours(0, 0, 0, 0);
+    
+    if (timeFrame === 'weekly') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (timeFrame === 'monthly') {
+      startDate.setMonth(startDate.getMonth() - 1);
+    }
+    
+    const startDateStr = startDate.toISOString().slice(0, 10);
+    const endDateStr = endDate.toISOString().slice(0, 10);
+    
+    console.log(`Fetching raw usage data from ${startDateStr} to ${endDateStr} (${timeFrame} view)`);
+    
     const appUsage = await AppUsage.find({
       userId: req.user._id,
       email: req.user.email,
-      date: today
+      date: { $gte: startDateStr, $lte: endDateStr }
     });
     
     console.log(`Found ${appUsage.length} app usage records for user ${req.user.email}`);
     
-    // Format app usage
     const appUsageFormatted = appUsage.reduce((acc, item) => {
-      acc[item.appName] = item.duration;
+      acc[item.appName] = (acc[item.appName] || 0) + item.duration;
       return acc;
     }, {});
     
-    // Get tab usage data
     const tabs = await TabUsage.find({
       userId: req.user._id,
       email: req.user.email,
-      timestamp: { $gte: new Date(today) }
+      date: { $gte: startDateStr, $lte: endDateStr }
     });
     
     console.log(`Found ${tabs.length} tab records for user ${req.user.email}`);
     
-    // Group tab usage by domain
     const tabUsage = tabs.reduce((acc, tab) => {
       const domain = tab.domain || 'unknown';
       acc[domain] = (acc[domain] || 0) + tab.duration;
@@ -681,7 +628,12 @@ app.get('/raw-usage', auth, async (req, res) => {
     res.json({
       appUsage: appUsageFormatted,
       tabUsage: tabUsage,
-      userEmail: req.user.email // Include the user email for the frontend
+      userEmail: req.user.email,
+      timeFrame: timeFrame || 'daily',
+      dateRange: {
+        start: startDateStr,
+        end: endDateStr
+      }
     });
   } catch (error) {
     console.error('Error fetching raw usage data:', error);
@@ -689,25 +641,20 @@ app.get('/raw-usage', auth, async (req, res) => {
   }
 });
 
-// Update the reset-data endpoint to filter by email
 app.post('/reset-data', auth, async (req, res) => {
   try {
     console.log(`Resetting data for user ${req.user.email} (${req.user._id})`);
     
-    // Remove app usage for the user
     const deletedAppUsage = await AppUsage.deleteMany({ 
       userId: req.user._id,
       email: req.user.email
     });
     
-    // Remove tab usage for the user
     const deletedTabUsage = await TabUsage.deleteMany({ 
       userId: req.user._id,
       email: req.user.email 
     });
     
-    // Clear current session data for this user
-    // In a real app, you'd maintain session data in the database
     const beforeLength = currentSessionData.length;
     const newSessionData = currentSessionData.filter(
       session => session.userId !== req.user._id.toString()
@@ -735,7 +682,6 @@ app.post('/reset-data', auth, async (req, res) => {
   }
 });
 
-// Add this new endpoint for user heartbeats
 app.post('/api/heartbeat', auth, (req, res) => {
   activeUsers.set(req.user._id.toString(), {
     timestamp: Date.now(),
@@ -744,7 +690,6 @@ app.post('/api/heartbeat', auth, (req, res) => {
   res.status(200).json({ success: true });
 });
 
-// Add an endpoint specifically for logged-in user data
 app.get('/api/user-data', auth, async (req, res) => {
   try {
     const { date, timeFrame } = req.query;
@@ -752,7 +697,6 @@ app.get('/api/user-data', auth, async (req, res) => {
     
     console.log(`📊 Fetching user data for ${req.user.email} (${req.user._id}) on ${currentDate}`);
     
-    // Build date filter based on timeFrame
     let dateFilter = { date: currentDate };
     
     if (timeFrame === 'weekly') {
@@ -765,14 +709,12 @@ app.get('/api/user-data', auth, async (req, res) => {
       dateFilter = { date: { $gte: monthAgo.toISOString().slice(0, 10) } };
     }
     
-    // Fetch app usage for the authenticated user
     const appUsage = await AppUsage.find({
       userId: req.user._id,
       email: req.user.email,
       ...dateFilter
     });
     
-    // Fetch tab usage for the authenticated user
     const tabUsage = await TabUsage.find({
       userId: req.user._id,
       email: req.user.email,
@@ -796,9 +738,7 @@ app.get('/api/user-data', auth, async (req, res) => {
   }
 });
 
-// ========== LEADERBOARD AND STATISTICS ENDPOINTS ==========
 
-// Get leaderboard data - top users by productivity
 app.get('/api/leaderboard', auth, async (req, res) => {
   try {
     const { timeFrame = 'weekly', limit = 10 } = req.query;
@@ -853,7 +793,6 @@ app.get('/api/leaderboard', auth, async (req, res) => {
       }
     ]);
     
-    // Get user details including profiles
     const userIds = leaderboardData.map(item => item._id);
     const users = await User.find({ _id: { $in: userIds } }).select('_id name email');
     const userProfiles = await UserProfile.find({ userId: { $in: userIds } }).select('userId displayName profilePhoto');
@@ -868,7 +807,6 @@ app.get('/api/leaderboard', auth, async (req, res) => {
       });
     });
     
-    // Format the leaderboard with user names and profile photos
     const formattedLeaderboard = leaderboardData.map((item, index) => {
       const profile = profileMap.get(item._id.toString());
       return {
@@ -899,14 +837,12 @@ app.get('/api/leaderboard', auth, async (req, res) => {
   }
 });
 
-// Get user statistics and achievements
 app.get('/api/user-stats', auth, async (req, res) => {
   try {
     const { timeFrame = 'monthly' } = req.query;
     const userId = req.user._id;
     const userEmail = req.user.email;
     
-    // Calculate date range
     const endDate = new Date();
     let startDate = new Date();
     
@@ -923,14 +859,12 @@ app.get('/api/user-stats', auth, async (req, res) => {
     
     console.log(`📊 Fetching user stats for ${userEmail} (${startDateStr} to ${endDateStr})`);
     
-    // Get user's productivity summaries
     const userSummaries = await ProductivitySummary.find({
       userId,
       email: userEmail,
       date: { $gte: startDateStr, $lte: endDateStr }
     }).sort({ date: -1 });
     
-    // Calculate aggregated stats
     const stats = {
       totalDays: userSummaries.length,
       totalProductiveTime: userSummaries.reduce((sum, s) => sum + (s.totalProductiveTime || 0), 0),
