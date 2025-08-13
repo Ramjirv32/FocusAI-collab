@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
@@ -18,25 +18,32 @@ import {
   Circle, 
   AlertCircle,
   Filter,
-  ListTodo
+  ListTodo,
+  Clock,
+  AlertTriangle,
+  List,
+  CalendarDays
 } from 'lucide-react';
 import { todoService, Todo, CreateTodoData, TodoStats } from '@/services/todoService';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
+import TodoCalendar from '@/components/Todo/TodoCalendar';
 
 const TodoList = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [stats, setStats] = useState<TodoStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'completed' | 'pending'>('all');
+  const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'overdue'>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'list' | 'calendar'>('list');
 
   // Form state
   const [newTodo, setNewTodo] = useState<CreateTodoData>({
     title: '',
     description: '',
     priority: 'medium',
-    category: 'general'
+    category: 'general',
+    dueDate: ''
   });
 
   // Load todos and stats
@@ -44,9 +51,14 @@ const TodoList = () => {
     try {
       setLoading(true);
       const filterParams: any = {};
-      if (filter !== 'all') {
-        filterParams.completed = filter === 'completed';
+      if (filter === 'completed') {
+        filterParams.completed = true;
+      } else if (filter === 'pending') {
+        filterParams.completed = false;
+      } else if (filter === 'overdue') {
+        filterParams.overdue = true;
       }
+      
       if (priorityFilter !== 'all') {
         filterParams.priority = priorityFilter;
       }
@@ -86,13 +98,19 @@ const TodoList = () => {
     }
 
     try {
-      await todoService.createTodo(newTodo);
+      const todoData = {
+        ...newTodo,
+        dueDate: newTodo.dueDate || undefined
+      };
+      
+      await todoService.createTodo(todoData);
       setIsCreateDialogOpen(false);
       setNewTodo({
         title: '',
         description: '',
         priority: 'medium',
-        category: 'general'
+        category: 'general',
+        dueDate: ''
       });
       loadTodos();
       toast({
@@ -164,6 +182,26 @@ const TodoList = () => {
     switch (priority) {
       case 'high': return <AlertCircle className="h-4 w-4" />;
       default: return null;
+    }
+  };
+
+  const isOverdue = (todo: Todo) => {
+    if (!todo.dueDate || todo.completed) return false;
+    return new Date(todo.dueDate) < new Date();
+  };
+
+  const formatDueDate = (dueDate: string) => {
+    const date = new Date(dueDate);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    } else {
+      return date.toLocaleDateString();
     }
   };
 
@@ -240,6 +278,15 @@ const TodoList = () => {
                     />
                   </div>
                 </div>
+                <div>
+                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Input
+                    id="dueDate"
+                    type="datetime-local"
+                    value={newTodo.dueDate}
+                    onChange={(e) => setNewTodo({ ...newTodo, dueDate: e.target.value })}
+                  />
+                </div>
                 <div className="flex gap-2">
                   <Button onClick={handleCreateTodo} className="flex-1">
                     Create Todo
@@ -258,10 +305,10 @@ const TodoList = () => {
 
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+                <CardTitle className="text-sm font-medium">Total</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.total}</div>
@@ -291,106 +338,158 @@ const TodoList = () => {
                 <div className="text-2xl font-bold text-red-600">{stats.highPriority}</div>
               </CardContent>
             </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Due Today</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{stats.dueToday}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Overdue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-700">{stats.overdue}</div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
-        {/* Filters */}
-        <div className="flex gap-4">
-          <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
-            <SelectTrigger className="w-32">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* View Tabs */}
+        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+          <TabsList className="grid w-full max-w-sm grid-cols-2">
+            <TabsTrigger value="list" className="flex items-center gap-2">
+              <List className="h-4 w-4" />
+              List View
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Calendar View
+            </TabsTrigger>
+          </TabsList>
 
-          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Priority</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <TabsContent value="list" className="space-y-4">
+            {/* Filters */}
+            <div className="flex gap-4">
+              <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
+                <SelectTrigger className="w-40">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                </SelectContent>
+              </Select>
 
-        {/* Todo List */}
-        <div className="space-y-3">
-          {loading ? (
-            <div className="text-center py-8">Loading todos...</div>
-          ) : todos.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8">
-                <ListTodo className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">No todos found</h3>
-                <p className="text-muted-foreground">Create your first todo to get started</p>
-              </CardContent>
-            </Card>
-          ) : (
-            todos.map((todo) => (
-              <Card key={todo._id} className={`${todo.completed ? 'opacity-60' : ''}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <button
-                      onClick={() => toggleTodoCompletion(todo)}
-                      className="mt-1"
-                    >
-                      {todo.completed ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />
-                      )}
-                    </button>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priority</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className={`font-medium ${todo.completed ? 'line-through' : ''}`}>
-                          {todo.title}
-                        </h3>
-                        <Badge variant={getPriorityColor(todo.priority)} className="text-xs">
-                          {getPriorityIcon(todo.priority)}
-                          {todo.priority}
-                        </Badge>
-                        {todo.category !== 'general' && (
-                          <Badge variant="outline" className="text-xs">
-                            {todo.category}
-                          </Badge>
-                        )}
+            {/* Todo List */}
+            <div className="space-y-3">
+              {loading ? (
+                <div className="text-center py-8">Loading todos...</div>
+              ) : todos.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <ListTodo className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium">No todos found</h3>
+                    <p className="text-muted-foreground">Create your first todo to get started</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                todos.map((todo) => (
+                  <Card key={todo._id} className={`${todo.completed ? 'opacity-60' : ''} ${isOverdue(todo) ? 'border-red-200 bg-red-50/50' : ''}`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <button
+                          onClick={() => toggleTodoCompletion(todo)}
+                          className="mt-1"
+                        >
+                          {todo.completed ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          ) : (
+                            <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                          )}
+                        </button>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 className={`font-medium ${todo.completed ? 'line-through' : ''}`}>
+                              {todo.title}
+                            </h3>
+                            <Badge variant={getPriorityColor(todo.priority)} className="text-xs">
+                              {getPriorityIcon(todo.priority)}
+                              {todo.priority}
+                            </Badge>
+                            {todo.category !== 'general' && (
+                              <Badge variant="outline" className="text-xs">
+                                {todo.category}
+                              </Badge>
+                            )}
+                            {isOverdue(todo) && (
+                              <Badge variant="destructive" className="text-xs">
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                Overdue
+                              </Badge>
+                            )}
+                          </div>
+                          {todo.description && (
+                            <p className={`text-sm text-muted-foreground ${todo.completed ? 'line-through' : ''}`}>
+                              {todo.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                            <span>Created {new Date(todo.createdAt).toLocaleDateString()}</span>
+                            {todo.dueDate && (
+                              <span className={`flex items-center gap-1 ${isOverdue(todo) ? 'text-red-600 font-medium' : ''}`}>
+                                <Clock className="h-3 w-3" />
+                                Due {formatDueDate(todo.dueDate)}
+                              </span>
+                            )}
+                            {todo.completedAt && (
+                              <span>Completed {new Date(todo.completedAt).toLocaleDateString()}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteTodo(todo._id)}
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      {todo.description && (
-                        <p className={`text-sm text-muted-foreground ${todo.completed ? 'line-through' : ''}`}>
-                          {todo.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                        <span>Created {new Date(todo.createdAt).toLocaleDateString()}</span>
-                        {todo.completedAt && (
-                          <span>Completed {new Date(todo.completedAt).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
 
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteTodo(todo._id)}
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+          <TabsContent value="calendar">
+            <TodoCalendar onTodoSelect={(todo) => {
+              // Handle todo selection from calendar if needed
+              console.log('Selected todo from calendar:', todo);
+            }} />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
