@@ -19,7 +19,8 @@ import {
   MessageSquare,
   Wrench,
   Chrome,
-  LifeBuoy
+  LifeBuoy,
+  ListTodo
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -48,6 +49,12 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       description: 'Usage Statistics'
     },
     {
+      title: 'Todo List',
+      icon: ListTodo,
+      path: '/todo-list',
+      description: 'Manage Tasks & Goals'
+    },
+    {
       title: 'Gamification',
       icon: Trophy,
       path: '/gamification',
@@ -65,18 +72,18 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       path: '/notifications',
       description: 'Alerts & Updates'
     },
-    // {
-    //   title: 'Extension',
-    //   icon: Chrome,
-    //   path: '/extension',
-    //   description: 'Chrome Extension Status'
-    // },
-    // {
-    //   title: 'Diagnostics',
-    //   icon: Wrench,
-    //   path: '/diagnostics',
-    //   description: 'System Diagnostics'
-    // },
+    {
+      title: 'Extension',
+      icon: Chrome,
+      path: '/extension',
+      description: 'Chrome Extension Status'
+    },
+    {
+      title: 'Diagnostics',
+      icon: Wrench,
+      path: '/diagnostics',
+      description: 'System Diagnostics'
+    },
     {
       title: 'Help & Support',
       icon: HelpCircle,
@@ -123,21 +130,19 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
     <button
       onClick={() => item.isLogout ? handleLogout() : handleMenuClick(item.path)}
       className={cn(
-        "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group text-left",
-        collapsed && "justify-center py-3", // Center icon when collapsed with slightly less padding
+        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group text-left",
         isActive 
           ? "bg-primary text-primary-foreground shadow-sm" 
           : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
       )}
     >
       <item.icon className={cn(
-        "flex-shrink-0",
-        collapsed ? "h-7 w-7" : "h-6 w-6", // Keep icon sizes large
+        "h-5 w-5 flex-shrink-0",
         isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
       )} />
       {!collapsed && (
         <div className="flex flex-col min-w-0 flex-1">
-          <span className="text-base font-medium truncate">{item.title}</span>
+          <span className="text-sm font-medium truncate">{item.title}</span>
           {!isActive && !isMobile && (
             <span className="text-xs opacity-60 truncate">{item.description}</span>
           )}
@@ -162,19 +167,12 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
         <div className="flex items-center justify-between p-4 border-b min-h-[73px]">
           {!collapsed && (
             <div className="flex items-center gap-2 min-w-0">
-              <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-                <Activity className="h-6 w-6 text-primary-foreground" />
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                <Activity className="h-5 w-5 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <h2 className="font-semibold text-base truncate">FocusAI</h2>
+                <h2 className="font-semibold text-sm truncate">FocusAI</h2>
                 <p className="text-xs text-muted-foreground truncate">Productivity Hub</p>
-              </div>
-            </div>
-          )}
-          {collapsed && (
-            <div className="mx-auto">
-              <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
-                <Activity className="h-6 w-6 text-primary-foreground" />
               </div>
             </div>
           )}
@@ -182,10 +180,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
             variant="ghost"
             size="sm"
             onClick={onToggle}
-            className={cn(
-              "h-8 w-8 p-0 flex-shrink-0",
-              collapsed && "absolute right-2 top-4" // Position the toggle button when collapsed
-            )}
+            className="h-8 w-8 p-0 flex-shrink-0"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -195,14 +190,14 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
         {!collapsed && user && (
           <div className="p-4 border-b">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <User className="h-6 w-6 text-primary" />
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <User className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-base font-medium truncate">
+                <p className="text-sm font-medium truncate">
                   {user.name || user.email}
                 </p>
-                <p className="text-sm text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground truncate">
                   {user.email}
                 </p>
                 <p className="text-xs text-green-600 mt-1">
@@ -212,17 +207,10 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
             </div>
           </div>
         )}
-        {collapsed && user && (
-          <div className="py-4 border-b flex justify-center">
-            <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="h-6 w-6 text-primary" />
-            </div>
-          </div>
-        )}
 
         {/* Main Navigation */}
-        <nav className="flex-1 p-4 space-y-2.5 overflow-y-auto"> {/* Reduced from space-y-4 to space-y-2.5 */}
-          <div className="space-y-1.5"> {/* Reduced from space-y-3 to space-y-1.5 */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <div className="space-y-1">
             {menuItems.map((item) => (
               <MenuItem
                 key={item.path}
@@ -234,7 +222,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
         </nav>
 
         {/* Bottom Navigation */}
-        <div className="p-4 border-t space-y-1.5 flex-shrink-0"> {/* Reduced from space-y-3 to space-y-1.5 */}
+        <div className="p-4 border-t space-y-1 flex-shrink-0">
           {bottomMenuItems.map((item) => (
             <MenuItem
               key={item.path}
