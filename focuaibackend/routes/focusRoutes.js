@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 
 // Import Focus Results model (we'll create this next)
 const FocusResult = require('../models/FocusResult');
+const ProductivitySummary = require('../models/ProductivitySummary');
 
 // Store focus analysis results
 router.post('/focus-results', auth, async (req, res) => {
@@ -109,6 +110,40 @@ router.get('/focus-results', auth, async (req, res) => {
       message: 'Error getting focus results', 
       error: error.message 
     });
+  }
+});
+
+// Get focus summary
+router.get('/summary', auth, async (req, res) => {
+  try {
+    // Find the latest productivity summary
+    const summary = await ProductivitySummary.findOne({
+      userId: req.user._id,
+      email: req.user.email
+    }).sort({ date: -1 });
+    
+    if (!summary) {
+      return res.json({
+        focusScore: 0,
+        productiveTime: 0,
+        distractions: []
+      });
+    }
+    
+    // Format distractions
+    const distractions = Object.entries(summary.distractionContent || {})
+      .map(([name, duration]) => ({ name, duration }))
+      .sort((a, b) => b.duration - a.duration)
+      .slice(0, 5);
+    
+    res.json({
+      focusScore: summary.focusScore || 0,
+      productiveTime: summary.totalProductiveTime || 0,
+      distractions: distractions
+    });
+  } catch (error) {
+    console.error('Error fetching focus summary:', error);
+    res.status(500).json({ error: 'Failed to fetch focus summary' });
   }
 });
 
