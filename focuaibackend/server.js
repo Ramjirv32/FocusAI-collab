@@ -15,6 +15,8 @@ const ProductivitySummary = require('./models/ProductivitySummary');
 const UserProfile = require('./models/UserProfile');
 const Gamification = require('./models/Gamification');
 const ChatHistory = require('./models/ChatHistory');
+const Alert = require('./models/Alert');
+
 
 const auth = require('./middleware/auth');
 
@@ -1098,6 +1100,8 @@ async function getUserRankInLeaderboard(userId, timeFrame = 'weekly') {
   }
 }
 
+// ========== ALERT ENDPOINTS ==========
+
 // ========== PRODUCTIVITY SUMMARY ENDPOINTS ==========
 
 // Helper function to classify apps as productive or non-productive
@@ -1209,6 +1213,9 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to update productivity summary', details: error.message });
   }
 });
+
+
+
 
 // Get productivity summary for a user
 app.get('/api/productivity-summary', auth, async (req, res) => {
@@ -1495,6 +1502,125 @@ async function updateProductivitySummaryForUser(userId, email, date) {
     console.error('Error updating productivity summary:', error);
   }
 }
+
+
+// POST /api/alerts/check - Main alert checking route
+app.post('/api/alerts/check', auth, async (req, res) => {
+  try {
+    const { focusScore } = req.body;
+    const userId = req.user._id || req.user.id; // Handle both possible formats
+    const date = new Date().toISOString().slice(0, 10);
+    
+    console.log(`🔍 Checking alerts for user ${userId} with focus score ${focusScore} on ${date}`);
+
+    // Validate input
+    if (typeof focusScore !== 'number' || focusScore < 0 || focusScore > 100) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid focus score provided'
+      });
+    }
+
+    // Find existing alert document for today
+    let alertDoc = await Alert.findOne({ 
+      userId: new mongoose.Types.ObjectId(userId), 
+      date 
+    });
+
+    // Create new alert document if none exists for today
+    if (!alertDoc) {
+      console.log('📝 Creating new alert document');
+      alertDoc = new Alert({
+        userId: new mongoose.Types.ObjectId(userId),
+        date,
+        is50: false,
+        is20: false,
+        focusScore: focusScore,
+        lastTriggered: new Date()
+      });
+    } else {
+      // Update focus score
+      alertDoc.focusScore = focusScore;
+      alertDoc.lastTriggered = new Date();
+    }
+
+    let alertMessage = '';
+    let showAlert = false;
+    let alertType = '';
+    let suggestions = [];
+
+    // Check for 20% threshold (critical alert)
+    if (focusScore <= 20 && !alertDoc.is20) {
+      console.log('🚨 Triggering critical alert (20%)');
+      alertDoc.is20 = true;
+      showAlert = true;
+      alertType = 'is20';
+      alertMessage = `🚨 CRITICAL: Your focus score is ${focusScore}%. Immediate action required to improve productivity!`;
+      suggestions = [
+        'Close all distracting applications immediately',
+        'Take a 5-minute break to reset your mind',
+        'Turn on focus mode or do not disturb',
+        'Review your goals for the day',
+        'Move to a quieter workspace if possible'
+      ];
+    }
+    // Check for 50% threshold (warning alert)
+    else if (focusScore <= 50 && !alertDoc.is50) {
+      console.log('⚠️ Triggering warning alert (50%)');
+      alertDoc.is50 = true;
+      showAlert = true;
+      alertType = 'is50';
+      alertMessage = `⚠️ WARNING: Your focus score is ${focusScore}%. Consider taking steps to improve your concentration.`;
+      suggestions = [
+        'Try the Pomodoro technique (25 min work, 5 min break)',
+        'Close unnecessary browser tabs',
+        'Put your phone in another room',
+        'Listen to focus music or white noise',
+        'Take a short walk to clear your mind'
+      ];
+    }
+    // No alert needed or already shown today
+    else if (focusScore > 50) {
+      console.log('✅ No alert needed - focus score is good');
+    } else {
+      console.log('ℹ️ Alert already shown today for this threshold');
+    }
+
+    // Save the alert document
+    try {
+      await alertDoc.save();
+      console.log('💾 Alert document saved successfully');
+    } catch (saveError) {
+      console.error('❌ Error saving alert document:', saveError);
+      // Continue execution even if save fails
+    }
+
+    // Return response
+    const response = {
+      success: true,
+      showAlert,
+      alert: alertMessage,
+      alertType,
+      suggestions,
+      focusScore: focusScore,
+      is20: alertDoc.is20,
+      is50: alertDoc.is50,
+      lastTriggered: alertDoc.lastTriggered,
+      userId: userId
+    };
+
+    console.log('📤 Sending response:', response);
+    res.json(response);
+
+  } catch (error) {
+    console.error('❌ Error in alert check:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to check alerts',
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+});
 
 try {
   app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)); // Changed from 5001 to PORT
