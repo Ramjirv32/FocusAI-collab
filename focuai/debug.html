@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FocusAI Extension Debug</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .card {
+      background-color: #f9f9f9;
+      border-left: 4px solid #4285f4;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    pre {
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 300px;
+    }
+    .success { color: green; }
+    .error { color: red; }
+    .warning { color: orange; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>FocusAI Extension Debugger</h1>
+    
+    <div class="card">
+      <h2>Extension Status</h2>
+      <div id="status">Checking status...</div>
+      <button id="refreshStatus">Refresh Status</button>
+    </div>
+    
+    <div class="card">
+      <h2>Credentials</h2>
+      <div id="credentials">Loading...</div>
+      <button id="checkCredentials">Check Credentials</button>
+    </div>
+    
+    <div class="card">
+      <h2>Active Tab</h2>
+      <div id="activeTab">Loading...</div>
+      <button id="checkActiveTab">Check Active Tab</button>
+    </div>
+    
+    <div class="card">
+      <h2>Manual Test</h2>
+      <button id="testTabLogging">Send Test Tab Data</button>
+      <button id="clearStoredData">Clear Stored Timings</button>
+    </div>
+    
+    <div class="card">
+      <h2>Debug Log</h2>
+      <pre id="debugLog">No log entries yet</pre>
+      <button id="clearLog">Clear Log</button>
+    </div>
+  </div>
+
+  <script src="debug.js"></script>
+</body>
+</html>
