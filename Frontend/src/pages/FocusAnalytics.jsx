@@ -17,6 +17,9 @@ import DashboardLayout from '../components/Layout/DashboardLayout';
 import AIRecommendations from '../components/FocusAnalysis/AIRecommendations';
 import FocusDistractionsChart from '../components/FocusAnalysis/FocusDistractionsChart';
 
+// Define API base URL
+const API_BASE_URL = 'http://localhost:5001';
+
 const FocusAnalytics = () => {
   const { user } = useAuth();
   const [productivityData, setProductivityData] = useState(null);
@@ -43,15 +46,41 @@ const FocusAnalytics = () => {
     try {
       console.log(`🔄 Loading analytics for ${user.email} on ${selectedDate}`);
       
-      // Fetch productivity summary
+      // Fetch productivity summary from correct port (5001)
       const productivityResponse = await fetch(
-        `http://localhost:8000/user/${user.id}/productivity-summary?date=${selectedDate}&email=${user.email}`
-      );
+        `${API_BASE_URL}/api/productivity-summary?date=${selectedDate}`
+      , {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       
       if (productivityResponse.ok) {
         const productivityResult = await productivityResponse.json();
-        setProductivityData(productivityResult);
-        console.log('✅ Productivity data loaded:', productivityResult);
+        
+        // Extract the first summary if we got an array of summaries
+        const summary = productivityResult.summaries && productivityResult.summaries.length > 0 
+          ? productivityResult.summaries[0] 
+          : productivityResult;
+          
+        // Process the data to ensure it has the right format
+        const processedData = {
+          focus_score: summary.focusScore || 0,
+          total_productive_time: summary.totalProductiveTime || 0,
+          total_non_productive_time: summary.totalNonProductiveTime || 0,
+          overall_total_usage: summary.overallTotalUsage || 0,
+          max_productive_app: summary.maxProductiveApp || 'None',
+          most_used_app: summary.mostUsedApp || 'None',
+          most_visited_tab: summary.mostVisitedTab || 'None',
+          total_activities: Object.keys(summary.productiveContent || {}).length + 
+                           Object.keys(summary.nonProductiveContent || {}).length,
+          // Convert Maps to objects if needed
+          productive_content: summary.productiveContent || {},
+          non_productive_content: summary.nonProductiveContent || {}
+        };
+        
+        setProductivityData(processedData);
+        console.log('✅ Productivity data loaded:', processedData);
       } else {
         console.warn('⚠️ Failed to load productivity data');
         setError('Failed to load productivity data');
@@ -294,6 +323,11 @@ const FocusAnalytics = () => {
                       <Tooltip formatter={(value) => formatTime(value)} />
                     </PieChart>
                   </ResponsiveContainer>
+                  {/* Debug information */}
+                  <div className="mt-4 text-xs text-muted-foreground">
+                    <div>Productive time: {formatTime(productivityData?.total_productive_time || 0)}</div>
+                    <div>Non-productive time: {formatTime(productivityData?.total_non_productive_time || 0)}</div>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -322,7 +356,7 @@ const FocusAnalytics = () => {
                       />
                       <Bar 
                         dataKey="duration" 
-                        fill={(entry) => entry.isProductive ? COLORS.productive : COLORS.nonProductive}
+                        name="Duration"
                       >
                         {chartData.apps.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.isProductive ? COLORS.productive : COLORS.nonProductive} />
