@@ -14,10 +14,12 @@ const TabUsage = require('./models/TabUsage');
 const ProductivitySummary = require('./models/ProductivitySummary');
 const UserProfile = require('./models/UserProfile');
 const Gamification = require('./models/Gamification');
+const ChatHistory = require('./models/ChatHistory');
 
 const auth = require('./middleware/auth');
 
-
+// Make sure this line is already in the imports
+// const chatRoutes = require('./routes/chatRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
@@ -26,6 +28,7 @@ const appUsageRoutes = require('./routes/appUsageRoutes');
 const statisticsRoutes = require('./routes/statisticsRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const focusRoutes = require('./routes/focusRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -49,9 +52,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use('/api/chat', chatRoutes);
 app.use('/api', profileRoutes);
 app.use('/api/gamification', gamificationRoutes); // Make sure this is using gamificationRoutes.js, not gamificationRoutess.js
 app.use('/api', settingsRoutes);
@@ -60,6 +64,8 @@ app.use('/api/app-usage', appUsageRoutes);
 app.use('/api', statisticsRoutes);
 app.use('/api', healthRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/focus', focusRoutes);
+
 
 console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoutes, newRoutes, appUsageRoutes, statisticsRoutes, healthRoutes');
 
@@ -76,6 +82,7 @@ app.get('/ch', auth, async (req, res) => {
     }
 });
 
+
 const generateToken = (user) => {
   return jwt.sign(
     { 
@@ -86,6 +93,7 @@ const generateToken = (user) => {
     { expiresIn: '7d' }
   );
 };
+
 
 
 app.post('/api/register', async (req, res) => {
@@ -111,6 +119,7 @@ app.post('/api/register', async (req, res) => {
     res.status(500).json({ error: 'Server error during registration' });
   }
 });
+
 
 
 const ensureUserHasInitialData = async (userId, email) => {
@@ -140,6 +149,7 @@ const ensureUserHasInitialData = async (userId, email) => {
       }
     }
   
+    
     const tabCount = await TabUsage.countDocuments({ userId, email });
     if (tabCount === 0) {
       console.log(`Creating initial tab data for user ${email} (${userId})`);

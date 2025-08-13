@@ -1,119 +1,210 @@
-const API_BASE_URL = 'http://localhost:5001';
+import axios from 'axios';
+
+// Define types for better type safety
+interface ProductivityData {
+  focusScore: number;
+  productiveTime: number;
+  distractions: Array<{name: string, duration: number}>;
+  topApps: Array<{name: string, duration: number}>;
+  streak: number;
+  totalAppUsage: number;
+}
+
+interface ChatResponse {
+  success: boolean;
+  response: string;
+  historyId?: string;
+  hasProductivityData: boolean;
+  focusScore?: number;
+  productiveHours?: number;
+  uniqueApps?: number;
+  streak?: number;
+  error?: string;
+}
+
+// Use a hardcoded API_URL to avoid process.env issues
+const API_URL = 'http://localhost:5001/api';
 
 export const chatService = {
-  async sendMessage(message: string) {
+  // Send a message to the AI assistant
+  async sendMessage(message: string, historyId?: string, userData?: ProductivityData | null): Promise<ChatResponse> {
     try {
-      const token = localStorage.getItem('token');
+      console.log('🤖 Sending chat message:', message);
+      console.log('📊 Including user data:', userData);
       
-      // Fetch productivity data first
-      let productivityData = null;
-      try {
-        const productivityResponse = await fetch(`${API_BASE_URL}/ch`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (productivityResponse.ok) {
-          productivityData = await productivityResponse.json();
-          console.log('📊 Fetched productivity data:', productivityData);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await axios.post<ChatResponse>(
+        `${API_URL}/chat`, 
+        { 
+          message, 
+          historyId,
+          userData // Include the user data in the request
+        },
+        { 
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 20000 // Increase timeout to 20 seconds for AI processing
         }
-      } catch (error) {
-        console.error('Failed to fetch productivity data:', error);
+      );
+
+      console.log('📨 Chat response received:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Chat service error:', error);
+      
+      // Check for specific error types and provide appropriate responses
+      if (error.code === 'ECONNABORTED') {
+        return {
+          success: false,
+          response: "The request took too long to process. The server might be busy. Please try a shorter message or try again later.",
+          error: "Request timeout",
+          hasProductivityData: false
+        };
       }
-
-      // Calculate summary stats from productivity data
-      let focusScore = 0;
-      let productiveHours = 0;
-      let uniqueApps = 0;
-      let streak = 0;
-
-      if (productivityData && productivityData.length > 0) {
-        const latestSummary = productivityData[0];
-        focusScore = Math.round(latestSummary.focusScore || 0);
-        productiveHours = Math.round((latestSummary.totalProductiveTime || 0) / 3600 * 10) / 10;
-        uniqueApps = Object.keys(latestSummary.productiveContent || {}).length + 
-                    Object.keys(latestSummary.nonProductiveContent || {}).length;
-        streak = calculateStreak(productivityData);
+      
+      if (error.response) {
+        // The server responded with an error status code
+        console.log('Server error details:', error.response.data);
+        
+        // If the server sent back a specific error message, use it
+        if (error.response.data && error.response.data.response) {
+          return {
+            success: false,
+            response: error.response.data.response,
+            error: error.response.data.error || "Server error",
+            hasProductivityData: false
+          };
+        }
       }
-
-      // Create AI response based on the message and productivity data
-      let aiResponse = this.generateAIResponse(message, productivityData);
-
-      return {
-        success: true,
-        response: aiResponse,
-        hasProductivityData: productivityData && productivityData.length > 0,
-        focusScore,
-        productiveHours,
-        uniqueApps,
-        streak
-      };
-    } catch (error) {
-      console.error('Chat service error:', error);
+      
+      // Default error response
       return {
         success: false,
-        response: "Sorry, I'm having trouble connecting right now. Please try again."
+        response: "I'm having trouble connecting to the server right now. Please try again in a moment.",
+        error: error.message || 'Unknown error',
+        hasProductivityData: false
       };
     }
   },
 
-  generateAIResponse(message: string, productivityData: any[]) {
-    const messageLower = message.toLowerCase();
-    
-    if (!productivityData || productivityData.length === 0) {
-      return "I don't have any productivity data for you yet. Start using your computer and I'll begin tracking your focus patterns! 📊";
-    }
-
-    const latestSummary = productivityData[0];
-    const focusScore = Math.round(latestSummary.focusScore || 0);
-    const productiveHours = Math.round((latestSummary.totalProductiveTime || 0) / 3600 * 10) / 10;
-    const totalHours = Math.round((latestSummary.overallTotalUsage || 0) / 3600 * 10) / 10;
-
-    // Focus score related questions
-    if (messageLower.includes('focus score') || messageLower.includes('focus')) {
-      if (focusScore >= 80) {
-        return `🎯 Excellent! Your focus score is ${focusScore}%. You're in the top tier of productivity! Keep up the fantastic work. Your productive time today: ${productiveHours} hours out of ${totalHours} total hours.`;
-      } else if (focusScore >= 60) {
-        return `📊 Your focus score is ${focusScore}%. That's pretty good! You spent ${productiveHours} productive hours out of ${totalHours} total. Try to minimize distractions to boost your score even higher.`;
-      } else if (focusScore >= 40) {
-        return `⚡ Your focus score is ${focusScore}%. There's room for improvement! You had ${productiveHours} productive hours. Consider using website blockers or focus techniques like Pomodoro to increase your productivity.`;
-      } else {
-        return `🚨 Your focus score is ${focusScore}%. Let's work on this together! Only ${productiveHours} hours were productive out of ${totalHours}. Try setting specific work hours and removing distracting apps.`;
+  // Get chat history list
+  async getChatHistories() {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
       }
+
+      const response = await axios.get(`${API_URL}/chat/history`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return response.data.histories || [];
+    } catch (error) {
+      console.error('Error fetching chat histories:', error);
+      return [];
     }
+  },
 
-    // Apps usage questions
-    if (messageLower.includes('apps') || messageLower.includes('applications')) {
-      const productiveApps = Object.entries(latestSummary.productiveContent || {})
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 3)
-        .map(([app, time]) => `${app} (${Math.round(time/60)}min)`);
-      
-      const distractingApps = Object.entries(latestSummary.nonProductiveContent || {})
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 3)
-        .map(([app, time]) => `${app} (${Math.round(time/60)}min)`);
+  // Get specific chat history
+  async getChatHistoryById(historyId: string) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
 
-      return `📱 **Your App Usage Analysis:**\n\n🎯 **Most Productive Apps:**\n${productiveApps.join('\n')}\n\n🚨 **Most Distracting Apps:**\n${distractingApps.join('\n')}\n\nYour most productive app: ${latestSummary.maxProductiveApp || 'Unknown'}`;
+      const response = await axios.get(`${API_URL}/chat/history/${historyId}`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return response.data.history;
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      return {
+        _id: null,
+        title: 'Error loading chat',
+        messages: []
+      };
     }
+  },
 
-    // Default response
-    return `🤖 I have your productivity data ready! Your focus score is ${focusScore}% with ${productiveHours} productive hours today. Ask me about your apps, distractions, or how to improve your productivity! 📊✨`;
+  // Create a new chat history
+  async createChatHistory(title?: string) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await axios.post(`${API_URL}/chat/history`, 
+        { title }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return response.data.history;
+    } catch (error) {
+      console.error('Error creating chat history:', error);
+      throw error;
+    }
+  },
+
+  // Delete a chat history
+  async deleteChatHistory(historyId: string) {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      await axios.delete(`${API_URL}/chat/history/${historyId}`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting chat history:', error);
+      throw error;
+    }
+  },
+  
+  // Fetch user productivity data
+  async getUserProductivityData(): Promise<ProductivityData | null> {
+    try {
+      console.log('🔍 Fetching user productivity data');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Get data from multiple endpoints to compile a complete picture
+      const [focusResponse, statsResponse] = await Promise.all([
+        axios.get(`${API_URL}/focus/summary`, { 
+          headers: { Authorization: `Bearer ${token}` } 
+        }),
+        axios.get(`${API_URL}/statistics/overview`, { 
+          headers: { Authorization: `Bearer ${token}` } 
+        })
+      ]);
+
+      // Combine data from different sources
+      const userData: ProductivityData = {
+        focusScore: focusResponse.data.focusScore || 0,
+        productiveTime: focusResponse.data.productiveTime || 0,
+        distractions: focusResponse.data.distractions || [],
+        topApps: statsResponse.data.topApps || [],
+        streak: statsResponse.data.streak || 0,
+        totalAppUsage: statsResponse.data.totalAppUsage || 0
+      };
+
+      console.log('📊 User productivity data:', userData);
+      return userData;
+    } catch (error) {
+      console.error('❌ Error fetching user productivity data:', error);
+      return null;
+    }
   }
 };
-
-function calculateStreak(data: any[]) {
-  if (!data || data.length === 0) return 0;
-  
-  let streak = 0;
-  for (const summary of data) {
-    if ((summary.focusScore || 0) >= 30) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-  return streak;
-}
