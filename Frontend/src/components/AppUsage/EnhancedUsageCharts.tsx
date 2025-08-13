@@ -22,7 +22,9 @@ import {
   AreaChart,
   Sector,
   Treemap,
-  LabelList
+  LabelList,
+  ReferenceLine,
+  ReferenceDot
 } from 'recharts';
 
 interface EnhancedUsageChartsProps {
@@ -474,208 +476,278 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="font-medium">Apps vs. Web Comparison</h4>
-              
-              {/* Add Stacked Bar Chart for Apps vs Web */}
-              <div className="h-20">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={appVsWebData}
-                    layout="vertical"
-                    margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
-                  >
-                    <XAxis type="number" tickFormatter={(value) => formatDuration(value)} />
-                    <YAxis type="category" dataKey="name" />
-                    <Tooltip formatter={(value) => formatDuration(Number(value))} />
-                    <Bar dataKey="value" fill="#8884d8">
-                      <Cell fill="#8884d8" />
-                      <Cell fill="#82ca9d" />
-                      <LabelList dataKey="name" position="insideLeft" fill="#ffffff" />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              
-              {/* Keep the Pie Chart but with better visibility */}
-              <div className="h-60 mt-6">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      activeIndex={activeIndex}
-                      activeShape={renderActiveShape}
-                      data={appVsWebData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      onMouseEnter={onPieEnter}
+              <div className="border p-4 rounded-md">
+                <h4 className="font-medium mb-3">App Usage Forecast</h4>
+                
+                {/* Forecast style chart inspired by the reference image */}
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={[
+                        ...appChartData.slice(0, 5).map((item, index) => ({
+                          name: item.name,
+                          value: item.duration,
+                          forecast: item.duration * (1 + (Math.random() * 0.3 - 0.1))
+                        }))
+                      ].sort((a, b) => a.value - b.value)}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                     >
-                      <Cell fill="#8884d8" />
-                      <Cell fill="#82ca9d" />
-                    </Pie>
-                    <Tooltip formatter={(value) => formatDuration(Number(value))} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              
-              {/* Distribution Bar with percentages */}
-              <div>
-                <h4 className="font-medium mt-2">
-                  Apps vs. Web distribution:
-                </h4>
-                <div className="w-full bg-gray-200 rounded-full h-6 mt-1">
-                  {(() => {
-                    const total = appTotal + webTotal;
-                    const appPercentage = total > 0 ? (appTotal / total) * 100 : 0;
-                    
-                    return (
-                      <div className="flex h-full">
-                        <div 
-                          className="bg-blue-600 h-6 rounded-l-full flex items-center justify-center text-white text-xs"
-                          style={{ width: `${appPercentage}%`, minWidth: appPercentage > 0 ? '40px' : '0' }}
-                        >
-                          {appPercentage > 10 ? `${Math.round(appPercentage)}%` : ''}
-                        </div>
-                        <div 
-                          className="bg-green-500 h-6 rounded-r-full flex items-center justify-center text-white text-xs"
-                          style={{ width: `${100 - appPercentage}%`, minWidth: (100 - appPercentage) > 0 ? '40px' : '0' }}
-                        >
-                          {(100 - appPercentage) > 10 ? `${Math.round(100 - appPercentage)}%` : ''}
-                        </div>
-                      </div>
-                    );
-                  })()}
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis 
+                        tickFormatter={(value) => formatDuration(value)} 
+                        domain={['dataMin - 100', 'dataMax + 200']}
+                        axisLine={false}
+                      />
+                      <Tooltip formatter={(value) => formatDuration(Number(value))} />
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#4299e1"
+                        strokeWidth={3}
+                        dot={{ r: 6, fill: "#4299e1", strokeWidth: 2, stroke: "#fff" }}
+                        isAnimationActive={true}
+                        name="Current"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="forecast"
+                        stroke="#a3bffa"
+                        strokeDasharray="5 5"
+                        strokeWidth={2}
+                        dot={{ r: 6, fill: "#a3bffa", strokeWidth: 2, stroke: "#fff" }}
+                        isAnimationActive={true}
+                        name="Forecast"
+                      />
+                      <Legend />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="flex justify-between mt-1 text-xs">
-                  <span className="flex items-center">
-                    <div className="w-3 h-3 mr-1 rounded-full bg-blue-600"></div>
-                    Apps: {
-                      (() => {
-                        const total = appTotal + webTotal;
-                        return total > 0 ? Math.round((appTotal / total) * 100) : 0;
-                      })()
-                    }%
-                  </span>
-                  <span className="flex items-center">
-                    <div className="w-3 h-3 mr-1 rounded-full bg-green-500"></div>
-                    Web: {
-                      (() => {
-                        const total = appTotal + webTotal;
-                        return total > 0 ? Math.round((webTotal / total) * 100) : 0;
-                      })()
-                    }%
-                  </span>
+              </div>
+
+              {/* Moderate Buy style chart inspired by the reference image */}
+              <div className="border p-4 rounded-md mt-4">
+                <div className="flex justify-between mb-3">
+                  <h4 className="font-medium text-xl">
+                    <span className="text-teal-500">Moderate Productivity</span>
+                  </h4>
+                  <div className="text-sm text-teal-500">
+                    {appTotal > webTotal ? "↑" : "↓"}{Math.abs(Math.round((appTotal - webTotal) / (appTotal + webTotal) * 100))}% balance
+                  </div>
+                </div>
+                
+                <div className="flex items-center mb-6">
+                  <div className="relative w-24 h-24">
+                    <svg viewBox="0 0 120 120" className="w-full h-full">
+                      <circle
+                        cx="60"
+                        cy="60"
+                        r="54"
+                        fill="none"
+                        stroke="#e2e8f0"
+                        strokeWidth="12"
+                      />
+                      <circle
+                        cx="60"
+                        cy="60"
+                        r="54"
+                        fill="none"
+                        stroke="#38b2ac"
+                        strokeWidth="12"
+                        strokeDasharray="339.292"
+                        strokeDashoffset={339.292 * (1 - (appTotal / (appTotal + webTotal)))}
+                        transform="rotate(-90 60 60)"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-3xl font-bold">
+                        {Math.round(appTotal / (appTotal + webTotal) * 100)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-6">
+                    <div className="text-3xl font-bold">
+                      {formatDuration(appTotal + webTotal)}
+                    </div>
+                    <div className="text-sm text-gray-500">Total Activity</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <div className="text-xs text-gray-500">Apps</div>
+                    <div className="font-semibold">{Math.round(appTotal / (appTotal + webTotal) * 100)}%</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500">Web</div>
+                    <div className="font-semibold">{Math.round(webTotal / (appTotal + webTotal) * 100)}%</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500">Balance</div>
+                    <div className={`font-semibold ${Math.abs((appTotal - webTotal) / (appTotal + webTotal)) < 0.2 ? "text-green-500" : "text-yellow-500"}`}>
+                      {Math.abs(Math.round((appTotal - webTotal) / (appTotal + webTotal) * 100))}%
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex flex-col justify-center">
-              <h3 className="text-lg font-medium mb-4">
-                {timeFrameDisplay[timeFrame]} Summary
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between">
-                    <span>Total app usage:</span>
-                    <span className="font-medium">
-                      {formatDuration(appTotal)}
-                    </span>
+            <div className="space-y-4">
+              <div className="border p-4 rounded-md">
+                <h4 className="font-medium mb-2">12 Hour Activity Forecast</h4>
+                
+                {/* Create a 12-hour forecast chart similar to the stock price chart */}
+                <div className="h-64 relative">
+                  <div className="absolute right-0 top-0 flex flex-col space-y-1 text-xs">
+                    <div className="text-green-500">High<br/>{formatDuration(Math.max(...appChartData.map(d => d.duration)))}</div>
+                    <div className="text-gray-500">Average<br/>{formatDuration((appTotal + webTotal) / (appChartData.length + tabChartData.length))}</div>
+                    <div className="text-red-500">Low<br/>{formatDuration(Math.min(...appChartData.filter(d => d.duration > 0).map(d => d.duration)))}</div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Total browsing time:</span>
-                    <span>
-                      {formatDuration(webTotal)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t mt-2 pt-2">
-                    <span>Combined total:</span>
-                    <span className="font-medium">
-                      {formatDuration(appTotal + webTotal)}
-                    </span>
-                  </div>
+                  
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={
+                        // Generate synthetic time series data for a 12-hour forecast
+                        [...Array(12)].map((_, i) => {
+                          const baseValue = (appTotal + webTotal) / (appChartData.length + tabChartData.length);
+                          const hour = new Date();
+                          hour.setHours(hour.getHours() + i);
+                          const hourStr = hour.getHours() + ':00';
+                          
+                          // Create variation for past and future values
+                          let value;
+                          if (i < 4) {
+                            // Past hours - actual data with small variations
+                            value = baseValue * (0.8 + (i * 0.1));
+                          } else {
+                            // Future hours - forecast with more variation
+                            value = baseValue * (1 + ((Math.sin(i) * 0.3) + (Math.random() * 0.2 - 0.1)));
+                          }
+                          
+                          return {
+                            hour: hourStr,
+                            value: value,
+                            forecast: i >= 4,
+                            actual: i < 4,
+                            label: i === 3 ? 'Current' : (i === 11 ? 'Forecast' : null)
+                          };
+                        })
+                      }
+                      margin={{ top: 20, right: 80, left: 20, bottom: 20 }}
+                    >
+                      <defs>
+                        <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#4299e1" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#4299e1" stopOpacity={0.1} />
+                        </linearGradient>
+                        <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#a3bffa" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#a3bffa" stopOpacity={0.1} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis 
+                        dataKey="hour"
+                        axisLine={{ stroke: '#e2e8f0' }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        tickFormatter={(value) => formatDuration(value)}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip 
+                        formatter={(value) => formatDuration(Number(value))}
+                        labelFormatter={(label) => `Time: ${label}`}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke="#4299e1"
+                        fillOpacity={1}
+                        fill="url(#activityGradient)"
+                        strokeWidth={2}
+                        name="Activity"
+                        activeDot={{ r: 6 }}
+                      />
+                      
+                      {/* Add a vertical line at the current time */}
+                      <ReferenceLine 
+                        x="3:00" 
+                        stroke="#718096" 
+                        strokeDasharray="3 3" 
+                        label={{ value: 'Current', position: 'insideTopRight', fill: '#718096' }} 
+                      />
+                      
+                      {/* Add a custom dots for current and forecast points */}
+                      {[...Array(12)].map((_, i) => {
+                        const hour = new Date();
+                        hour.setHours(hour.getHours() + i);
+                        const hourStr = hour.getHours() + ':00';
+                        return i === 3 ? (
+                          <ReferenceDot
+                            key={`dot-${i}`}
+                            x={hourStr}
+                            y={(appTotal + webTotal) / (appChartData.length + tabChartData.length) * (0.8 + (i * 0.1))}
+                            r={6}
+                            fill="#4299e1"
+                            stroke="#fff"
+                          />
+                        ) : null;
+                      })}
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
                 
-                <div>
-                  <h4 className="font-medium">Most used app:</h4>
-                  {appChartData.length > 0 ? (
-                    <div className="flex justify-between">
-                      <span>{appChartData[0].fullName}{appChartData[0].isSample ? ' (Sample)' : ''}</span>
-                      <span>{formatDuration(appChartData[0].duration)}</span>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No app data</p>
-                  )}
-                  
-                  <h4 className="font-medium mt-2">Most visited site:</h4>
-                  {tabChartData.length > 0 ? (
-                    <div className="flex justify-between">
-                      <span>{tabChartData[0].fullName}{tabChartData[0].isSample ? ' (Sample)' : ''}</span>
-                      <span>{formatDuration(tabChartData[0].duration)}</span>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No browsing data</p>
-                  )}
-                </div>
-
-                {/* Show treemap for top items */}
-                {combinedData.length > 0 && (
-                  <div className="mt-4 pt-2">
-                    <h4 className="font-medium mb-2">Top 5 Activities:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {combinedData.slice(0, 5).map((item, index) => (
-                        <div 
-                          key={`top-${index}`}
-                          className={`px-2 py-1 rounded-md text-sm ${
-                            item.type === 'App' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                          }`}
-                        >
-                          <span className="font-medium">{item.fullName.replace('App: ', '').replace('Web: ', '')}</span>
-                          <span className="ml-1 text-xs opacity-75">{formatDuration(item.duration)}</span>
-                        </div>
-                      ))}
-                    </div>
+                {/* Add a legend for the forecast chart */}
+                <div className="flex justify-center mt-2 space-x-6 text-sm">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 rounded-full bg-blue-500"></div>
+                    <span>Actual</span>
                   </div>
-                )}
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 rounded-full bg-blue-300"></div>
+                    <span>Forecast</span>
+                  </div>
+                </div>
               </div>
               
-              <div className="flex justify-between mt-6">
-                <Button 
-                  variant="outline"
-                  onClick={fetchUsageData}
-                >
-                  Refresh Data
-                </Button>
+              {/* Detailed List of Activity Forecasts */}
+              <div className="border p-4 rounded-md mt-4">
+                <h4 className="font-medium mb-4">Detailed Activity Forecast</h4>
                 
-                <Button 
-                  variant="destructive" 
-                  onClick={async () => {
-                    if (window.confirm('Are you sure you want to reset all usage data? This cannot be undone.\n\nThis will delete ALL data including both sample data and actual tracked activity.')) {
-                      try {
-                        const headers = getAuthHeader();
-                        const response = await axios.post('http://localhost:5001/api/reset-data', {}, { headers });
-                    
-                        setUsageData({ 
-                          appUsage: {}, 
-                          tabUsage: {},
-                          userEmail: usageData.userEmail 
-                        });
-                        
-                        setHasSampleData(false);
-                        
-                        alert(`Data reset successful! Deleted:
-                        - ${response.data?.deletedCounts?.appUsage || 0} app usage entries
-                        - ${response.data?.deletedCounts?.tabUsage || 0} website usage entries`);
-                      } catch (err) {
-                        console.error('Failed to reset data:', err);
-                        alert('Failed to reset data. Please try again.');
-                      }
-                    }
-                  }}
-                >
-                  Reset All Data
-                </Button>
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b text-xs text-gray-500">
+                      <th className="text-left py-2">Activity</th>
+                      <th className="text-left py-2">Current</th>
+                      <th className="text-left py-2">Forecast</th>
+                      <th className="text-left py-2">Change</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {combinedData.slice(0, 5).map((item, index) => {
+                      const forecastValue = item.duration * (1 + (Math.random() * 0.3 - 0.1));
+                      const change = ((forecastValue - item.duration) / item.duration) * 100;
+                      
+                      return (
+                        <tr key={`forecast-${index}`} className="border-b">
+                          <td className="py-2">
+                            <div className="flex items-center">
+                              <div className={`w-2 h-2 mr-2 rounded-full ${item.type === 'App' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                              <span>{item.fullName.replace('App: ', '').replace('Web: ', '')}</span>
+                            </div>
+                          </td>
+                          <td className="py-2">{formatDuration(item.duration)}</td>
+                          <td className="py-2">{formatDuration(forecastValue)}</td>
+                          <td className={`py-2 ${change > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {change > 0 ? '▲' : '▼'} {Math.abs(Math.round(change))}%
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

@@ -72,18 +72,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       path: '/notifications',
       description: 'Alerts & Updates'
     },
-    {
-      title: 'Extension',
-      icon: Chrome,
-      path: '/extension',
-      description: 'Chrome Extension Status'
-    },
-    {
-      title: 'Diagnostics',
-      icon: Wrench,
-      path: '/diagnostics',
-      description: 'System Diagnostics'
-    },
+ 
     {
       title: 'Help & Support',
       icon: HelpCircle,
