@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, Legend, PieChart, Pie, Cell 
@@ -12,46 +12,75 @@ const COLORS = {
   distracted: '#ef4444'
 };
 
-const FocusDistractionsChart = ({ data = [] }) => {
-  // If no data is provided, use demo data
-  const chartData = data.length > 0 ? data : [
-    { name: "VS Code", duration: 3600, type: "Focused" },
-    { name: "Chrome - DSA Tutorial", duration: 1800, type: "Focused" },
-    { name: "Chrome - Memes", duration: 1200, type: "Distracted" },
-    { name: "Instagram", duration: 900, type: "Distracted" },
-    { name: "LeetCode", duration: 2400, type: "Focused" },
-    { name: "Facebook", duration: 600, type: "Distracted" },
-    { name: "Slack", duration: 1500, type: "Focused" }
-  ];
+const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
+  // Process data to get top 5-6 apps
+  const { chartData, focusTotal, distractionTotal } = useMemo(() => {
+    if (isDemo || !data.productiveContent || !data.nonProductiveContent) {
+      // Fallback to demo data if no data provided
+      const demoData = [
+        { name: "VS Code", duration: 3600, type: "Focused" },
+        { name: "Chrome - DSA Tutorial", duration: 1800, type: "Focused" },
+        { name: "Chrome - Memes", duration: 1200, type: "Distracted" },
+        { name: "Instagram", duration: 900, type: "Distracted" },
+        { name: "LeetCode", duration: 2400, type: "Focused" },
+        { name: "Facebook", duration: 600, type: "Distracted" },
+      ];
+      
+      const focusTotal = demoData
+        .filter(item => item.type === "Focused")
+        .reduce((sum, item) => sum + item.duration, 0);
+        
+      const distractionTotal = demoData
+        .filter(item => item.type === "Distracted")
+        .reduce((sum, item) => sum + item.duration, 0);
+        
+      return { chartData: demoData, focusTotal, distractionTotal };
+    }
 
-  // Calculate totals for focus vs distraction
-  const focusTotal = chartData
-    .filter(item => item.type === "Focused")
-    .reduce((sum, item) => sum + item.duration, 0);
-    
-  const distractionTotal = chartData
-    .filter(item => item.type === "Distracted")
-    .reduce((sum, item) => sum + item.duration, 0);
-  
+    // Process real data
+    const productiveApps = Object.entries(data.productiveContent || {}).map(([name, duration]) => ({
+      name: name || 'Unknown App',
+      duration: Math.round(duration / 60), // Convert to minutes
+      type: 'Focused'
+    }));
+
+    const distractingApps = Object.entries(data.nonProductiveContent || {}).map(([name, duration]) => ({
+      name: name || 'Unknown App',
+      duration: Math.round(duration / 60), // Convert to minutes
+      type: 'Distracted'
+    }));
+
+    // Combine and sort by duration
+    const allApps = [...productiveApps, ...distractingApps]
+      .sort((a, b) => b.duration - a.duration)
+      .slice(0, 6); // Get top 6 apps
+
+    const focusTotal = productiveApps.reduce((sum, item) => sum + item.duration, 0);
+    const distractionTotal = distractingApps.reduce((sum, item) => sum + item.duration, 0);
+
+    return { chartData: allApps, focusTotal, distractionTotal };
+  }, [data, isDemo]);
+
   // Prepare data for pie chart
   const pieData = [
     { name: 'Focused', value: focusTotal, color: COLORS.focused },
     { name: 'Distracted', value: distractionTotal, color: COLORS.distracted }
   ];
 
-  // Format time from seconds to hours/minutes
-  const formatTime = (seconds) => {
-    if (!seconds) return '0m';
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+  // Format time from minutes to hours/minutes
+  const formatTime = (minutes) => {
+    if (!minutes) return '0m';
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.floor(minutes % 60);
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${mins}m`;
     }
-    return `${minutes}m`;
+    return `${mins}m`;
   };
 
   // Focus to distraction ratio percentage
-  const focusPercentage = Math.round((focusTotal / (focusTotal + distractionTotal || 1)) * 100);
+  const totalTime = focusTotal + distractionTotal;
+  const focusPercentage = totalTime > 0 ? Math.round((focusTotal / totalTime) * 100) : 0;
 
   return (
     <Card>
@@ -59,12 +88,13 @@ const FocusDistractionsChart = ({ data = [] }) => {
         <CardTitle>Focus vs Distraction Breakdown</CardTitle>
         <CardDescription>
           Analysis of your productive vs distracting activities
+          {isDemo && <span className="text-yellow-500 ml-2">(Demo Data)</span>}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="chart" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="chart">Bar Chart</TabsTrigger>
+            <TabsTrigger value="chart">Top Apps</TabsTrigger>
             <TabsTrigger value="pie">Distribution</TabsTrigger>
           </TabsList>
 
@@ -72,9 +102,9 @@ const FocusDistractionsChart = ({ data = [] }) => {
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
                 <div>
-                  <h4 className="text-sm font-medium">Activity Breakdown</h4>
+                  <h4 className="text-sm font-medium">Top Apps</h4>
                   <p className="text-xs text-muted-foreground">
-                    Time spent on focused vs distracting activities
+                    Time spent on your most used applications
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -89,7 +119,11 @@ const FocusDistractionsChart = ({ data = [] }) => {
 
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData} layout="vertical">
-                  <XAxis type="number" tickFormatter={formatTime} />
+                  <XAxis 
+                    type="number" 
+                    tickFormatter={formatTime}
+                    domain={[0, 'dataMax']}
+                  />
                   <YAxis 
                     dataKey="name" 
                     type="category" 
@@ -98,18 +132,19 @@ const FocusDistractionsChart = ({ data = [] }) => {
                   />
                   <Tooltip 
                     formatter={(value) => formatTime(value)}
-                    labelFormatter={(label) => `Activity: ${label}`}
+                    labelFormatter={(value) => `${value}`}
                   />
-                  <Legend />
+                  <CartesianGrid strokeDasharray="3 3" />
                   <Bar 
                     dataKey="duration" 
-                    name="Duration" 
                     fill="#8884d8"
+                    radius={[0, 4, 4, 0]}
+                    animationDuration={1000}
                   >
                     {chartData.map((entry, index) => (
                       <Cell 
-                        key={`cell-${index}`}
-                        fill={entry.type === "Focused" ? COLORS.focused : COLORS.distracted}
+                        key={`cell-${index}`} 
+                        fill={entry.type === 'Focused' ? COLORS.focused : COLORS.distracted} 
                       />
                     ))}
                   </Bar>
@@ -120,40 +155,33 @@ const FocusDistractionsChart = ({ data = [] }) => {
 
           <TabsContent value="pie">
             <div className="flex flex-col items-center">
-              <div className="text-center mb-4">
-                <h3 className="text-2xl font-bold">{focusPercentage}%</h3>
-                <p className="text-sm text-muted-foreground">Focus Ratio</p>
+              <h4 className="text-sm font-medium mb-2">Focus Distribution</h4>
+              <div className="w-full h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatTime(value)} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-              
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatTime(value)} />
-                </PieChart>
-              </ResponsiveContainer>
-              
-              <div className="flex justify-center gap-4 mt-2">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 mr-1 rounded-full" style={{backgroundColor: COLORS.focused}}></div>
-                  <span className="text-xs">Focus</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 mr-1 rounded-full" style={{backgroundColor: COLORS.distracted}}></div>
-                  <span className="text-xs">Distraction</span>
-                </div>
+              <div className="text-center mt-2">
+                <p className="text-sm text-muted-foreground">
+                  You were focused for <span className="font-medium">{focusPercentage}%</span> of your time
+                </p>
               </div>
             </div>
           </TabsContent>

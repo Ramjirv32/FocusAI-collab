@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const password = document.getElementById('password').value;
     
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('http://localhost:5001/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -94,4 +94,9 @@ document.addEventListener('DOMContentLoaded', function() {
       statusDiv.classList.add('hidden');
     }, 3000);
   }
+  
+  document.getElementById('openDebug').addEventListener('click', function(e) {
+    e.preventDefault();
+    chrome.tabs.create({ url: chrome.runtime.getURL('debug.html') });
+  });
 });

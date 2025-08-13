@@ -20,7 +20,6 @@ import FocusDistractionsChart from '../components/FocusAnalysis/FocusDistraction
 const FocusAnalytics = () => {
   const { user } = useAuth();
   const [productivityData, setProductivityData] = useState(null);
-  const [focusData, setFocusData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
@@ -31,8 +30,6 @@ const FocusAnalytics = () => {
     productive: '#22c55e',
     nonProductive: '#ef4444',
     neutral: '#f59e0b',
-    focus: '#3b82f6',
-    distraction: '#ec4899'
   };
 
   const pieColors = ['#22c55e', '#ef4444', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#06b6d4'];
@@ -57,24 +54,11 @@ const FocusAnalytics = () => {
         console.log('✅ Productivity data loaded:', productivityResult);
       } else {
         console.warn('⚠️ Failed to load productivity data');
+        setError('Failed to load productivity data');
       }
-      
-      // Fetch focus analysis
-      const focusResponse = await fetch(
-        `http://localhost:8000/user/${user.id}/productivity-analysis?date=${selectedDate}&email=${user.email}`
-      );
-      
-      if (focusResponse.ok) {
-        const focusResult = await focusResponse.json();
-        setFocusData(focusResult);
-        console.log('✅ Focus data loaded:', focusResult);
-      } else {
-        console.warn('⚠️ Failed to load focus data');
-      }
-      
     } catch (err) {
-      console.error('❌ Error loading analytics:', err);
-      setError('Failed to load analytics data. Please try again.');
+      console.error('Error loading analytics:', err);
+      setError('Failed to load data. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -137,32 +121,7 @@ const FocusAnalytics = () => {
     return { apps: appsData, categories: categoriesData };
   };
 
-  const prepareFocusChartData = () => {
-    if (!focusData) return { timeline: [], areas: [] };
-    
-    // Focus areas data
-    const areasData = [
-      ...focusData.focus_areas.map(area => ({
-        name: area.category,
-        duration: area.total_duration,
-        count: area.activity_count,
-        type: 'focus',
-        color: COLORS.focus
-      })),
-      ...focusData.distraction_areas.map(area => ({
-        name: area.category,
-        duration: area.total_duration,
-        count: area.activity_count,
-        type: 'distraction',
-        color: COLORS.distraction
-      }))
-    ];
-
-    return { areas: areasData };
-  };
-
   const chartData = prepareProductivityChartData();
-  const focusChartData = prepareFocusChartData();
 
   if (isLoading) {
     return (
@@ -287,7 +246,7 @@ const FocusAnalytics = () => {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Activities</p>
                   <p className="text-3xl font-bold">
-                    {focusData?.total_activities || 0}
+                    {productivityData?.total_activities || 0}
                   </p>
                 </div>
                 <Activity className="h-8 w-8 text-purple-600" />
@@ -387,22 +346,17 @@ const FocusAnalytics = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <FocusDistractionsChart 
-                    data={
-                      focusData ? [
-                        ...Object.entries(focusData.focus_areas || []).map(([_, area]) => ({
-                          name: area.category || area.name,
-                          duration: area.total_duration || area.duration,
-                          type: "Focused"
-                        })),
-                        ...Object.entries(focusData.distraction_areas || []).map(([_, area]) => ({
-                          name: area.category || area.name,
-                          duration: area.total_duration || area.duration,
-                          type: "Distracted"
-                        }))
-                      ] : []
-                    }
-                  />
+                  {productivityData ? (
+                    <FocusDistractionsChart 
+                      data={{
+                        productiveContent: productivityData.productive_content || {},
+                        nonProductiveContent: productivityData.non_productive_content || {}
+                      }}
+                      isDemo={false}
+                    />
+                  ) : (
+                    <FocusDistractionsChart isDemo={true} />
+                  )}
                 </CardContent>
               </Card>
 
@@ -421,7 +375,7 @@ const FocusAnalytics = () => {
                       <span className="font-medium">Focused Duration</span>
                     </div>
                     <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      {formatTime((focusData?.summary?.focused_duration_minutes || 0) * 60)}
+                      {formatTime(productivityData?.total_productive_time || 0)}
                     </Badge>
                   </div>
 
@@ -431,7 +385,7 @@ const FocusAnalytics = () => {
                       <span className="font-medium">Distracted Duration</span>
                     </div>
                     <Badge variant="secondary" className="bg-red-100 text-red-800">
-                      {formatTime((focusData?.summary?.distracted_duration_minutes || 0) * 60)}
+                      {formatTime(productivityData?.total_non_productive_time || 0)}
                     </Badge>
                   </div>
 
@@ -441,7 +395,7 @@ const FocusAnalytics = () => {
                       <span className="font-medium">Productivity Score</span>
                     </div>
                     <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      {focusData?.summary?.productivity_score || 0}%
+                      {productivityData?.focus_score || 0}%
                     </Badge>
                   </div>
                 </CardContent>
@@ -595,4 +549,3 @@ const FocusAnalytics = () => {
 };
 
 export default FocusAnalytics;
-
