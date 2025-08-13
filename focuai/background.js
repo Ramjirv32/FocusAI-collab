@@ -5,10 +5,13 @@ let authToken = null;
 let activeTabId = null;
 let tabStartTime = {};
 let tabTotalTime = {};
+let focusModeEnabled = false;
+let focusDomain = '';
+let osDndEnabled = false;
 
 
 // Initialize by retrieving stored credentials
-chrome.storage.local.get(['userId', 'email', 'token'], function(result) {
+chrome.storage.local.get(['userId', 'email', 'token', 'focusModeEnabled', 'focusDomain', 'osDndEnabled'], function(result) {
   if (result.userId && result.email && result.token) {
     userId = result.userId;
     userEmail = result.email;
@@ -17,6 +20,9 @@ chrome.storage.local.get(['userId', 'email', 'token'], function(result) {
   } else {
     console.log('⚠️ No credentials found in storage');
   }
+  if (typeof result.focusModeEnabled === 'boolean') focusModeEnabled = result.focusModeEnabled;
+  if (typeof result.focusDomain === 'string') focusDomain = result.focusDomain;
+  if (typeof result.osDndEnabled === 'boolean') osDndEnabled = result.osDndEnabled;
 });
 
 
@@ -41,6 +47,14 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     userEmail = null;
     authToken = null;
     console.log('🔑 Credentials cleared');
+  } else if (message.action === 'updateFocusMode') {
+    focusModeEnabled = !!message.enabled;
+    focusDomain = (message.domain || '').trim();
+    osDndEnabled = !!message.osDndEnabled;
+    chrome.storage.local.set({ focusModeEnabled, focusDomain, osDndEnabled });
+    console.log('🎯 Focus mode updated:', { focusModeEnabled, focusDomain, osDndEnabled });
+    try { enforceFocusModeAllTabs(); } catch (_) {}
+    try { toggleOsDndIfNeeded(); } catch (_) {}
   } else if (message.action === 'debugInfo') {
     const info = {
       credentials: {
@@ -50,7 +64,8 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       },
       activeTab: activeTabId,
       tabStartTimes: tabStartTime,
-      tabTotalTimes: tabTotalTime
+      tabTotalTimes: tabTotalTime,
+      focus: { enabled: focusModeEnabled, domain: focusDomain, osDndEnabled }
     };
     console.log('🔍 Debug info requested:', info);
     sendResponse(info);
@@ -74,10 +89,11 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
       
       // Get tab info to log
       chrome.tabs.get(activeTabId, function(tab) {
-        if (chrome.runtime.lastError) {
-          console.error("❌ Error getting tab info:", chrome.runtime.lastError);
-          return;
-        }
+      if (chrome.runtime.lastError) {
+        const msg = chrome.runtime.lastError && chrome.runtime.lastError.message ? chrome.runtime.lastError.message : String(chrome.runtime.lastError);
+        console.warn("❕ Skipping tab info (non-fatal):", msg);
+        return;
+      }
         logTabActivity(tab, duration, "tab-switch");
       });
     }
@@ -90,10 +106,12 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
   // Log the new active tab info
   chrome.tabs.get(tabId, function(tab) {
     if (chrome.runtime.lastError) {
-      console.error("❌ Error getting new active tab info:", chrome.runtime.lastError);
+      const msg = chrome.runtime.lastError && chrome.runtime.lastError.message ? chrome.runtime.lastError.message : String(chrome.runtime.lastError);
+      console.warn("❕ Skipping new active tab info (non-fatal):", msg);
       return;
     }
     console.log(`🌐 New active tab: ${tab.title} (${tab.url})`);
+    enforceFocusModeForTab(tab);
   });
 });
 
@@ -113,6 +131,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     
     // Reset timing for this tab as it's a new page
     tabStartTime[tabId] = Date.now();
+    enforceFocusModeForTab(tab);
   }
 });
 
@@ -134,7 +153,8 @@ chrome.windows.onFocusChanged.addListener(function(windowId) {
         // Get tab info to log
         chrome.tabs.get(activeTabId, function(tab) {
           if (chrome.runtime.lastError) {
-            console.error("❌ Error getting tab info when losing focus:", chrome.runtime.lastError);
+            const msg = chrome.runtime.lastError && chrome.runtime.lastError.message ? chrome.runtime.lastError.message : String(chrome.runtime.lastError);
+            console.warn("❕ Skipping tab info on blur (non-fatal):", msg);
             return;
           }
           logTabActivity(tab, duration, "window-blur");
@@ -214,12 +234,124 @@ function logTabActivity(tab, duration, reason) {
 }
 
 
+// Enforce focus mode: if enabled and current tab domain does not match focusDomain, mute the tab (similar to DND)
+function enforceFocusModeForTab(tab) {
+  try {
+    if (!focusModeEnabled) return;
+    const rawUrl = tab && tab.url ? tab.url : '';
+    if (!rawUrl || rawUrl.startsWith('chrome://') || rawUrl.startsWith('edge://') || rawUrl.startsWith('about:') || rawUrl.startsWith('chrome-extension://')) {
+      return; // skip restricted/internal pages
+    }
+    const url = new URL(rawUrl);
+    const host = url.hostname || '';
+    if (!focusDomain) return;
+    const matches = host === focusDomain || host.endsWith('.' + focusDomain);
+    // If not focused domain, try to mute the tab
+    chrome.tabs.update(tab.id, { muted: !matches }, function() {
+      if (chrome.runtime.lastError) {
+        // ignore error
+      }
+    });
+    // Additionally, block notifications and sound at the Chrome level for non-focused origins
+    if (!matches) {
+      try {
+        chrome.contentSettings['notifications'].set({
+          primaryPattern: `${url.origin}/*`,
+          setting: 'block'
+        }, () => {});
+      } catch (_) {}
+    }
+    // If not focused domain, inject suppression into the page's MAIN world
+    if (!matches) {
+      try {
+        chrome.scripting.executeScript({
+          target: { tabId: tab.id, allFrames: true },
+          world: 'MAIN',
+          func: () => {
+            try {
+              const OriginalNotification = window.Notification;
+              const noop = function() {};
+              try {
+                window.alert = noop;
+                window.confirm = function() { return false; };
+                window.prompt = function() { return null; };
+              } catch(_) {}
+              try {
+                // Deny notifications
+                const DeniedNotification = function() { return null; };
+                DeniedNotification.requestPermission = function(cb) {
+                  const result = 'denied';
+                  if (typeof cb === 'function') cb(result);
+                  return Promise.resolve(result);
+                };
+                Object.defineProperty(DeniedNotification, 'permission', { get: () => 'denied' });
+                // Best-effort replace
+                window.Notification = DeniedNotification;
+              } catch(_) {}
+              // Mute media elements continuously
+              const muteMedia = () => {
+                try {
+                  document.querySelectorAll('video,audio').forEach(el => { try { el.muted = true; el.volume = 0; } catch(_){} });
+                } catch(_) {}
+              };
+              muteMedia();
+              try { new MutationObserver(muteMedia).observe(document.documentElement, { childList: true, subtree: true }); } catch(_) {}
+            } catch(_) {}
+          }
+        });
+      } catch (_) {}
+    }
+  } catch (_) {}
+}
+
+// Apply focus mode rules to all tabs (used when toggled)
+function enforceFocusModeAllTabs() {
+  if (!focusModeEnabled || !focusDomain) return;
+  try {
+    chrome.tabs.query({}, function(tabs) {
+      tabs.forEach(t => {
+        const u = t && t.url ? t.url : '';
+        if (!u || u.startsWith('chrome://') || u.startsWith('edge://') || u.startsWith('about:') || u.startsWith('chrome-extension://')) return;
+        enforceFocusModeForTab(t);
+      });
+    });
+  } catch (_) {}
+}
+
+// Periodic enforcement to handle missed events or dynamic changes
+setInterval(() => {
+  try {
+    if (focusModeEnabled && focusDomain) {
+      enforceFocusModeAllTabs();
+    }
+  } catch (_) {}
+}, 7000);
+
+// Toggle OS-level DND via backend (Windows only)
+function toggleOsDndIfNeeded() {
+  if (!userEmail || !authToken) return; // must be logged in
+  const desired = !!(focusModeEnabled && osDndEnabled);
+  fetch('http://localhost:5001/api/system/os-dnd', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body: JSON.stringify({ enabled: desired })
+  }).then(r => r.json()).then(d => {
+    console.log('🖥️ OS DND toggled:', d);
+  }).catch(err => {
+    console.warn('OS DND toggle failed:', err);
+  });
+}
+
 // Periodically check and log the current active tab
 setInterval(function() {
   if (activeTabId && tabStartTime[activeTabId]) {
     chrome.tabs.get(activeTabId, function(tab) {
       if (chrome.runtime.lastError) {
-        console.error("❌ Error getting active tab for periodic update:", chrome.runtime.lastError);
+        const msg = chrome.runtime.lastError && chrome.runtime.lastError.message ? chrome.runtime.lastError.message : String(chrome.runtime.lastError);
+        console.warn("❕ Skipping periodic tab (non-fatal):", msg);
         return;
       }
       
