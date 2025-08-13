@@ -20,8 +20,6 @@ const Alert = require('./models/Alert');
 
 const auth = require('./middleware/auth');
 
-// Make sure this line is already in the imports
-// const chatRoutes = require('./routes/chatRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
