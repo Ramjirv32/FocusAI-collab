@@ -6,6 +6,7 @@ import { MessageCircle, Send, X, Bot, User, Maximize2, Minimize2, Monitor, Clock
 import axios from "axios"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { useNavigate } from 'react-router-dom';
 
 // Declare global interface for window functions
 declare global {
@@ -49,6 +50,8 @@ interface UsageSummary {
 }
 
 const ProductivityChatBot = () => {
+  const navigate = useNavigate();
+  
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
