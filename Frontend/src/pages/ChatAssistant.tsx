@@ -40,6 +40,18 @@ const ChatAssistant: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Format minutes to hours and minutes
+  const formatMinutesToHoursAndMinutes = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${mins}m`;
+    } else {
+      return `${mins}m`;
+    }
+  };
+
   // Typewriter effect function
   const startTypewriterEffect = (messageId: string, fullContent: string) => {
     let currentIndex = 0;
@@ -194,7 +206,9 @@ const ChatAssistant: React.FC = () => {
                     <div className="text-xs opacity-90">Focus Score</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">{userProductivityStats.productiveHours}h</div>
+                    <div className="text-2xl font-bold">
+                      {formatMinutesToHoursAndMinutes(userProductivityStats.productiveHours)}
+                    </div>
                     <div className="text-xs opacity-90">Productive</div>
                   </div>
                   <div>
