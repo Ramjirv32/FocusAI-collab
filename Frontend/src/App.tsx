@@ -19,6 +19,7 @@ import Notifications from "./pages/Notifications";
 import Extension from "./pages/Extension";
 import Diagnostics from "./pages/Diagnostics";
 import Activities from "./pages/Activities";
+import TodoList from "./pages/TodoList";
 import React from 'react';
 import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
 
@@ -99,6 +100,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Activities />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/todo-list" 
+      element={
+        <ProtectedRoute>
+          <TodoList />
         </ProtectedRoute>
       }
     />
