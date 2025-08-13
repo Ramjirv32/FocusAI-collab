@@ -19,6 +19,7 @@ import { Badge } from '../components/ui/badge';
 import { ArrowRight, Activity, Layers, User, Trophy, Target, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE_URL = 'http://localhost:5001';
 // Make sure to add this proper export statement
 const Index = () => {
   const navigate = useNavigate();
@@ -35,6 +36,14 @@ const Index = () => {
   const [error, setError] = useState(null); // Added missing error state
   const [aiServerStatus, setAiServerStatus] = useState(null);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
+
+    // Enhanced alert states
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isBlockingAlert, setIsBlockingAlert] = useState(false);
+  const [alertType, setAlertType] = useState(''); // 'is50', 'is20', 'warning'
+  const [alertSeverity, setAlertSeverity] = useState('medium'); // 'low', 'medium', 'high', 'critical'
+  const [alertTimer, setAlertTimer] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
 
   // Helper function to get auth headers
   const getAuthHeader = () => {
@@ -101,12 +110,12 @@ const Index = () => {
         
         // Try to extract focus stats from different possible data structures
         let focusStats;
-        
         if (consolidatedData.quickStats?.quick_stats) {
           // Data from AI server
           const rawFocusTimeMinutes = consolidatedData.quickStats.quick_stats.focus_time_minutes || 0;
           const rawDistractionTimeMinutes = consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0;
           
+          await checkProductivityAlerts(consolidatedData.quickStats.quick_stats.focus_score);
           // Cap values at realistic amounts (max 24 hours)
           const maxDailyMinutes = 24 * 60; // 24 hours in minutes
           
