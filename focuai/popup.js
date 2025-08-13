@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const statusDiv = document.getElementById('status');
   const loginButton = document.getElementById('login-button');
   const logoutButton = document.getElementById('logout-button');
+  const focusToggle = document.getElementById('focus-toggle');
+  const focusDomainInput = document.getElementById('focus-domain');
+  const osDndToggle = document.getElementById('os-dnd-toggle');
   
   // Check if user is already logged in
   chrome.storage.local.get(['token', 'userId', 'email'], function(result) {
@@ -23,51 +26,49 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
+
+  // Load existing focus settings
+  chrome.storage.local.get(['focusModeEnabled', 'focusDomain', 'osDndEnabled'], function(result) {
+    if (typeof result.focusModeEnabled === 'boolean') {
+      focusToggle.checked = result.focusModeEnabled;
+    }
+    if (typeof result.focusDomain === 'string') {
+      focusDomainInput.value = result.focusDomain;
+    }
+    if (typeof result.osDndEnabled === 'boolean') {
+      osDndToggle.checked = result.osDndEnabled;
+    }
+  });
   
   // Handle login
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  async function handleLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    
     try {
       const response = await fetch('http://localhost:5001/api/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      
       const data = await response.json();
-      if (data.token) {
-        // Store credentials locally
-        chrome.storage.local.set({
-          userId: data.user.id,
-          email: data.user.email,
-          token: data.token
-        });
-        
-        // Send to background script
-        chrome.runtime.sendMessage({
-          action: 'setCredentials',
-          userId: data.user.id,
-          email: data.user.email,
-          token: data.token
-        });
-        
-        // Update UI
+      if (data && data.token && data.user && data.user.id) {
+        chrome.storage.local.set({ userId: data.user.id, email: data.user.email, token: data.token });
+        chrome.runtime.sendMessage({ action: 'setCredentials', userId: data.user.id, email: data.user.email, token: data.token });
         loginForm.classList.add('hidden');
         loggedInDiv.classList.remove('hidden');
         userEmailEl.textContent = data.user.email;
         showStatus('Logged in! Tab tracking enabled.', 'success');
       } else {
-        showStatus('Login failed: ' + (data.error || 'Unknown error'), 'error');
+        showStatus('Login failed: ' + (data && (data.error || 'Unknown error')), 'error');
       }
     } catch (error) {
       showStatus('Error connecting to server', 'error');
     }
-  });
+  }
+
+  // Support both true form submit and button click (the container is a div)
+  loginForm.addEventListener('submit', function(e) { e.preventDefault(); handleLogin(); });
+  loginButton.addEventListener('click', function(e) { e.preventDefault(); handleLogin(); });
   
   // Handle logout
   logoutButton.addEventListener('click', function() {
@@ -83,6 +84,28 @@ document.addEventListener('DOMContentLoaded', function() {
       showStatus('Logged out successfully', 'success');
     });
   });
+
+  // Handle focus toggle changes
+  function saveFocusSettings() {
+    let domain = (focusDomainInput.value || '').trim();
+    try {
+      if (domain.includes('://')) {
+        const u = new URL(domain);
+        domain = u.hostname || domain;
+      }
+      if (domain.startsWith('www.')) domain = domain.slice(4);
+    } catch (_) {}
+    const enabled = !!focusToggle.checked;
+    const osDndEnabled = !!osDndToggle.checked;
+    chrome.storage.local.set({ focusModeEnabled: enabled, focusDomain: domain, osDndEnabled }, function() {
+      chrome.runtime.sendMessage({ action: 'updateFocusMode', enabled, domain, osDndEnabled });
+      showStatus(`Focus Mode ${enabled ? 'enabled' : 'disabled'}${domain ? ' for ' + domain : ''}`, 'success');
+    });
+  }
+
+  focusToggle.addEventListener('change', saveFocusSettings);
+  focusDomainInput.addEventListener('change', saveFocusSettings);
+  osDndToggle.addEventListener('change', saveFocusSettings);
   
   function showStatus(message, type) {
     statusDiv.textContent = message;
@@ -95,8 +118,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
   }
   
-  document.getElementById('openDebug').addEventListener('click', function(e) {
-    e.preventDefault();
-    chrome.tabs.create({ url: chrome.runtime.getURL('debug.html') });
-  });
+  const openDebugEl = document.getElementById('openDebug');
+  if (openDebugEl) {
+    openDebugEl.addEventListener('click', function(e) {
+      e.preventDefault();
+      chrome.tabs.create({ url: chrome.runtime.getURL('debug.html') });
+    });
+  }
 });

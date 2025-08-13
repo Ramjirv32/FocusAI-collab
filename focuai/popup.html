@@ -68,6 +68,22 @@
   <div id="logged-in" class="hidden">
     <p>Logged in as: <strong id="user-email"></strong></p>
     <p>Tab tracking is active</p>
+    <div class="form-group">
+      <label for="focus-domain">Focus domain (e.g., example.com):</label>
+      <input type="text" id="focus-domain" placeholder="Enter domain to focus">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="focus-toggle">
+        Enable Focus Mode for this domain
+      </label>
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="os-dnd-toggle">
+        Also enable OS Do Not Disturb (Windows)
+      </label>
+    </div>
     <button id="logout-button">Log Out</button>
   </div>
   
