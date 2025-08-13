@@ -428,8 +428,7 @@ IMPORTANT: Use these EXACT numbers from their ${isCalculated ? 'calculated' : 's
 • Focus Score: ${focusScore}% (their actual calculated productivity score)
 • Total Productive Time: ${Math.round(productiveHours)/10} hours
 • Total Distraction Time: ${Math.round(distractionHours)/10} hours
-• Overall Screen Time: ${typeof overallTotalUsage === 'number' ? 
-                        Math.round((overallTotalUsage / 60) * 10) / 10 : 0} hours
+• Overall Screen Time: ${Math.round(overallTotalUsage)/10} hours
 • Most Productive App: ${maxProductiveApp}
 • Most Used App Overall: ${mostUsedApp}
 • Most Visited Website: ${mostVisitedTab}
