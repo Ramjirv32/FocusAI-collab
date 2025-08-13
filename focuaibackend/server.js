@@ -31,7 +31,10 @@ const statisticsRoutes = require('./routes/statisticsRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const focusRoutes = require('./routes/focusRoutes');
+
+const systemRoutes = require('./routes/systemRoutes');
 const todoRoutes = require('./routes/todoRoutes');
+
 
 const app = express();
 const PORT = process.env.PORT || 5001; // Make sure this is 5001
@@ -68,11 +71,15 @@ app.use('/api', statisticsRoutes);
 app.use('/api', healthRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/focus', focusRoutes);
+
+app.use('/api/system', systemRoutes);
+
 app.use('/api/todos', todoRoutes);
 
 
 // Register todo routes (this line should already be there)
 app.use('/api/todos', todoRoutes);
+
 
 
 console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoutes, newRoutes, appUsageRoutes, statisticsRoutes, healthRoutes');
