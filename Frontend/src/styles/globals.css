@@ -1,0 +1,20 @@
+/* Progress bar styling */
+.progress-bar {
+  @apply overflow-hidden h-2 text-xs flex rounded bg-gray-200;
+}
+
+.progress-bar-fill {
+  @apply shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-300;
+}
+
+.progress-bar-fill-success {
+  @apply bg-green-500;
+}
+
+.progress-bar-fill-warning {
+  @apply bg-yellow-500;
+}
+
+.progress-bar-fill-danger {
+  @apply bg-red-500;
+}
