@@ -10,14 +10,17 @@
     "tabs",
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "contentSettings"
   ],
   "host_permissions": [
-    "http://localhost:5001/*"
+    "http://localhost:5001/*",
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"
   },
+  
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
