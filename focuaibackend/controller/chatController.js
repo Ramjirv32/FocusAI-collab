@@ -75,7 +75,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
         return null;
       }
 
-      // Calculate stats - SAME LOGIC AS usageController getUserStats
+  
       const totalAppTime = appUsage.reduce((sum, app) => sum + (app.duration || 0), 0);
       const totalTabTime = tabUsage.reduce((sum, tab) => sum + (tab.duration || 0), 0);
       const totalActiveTime = totalAppTime + totalTabTime;

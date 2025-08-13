@@ -8,12 +8,14 @@ import {
   BellRing, 
   Menu,
   LifeBuoy,
-  Activity
+  Activity,
+  Phone
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import DiagnosticInfo from '@/components/DiagnosticInfo';
 import UserMenu from './UserMenu';
+import { useNavigate } from 'react-router-dom';
 
 const Header = ({ toggleSidebar, isMobile }) => {
   const [extensionStatus, setExtensionStatus] = useState({
@@ -22,7 +24,9 @@ const Header = ({ toggleSidebar, isMobile }) => {
   });
   const [isRunningDiagnostic, setIsRunningDiagnostic] = useState(false);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [showVoiceMeetingDialog, setShowVoiceMeetingDialog] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Check extension status
   const checkExtensionStatus = async () => {
@@ -83,6 +87,12 @@ const Header = ({ toggleSidebar, isMobile }) => {
     }, 2000);
   };
 
+  // Start Voice Meeting
+  const startVoiceMeeting = () => {
+    setShowVoiceMeetingDialog(false);
+    navigate('/voice-meeting');
+  };
+
   return (
     <header className="bg-background z-10 border-b px-4 py-3 sticky top-0 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -121,6 +131,52 @@ const Header = ({ toggleSidebar, isMobile }) => {
             <XCircle className="h-3 w-3 text-red-500" />
           )}
         </Badge>
+
+        {/* Voice Meeting Button */}
+        <Dialog open={showVoiceMeetingDialog} onOpenChange={setShowVoiceMeetingDialog}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+            >
+              <Phone className="h-5 w-5" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Phone className="h-5 w-5 text-blue-500" />
+                <span>Start Voice Meeting</span>
+              </DialogTitle>
+              <DialogDescription>
+                Have a conversation with your FocusAI assistant using voice commands.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-4 bg-blue-50 rounded-md my-4">
+              <p className="text-sm text-blue-700">
+                Your productivity data will be analyzed to provide personalized voice assistance. 
+                You can ask questions about your focus score, productivity habits, and get tips to improve your workflow.
+              </p>
+            </div>
+            <DialogFooter className="sm:justify-between">
+              <Button
+                variant="outline"
+                onClick={() => setShowVoiceMeetingDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
+                onClick={startVoiceMeeting}
+              >
+                <Phone className="h-4 w-4" />
+                Meet with FocusAI
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Quick Diagnostic Button */}
         <Button 

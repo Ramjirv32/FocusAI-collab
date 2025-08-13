@@ -20,6 +20,7 @@ import Extension from "./pages/Extension";
 import Diagnostics from "./pages/Diagnostics";
 import Activities from "./pages/Activities";
 import TodoList from "./pages/TodoList";
+import VoiceMeeting from "./pages/VoiceMeeting";
 import React from 'react';
 import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
 
@@ -60,6 +61,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <ChatAssistant />
+        </ProtectedRoute>
+      }
+    />
+    <Route 
+      path="/voice-meeting" 
+      element={
+        <ProtectedRoute>
+          <VoiceMeeting />
         </ProtectedRoute>
       }
     />
