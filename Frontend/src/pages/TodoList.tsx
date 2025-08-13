@@ -22,11 +22,15 @@ import {
   Clock,
   AlertTriangle,
   List,
-  CalendarDays
+  CalendarDays,
+  Bell,
+  BellOff
 } from 'lucide-react';
 import { todoService, Todo, CreateTodoData, TodoStats } from '@/services/todoService';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import TodoCalendar from '@/components/Todo/TodoCalendar';
+import TodoAlert from '@/components/Todo/TodoAlert';
+import { useTodoAlerts } from '@/hooks/useTodoAlerts';
 
 const TodoList = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -36,6 +40,18 @@ const TodoList = () => {
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'overdue'>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'list' | 'calendar'>('list');
+
+  // Todo Alert System
+  const { 
+    currentAlert, 
+    isMonitoring, 
+    dismissAlert, 
+    completeTask, 
+    snoozeAlert,
+    startMonitoring,
+    stopMonitoring,
+    triggerCheck
+  } = useTodoAlerts();
 
   // Form state
   const [newTodo, setNewTodo] = useState<CreateTodoData>({
@@ -169,6 +185,29 @@ const TodoList = () => {
     }
   };
 
+  // Handle alert completion
+  const handleAlertComplete = () => {
+    completeTask();
+    loadTodos(); // Refresh the todo list
+  };
+
+  // Toggle alert monitoring
+  const toggleAlertMonitoring = () => {
+    if (isMonitoring) {
+      stopMonitoring();
+      toast({
+        title: 'Alerts Disabled',
+        description: 'Todo due time alerts have been disabled',
+      });
+    } else {
+      startMonitoring();
+      toast({
+        title: 'Alerts Enabled',
+        description: 'You will receive alerts for tasks due within 15 minutes',
+      });
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'destructive';
@@ -207,7 +246,17 @@ const TodoList = () => {
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto p-6 space-y-6">
+      {/* Todo Alert Modal */}
+      {currentAlert && (
+        <TodoAlert
+          alert={currentAlert}
+          onDismiss={dismissAlert}
+          onComplete={handleAlertComplete}
+          onSnooze={snoozeAlert}
+        />
+      )}
+
+      <div className={`container mx-auto p-6 space-y-6 ${currentAlert ? 'pointer-events-none opacity-50' : ''}`}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -218,90 +267,122 @@ const TodoList = () => {
             <p className="text-muted-foreground">Manage your tasks and stay productive</p>
           </div>
 
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Todo
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Create New Todo</DialogTitle>
-                <DialogDescription>
-                  Add a new task to your todo list
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter todo title..."
-                    value={newTodo.title}
-                    onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Enter todo description..."
-                    value={newTodo.description}
-                    onChange={(e) => setNewTodo({ ...newTodo, description: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-2">
+            {/* Alert Status Toggle */}
+            <Button
+              variant={isMonitoring ? "default" : "outline"}
+              size="sm"
+              onClick={toggleAlertMonitoring}
+              className="flex items-center gap-2"
+            >
+              {isMonitoring ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+              {isMonitoring ? 'Alerts On' : 'Alerts Off'}
+            </Button>
+
+            {/* Test Alert Button (for development/testing) */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={triggerCheck}
+              className="text-muted-foreground"
+              title="Check for upcoming tasks"
+            >
+              <AlertTriangle className="h-4 w-4" />
+            </Button>
+
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Todo
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create New Todo</DialogTitle>
+                  <DialogDescription>
+                    Add a new task to your todo list
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
                   <div>
-                    <Label htmlFor="priority">Priority</Label>
-                    <Select 
-                      value={newTodo.priority} 
-                      onValueChange={(value: any) => setNewTodo({ ...newTodo, priority: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="title">Title *</Label>
                     <Input
-                      id="category"
-                      placeholder="Category"
-                      value={newTodo.category}
-                      onChange={(e) => setNewTodo({ ...newTodo, category: e.target.value })}
+                      id="title"
+                      placeholder="Enter todo title..."
+                      value={newTodo.title}
+                      onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Enter todo description..."
+                      value={newTodo.description}
+                      onChange={(e) => setNewTodo({ ...newTodo, description: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="priority">Priority</Label>
+                      <Select 
+                        value={newTodo.priority} 
+                        onValueChange={(value: any) => setNewTodo({ ...newTodo, priority: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Input
+                        id="category"
+                        placeholder="Category"
+                        value={newTodo.category}
+                        onChange={(e) => setNewTodo({ ...newTodo, category: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="dueDate">Due Date</Label>
+                    <Input
+                      id="dueDate"
+                      type="datetime-local"
+                      value={newTodo.dueDate}
+                      onChange={(e) => setNewTodo({ ...newTodo, dueDate: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleCreateTodo} className="flex-1">
+                      Create Todo
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsCreateDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="dueDate">Due Date</Label>
-                  <Input
-                    id="dueDate"
-                    type="datetime-local"
-                    value={newTodo.dueDate}
-                    onChange={(e) => setNewTodo({ ...newTodo, dueDate: e.target.value })}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleCreateTodo} className="flex-1">
-                    Create Todo
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsCreateDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
+
+        {/* Alert Status Info */}
+        {isMonitoring && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 text-sm text-blue-800">
+            <Bell className="h-4 w-4" />
+            <span>Todo alerts are active - you'll receive notifications for tasks due within 15 minutes</span>
+          </div>
+        )}
 
         {/* Stats Cards */}
         {stats && (
