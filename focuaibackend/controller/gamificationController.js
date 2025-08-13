@@ -402,6 +402,83 @@ const gamificationController = {
       console.error('Error getting user rank:', error);
       res.status(500).json({ error: 'Failed to get user rank' });
     }
+  },
+
+  // Get user's gamification stats
+  async getStats(req, res) {
+    try {
+      const userId = req.user._id;
+      const email = req.user.email;
+      
+      // Find the user's gamification data
+      let gamificationData = await Gamification.findOne({ userId });
+      
+      // If no gamification data exists, create a new one
+      if (!gamificationData) {
+        gamificationData = new Gamification({
+          userId,
+          email,
+          points: {
+            total: 0,
+            daily: 0,
+            weekly: 0,
+            monthly: 0
+          },
+          level: {
+            current: 1,
+            progress: 0,
+            nextLevelAt: 1000
+          },
+          badges: [],
+          challenges: [],
+          streaks: {
+            current: 0,
+            longest: 0,
+            lastActiveDate: new Date()
+          },
+          statistics: {
+            totalFocusTime: 0,
+            totalProductiveTime: 0,
+            totalDistractionTime: 0,
+            averageFocusScore: 0,
+            sessionsCompleted: 0
+          }
+        });
+        await gamificationData.save();
+      }
+      
+      // Calculate next level points
+      const nextLevelPoints = Math.floor(100 * Math.pow(gamificationData.level.current + 1, 2));
+      const currentLevelPoints = Math.floor(100 * Math.pow(gamificationData.level.current, 2));
+      const pointsNeeded = nextLevelPoints - currentLevelPoints;
+      
+      // Format response
+      const stats = {
+        level: gamificationData.level.current,
+        points: gamificationData.points.total,
+        pointsToNextLevel: nextLevelPoints - gamificationData.points.total,
+        totalPointsForLevel: pointsNeeded,
+        achievements: {
+          total: gamificationData.badges.length + 10, // Total available achievements
+          completed: gamificationData.badges.length,
+        },
+        challenges: {
+          total: gamificationData.challenges.length,
+          completed: gamificationData.challenges.filter(c => c.completed).length,
+          active: gamificationData.challenges.filter(c => !c.completed).length,
+        },
+        streak: {
+          current: gamificationData.streaks?.current || 0,
+          longest: gamificationData.streaks?.longest || 0,
+        },
+        badges: countBadgesByRarity(gamificationData.badges)
+      };
+      
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error('Error fetching gamification stats:', error);
+      res.status(500).json({ success: false, error: 'Server error' });
+    }
   }
 };
 
@@ -496,6 +573,37 @@ async function updateUserProfileStats(userId, gamification) {
   } catch (error) {
     console.error('Error updating user profile stats:', error);
   }
+}
+
+// Helper function to count badges by rarity
+function countBadgesByRarity(badges) {
+  const counts = {
+    bronze: 0,
+    silver: 0,
+    gold: 0,
+    platinum: 0,
+    diamond: 0,
+    master: 0,
+    legendary: 0,
+  };
+  
+  badges.forEach(badge => {
+    const rarity = badge.rarity?.toLowerCase() || 'bronze';
+    if (counts.hasOwnProperty(rarity)) {
+      counts[rarity]++;
+    } else {
+      // Map other rarities to our frontend types
+      switch (rarity) {
+        case 'common': counts.bronze++; break;
+        case 'rare': counts.silver++; break;
+        case 'epic': counts.gold++; break;
+        case 'legendary': counts.platinum++; break;
+        default: counts.bronze++; break;
+      }
+    }
+  });
+  
+  return counts;
 }
 
 module.exports = gamificationController;

@@ -1,0 +1,1261 @@
+App_Name,Tab_Name,Usage_Seconds,Label,AppNameEncoded,TabNameEncoded,LabelEncoded
+VS Code,Main.py - Project Code,3600,Focused,22,244,1
+Chrome,YouTube - DSA Tutorial,1800,Focused,1,592,1
+Chrome,YouTube - Memes,1200,Distracted,1,615,0
+Instagram,Instagram Feed,900,Distracted,7,207,0
+Chrome,LeetCode - Arrays Practice,2400,Focused,1,228,1
+Facebook,Facebook Homepage,600,Distracted,2,106,0
+Slack,Team Discussion - #dev,1500,Focused,15,463,1
+Spotify,Spotify - Focus Playlist,1200,Focused,16,395,1
+Spotify,Spotify - Party Mix,800,Distracted,16,407,0
+Gmail,Inbox - Project Update,1300,Focused,3,157,1
+Netflix,Netflix - Stranger Things,1800,Distracted,9,290,0
+Google Meet,Weekly Team Call,2000,Focused,6,545,1
+Reddit,Reddit - Funny Jokes,700,Distracted,14,338,0
+Chrome,Stack Overflow - React Bug,1600,Focused,1,450,1
+Chrome,Twitter - Trending,600,Distracted,1,526,0
+Zoom,Client Call - Onboarding,1900,Focused,24,32,1
+WhatsApp,WhatsApp - Friends Chat,500,Distracted,23,550,0
+Notion,Notion - Research Notes,1700,Focused,11,303,1
+Google Docs,Docs - Final Report,1500,Focused,4,55,1
+VS Code,app.js - Debugging,3400,Focused,22,643,1
+Chrome,YouTube - Coding Interview,2000,Focused,1,589,1
+Chrome,YouTube - Comedy Clips,1000,Distracted,1,590,0
+Messenger,Messenger - College Group,650,Distracted,8,262,0
+Trello,Trello - Task Board,1400,Focused,20,500,1
+Outlook,Inbox - Client Replies,1100,Focused,12,151,1
+Chrome,Wikipedia - Sorting,1300,Focused,1,564,1
+Netflix,Netflix - Comedy Show,2100,Distracted,9,271,0
+Instagram,Instagram - Reels,400,Distracted,7,196,0
+Teams,Sprint Planning Call,1800,Focused,18,421,1
+Chrome,YouTube - System Design,1600,Focused,1,632,1
+Reddit,Reddit - Memes,800,Distracted,14,350,0
+Google Keep,Keep - Ideas List,700,Focused,5,210,1
+Telegram,Telegram - Fun Group,500,Distracted,19,480,0
+Postman,Postman - API Testing,1500,Focused,13,321,1
+ChatGPT,ChatGPT - Fix Code,1800,Focused,0,31,1
+Twitter,Twitter - Feed,550,Distracted,21,508,0
+Zoom,Workshop - AI Ethics,2100,Focused,24,566,1
+Chrome,Medium - Productivity Article,1400,Focused,1,253,1
+Chrome,YouTube - Productivity Tips,1200,Focused,1,616,1
+Facebook,Facebook - Stories,300,Distracted,2,104,0
+Notepad++,main.c - File Open,1200,Focused,10,657,1
+Spotify,Spotify - Chill Lofi,1000,Distracted,16,377,0
+Gmail,Gmail - Assignment Reply,1600,Focused,3,116,1
+Chrome,YouTube - Study With Me,1800,Focused,1,630,1
+Netflix,Netflix - Movie,1500,Distracted,9,279,0
+WhatsApp,WhatsApp Web - Chat,600,Distracted,23,563,0
+Stack Overflow,Stack Overflow App,1400,Focused,17,459,1
+Chrome,GeeksforGeeks - Trees,1700,Focused,1,115,1
+VS Code,style.css - Portfolio,3600,Focused,22,684,1
+VS Code,server.js - Backend Code,3200,Focused,22,674,1
+Chrome,YouTube - Machine Learning,1900,Focused,1,613,1
+Instagram,Instagram - Stories,750,Distracted,7,201,0
+Slack,Project Updates - #general,1300,Focused,15,331,1
+Spotify,Spotify - Workout Mix,900,Distracted,16,419,0
+Chrome,HackerRank - Algorithms,2200,Focused,1,134,1
+Reddit,Reddit - Programming,1100,Focused,14,358,1
+Google Docs,Docs - Meeting Notes,1600,Focused,4,57,1
+Netflix,Netflix - Documentary,2000,Distracted,9,275,0
+Zoom,Team Sync - Daily Standup,1800,Focused,24,468,1
+Twitter,Twitter - Tech News,600,Distracted,21,524,0
+Notion,Notion - Task Planning,1500,Focused,11,310,1
+Chrome,YouTube - Web Dev Tutorial,1700,Focused,1,637,1
+Facebook,Facebook - Group Chat,500,Distracted,2,85,0
+Gmail,Inbox - Team Feedback,1400,Focused,3,161,1
+Spotify,Spotify - Pop Hits,800,Distracted,16,410,0
+VS Code,config.json - Setup,3000,Focused,22,649,1
+Chrome,Stack Overflow - Python Error,1800,Focused,1,448,1
+Instagram,Instagram - Explore,650,Distracted,7,178,0
+Teams,Retrospective Call,1900,Focused,18,371,1
+Chrome,YouTube - Data Structures,2000,Focused,1,593,1
+Reddit,Reddit - News,700,Distracted,14,354,0
+Google Keep,Keep - Project Ideas,900,Focused,5,212,1
+Telegram,Telegram - Study Group,1200,Focused,19,485,1
+Postman,Postman - Endpoint Testing,1600,Focused,13,323,1
+ChatGPT,ChatGPT - Code Explanation,1700,Focused,0,25,1
+Twitter,Twitter - Memes,550,Distracted,21,513,0
+Zoom,Client Demo - Product,2100,Focused,24,34,1
+Chrome,Medium - Tech Article,1300,Focused,1,259,1
+Spotify,Spotify - Classical Music,1100,Focused,16,382,1
+Facebook,Facebook - Marketplace,400,Distracted,2,93,0
+Notepad++,script.py - Automation,1400,Focused,10,672,1
+Gmail,Gmail - Client Proposal,1500,Focused,3,118,1
+Chrome,YouTube - Interview Prep,1800,Focused,1,607,1
+Netflix,Netflix - Series Binge,1900,Distracted,9,289,0
+WhatsApp,WhatsApp - Family Chat,600,Distracted,23,549,0
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused,17,457,1
+Chrome,GeeksforGeeks - Graphs,1700,Focused,1,109,1
+VS Code,frontend.tsx - UI Code,3500,Focused,22,656,1
+Slack,Channel - #backend,1400,Focused,15,0,1
+Chrome,YouTube - Cloud Tutorial,2000,Focused,1,588,1
+Instagram,Instagram - DMs,500,Distracted,7,177,0
+Teams,Planning Session,1800,Focused,18,314,1
+Spotify,Spotify - Dance Mix,900,Distracted,16,386,0
+Chrome,LeetCode - Dynamic Programming,2300,Focused,1,230,1
+Reddit,Reddit - Tech Support,1000,Focused,14,366,1
+Google Docs,Docs - Presentation,1600,Focused,4,59,1
+Netflix,Netflix - Reality Show,2100,Distracted,9,283,0
+Zoom,Workshop - Data Science,2000,Focused,24,569,1
+Twitter,Twitter - Viral Posts,600,Distracted,21,534,0
+Notion,Notion - Study Plan,1400,Focused,11,305,1
+Chrome,YouTube - SQL Tutorial,1700,Focused,1,627,1
+Facebook,Facebook - Events,450,Distracted,2,81,0
+Gmail,Inbox - Work Emails,1500,Focused,3,167,1
+Spotify,Spotify - Rap Playlist,800,Distracted,16,411,0
+VS Code,api.py - API Development,3200,Focused,22,640,1
+Chrome,Stack Overflow - JS Bug,1800,Focused,1,440,1
+Instagram,Instagram - Live,700,Distracted,7,190,0
+Teams,Code Review Call,1900,Focused,18,50,1
+Chrome,YouTube - DevOps Guide,2000,Focused,1,598,1
+Reddit,Reddit - Gaming,750,Distracted,14,340,0
+Google Keep,Keep - To-Do List,900,Focused,5,223,1
+Telegram,Telegram - Work Group,1300,Focused,19,490,1
+Postman,Postman - API Debugging,1600,Focused,13,315,1
+ChatGPT,ChatGPT - Algorithm Help,1700,Focused,0,20,1
+Twitter,Twitter - Funny Videos,550,Distracted,21,510,0
+Zoom,Training - Soft Skills,2100,Focused,24,497,1
+Chrome,Medium - Career Advice,1300,Focused,1,245,1
+Spotify,Spotify - Jazz Vibes,1000,Focused,16,402,1
+Facebook,Facebook - Ads,400,Distracted,2,75,0
+Notepad++,utils.py - Script,1400,Focused,10,698,1
+Gmail,Gmail - Team Update,1500,Focused,3,132,1
+Chrome,YouTube - CSS Tutorial,1800,Focused,1,585,1
+Netflix,Netflix - Anime,1900,Distracted,9,267,0
+WhatsApp,WhatsApp - Group Chat,600,Distracted,23,552,0
+Stack Overflow,Stack Overflow - CSS Fix,1600,Focused,17,431,1
+Chrome,GeeksforGeeks - Linked Lists,1700,Focused,1,111,1
+VS Code,router.js - Backend,3400,Focused,22,670,1
+Slack,Channel - #frontend,1400,Focused,15,8,1
+Chrome,YouTube - AI Tutorial,2000,Focused,1,575,1
+Instagram,Instagram - Posts,500,Distracted,7,195,0
+Teams,Team Brainstorm,1800,Focused,18,461,1
+Spotify,Spotify - EDM Mix,900,Distracted,16,389,0
+Chrome,HackerRank - Data Structures,2200,Focused,1,137,1
+Reddit,Reddit - DIY Projects,1000,Focused,14,334,1
+Google Docs,Docs - Project Plan,1600,Focused,4,61,1
+Netflix,Netflix - Thriller Movie,2100,Distracted,9,292,0
+Zoom,Client Feedback Call,2000,Focused,24,36,1
+Twitter,Twitter - Sports News,600,Distracted,21,521,0
+Notion,Notion - Meeting Agenda,1400,Focused,11,296,1
+Chrome,YouTube - Java Tutorial,1700,Focused,1,609,1
+Facebook,Facebook - News Feed,450,Distracted,2,95,0
+Gmail,Inbox - Task Assignment,1500,Focused,3,159,1
+Spotify,Spotify - Indie Playlist,800,Distracted,16,398,0
+VS Code,tests.py - Unit Tests,3200,Focused,22,687,1
+Chrome,Stack Overflow - API Error,1800,Focused,1,427,1
+Instagram,Instagram - Highlights,700,Distracted,7,187,0
+Teams,Weekly Sync,1900,Focused,18,543,1
+Chrome,YouTube - Backend Tutorial,2000,Focused,1,581,1
+Reddit,Reddit - Jokes,750,Distracted,14,345,0
+Google Keep,Keep - Research Ideas,900,Focused,5,214,1
+Telegram,Telegram - Project Group,1300,Focused,19,483,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Debug Code,1700,Focused,0,30,1
+Twitter,Twitter - Celebrity News,550,Distracted,21,503,0
+Zoom,Workshop - ML Models,2100,Focused,24,570,1
+Chrome,Medium - Coding Tips,1300,Focused,1,247,1
+Spotify,Spotify - Focus Classical,1000,Focused,16,392,1
+Facebook,Facebook - Groups,400,Distracted,2,90,0
+Notepad++,server.c - File Edit,1400,Focused,10,673,1
+Gmail,Gmail - Follow-Up Email,1500,Focused,3,123,1
+Chrome,YouTube - Study Session,1800,Focused,1,628,1
+Netflix,Netflix - Comedy Special,1900,Distracted,9,272,0
+WhatsApp,WhatsApp - Social Chat,600,Distracted,23,556,0
+Stack Overflow,Stack Overflow - DB Query,1600,Focused,17,433,1
+Chrome,GeeksforGeeks - Stacks,1700,Focused,1,114,1
+VS Code,main.tsx - Frontend Code,3500,Focused,22,665,1
+Slack,Channel - #data-science,1400,Focused,15,4,1
+Chrome,YouTube - Python Tutorial,2000,Focused,1,620,1
+Instagram,Instagram - Ads,500,Distracted,7,172,0
+Teams,Project Kickoff Call,1800,Focused,18,324,1
+Spotify,Spotify - Party Playlist,900,Distracted,16,408,0
+Chrome,LeetCode - Strings Practice,2300,Focused,1,239,1
+Reddit,Reddit - Science,1000,Focused,14,359,1
+Google Docs,Docs - Research Paper,1600,Focused,4,67,1
+Netflix,Netflix - Action Movie,2100,Distracted,9,264,0
+Zoom,Team Workshop - Agile,2000,Focused,24,472,1
+Twitter,Twitter - Random Posts,600,Distracted,21,519,0
+Notion,Notion - Project Roadmap,1400,Focused,11,301,1
+Chrome,YouTube - Algorithms Guide,1700,Focused,1,577,1
+Facebook,Facebook - Friend Requests,450,Distracted,2,83,0
+Gmail,Inbox - Manager Feedback,1500,Focused,3,154,1
+Spotify,Spotify - Chill Pop,800,Distracted,16,378,0
+VS Code,db.py - Database Code,3200,Focused,22,652,1
+Chrome,Stack Overflow - Node.js Error,1800,Focused,1,446,1
+Instagram,Instagram - Stories View,700,Distracted,7,204,0
+Teams,Client Sync Call,1900,Focused,18,41,1
+Chrome,YouTube - Frontend Guide,2000,Focused,1,602,1
+Reddit,Reddit - Memes Page,750,Distracted,14,353,0
+Google Keep,Keep - Study Notes,900,Focused,5,218,1
+Telegram,Telegram - Tech Group,1300,Focused,19,488,1
+Postman,Postman - API Deployment,1600,Focused,13,316,1
+ChatGPT,ChatGPT - Code Review,1700,Focused,0,29,1
+Twitter,Twitter - Trending Hashtags,550,Distracted,21,527,0
+Zoom,Training - Leadership,2100,Focused,24,494,1
+Chrome,Medium - DevOps Article,1300,Focused,1,250,1
+VS Code,utils.py - Helper Functions,3300,Focused,22,697,1
+Chrome,YouTube - React Tutorial,1900,Focused,1,622,1
+Instagram,Instagram - Explore,800,Distracted,7,178,0
+Slack,Channel - #marketing,1400,Focused,15,11,1
+Spotify,Spotify - Study Music,1100,Focused,16,415,1
+Netflix,Netflix - Crime Series,2000,Distracted,9,274,0
+Gmail,Inbox - Team Meeting,1300,Focused,3,162,1
+Chrome,LeetCode - Two Pointers,2200,Focused,1,243,1
+Reddit,Reddit - Tech Memes,700,Distracted,14,364,0
+Google Docs,Docs - Project Timeline,1600,Focused,4,65,1
+Zoom,Team Retrospective,1800,Focused,24,466,1
+Twitter,Twitter - Industry News,600,Distracted,21,512,0
+Notion,Notion - Personal Goals,1500,Focused,11,298,1
+Chrome,Stack Overflow - Django Error,1700,Focused,1,436,1
+Facebook,Facebook - Profile Page,500,Distracted,2,99,0
+WhatsApp,WhatsApp - Work Group,650,Focused,23,562,1
+Postman,Postman - API Documentation,1600,Focused,13,317,1
+ChatGPT,ChatGPT - Code Refactoring,1800,Focused,0,28,1
+Spotify,Spotify - Relaxing Tunes,900,Distracted,16,413,0
+Teams,Weekly Standup,1900,Focused,18,542,1
+Chrome,YouTube - Deep Learning,2000,Focused,1,596,1
+Reddit,Reddit - Coding Help,1000,Focused,14,332,1
+Google Keep,Keep - Shopping List,900,Distracted,5,216,0
+Telegram,Telegram - Casual Chat,550,Distracted,19,474,0
+VS Code,styles.css - Website Design,3400,Focused,22,685,1
+Chrome,GeeksforGeeks - Heaps,1600,Focused,1,110,1
+Instagram,Instagram - Influencer Posts,700,Distracted,7,189,0
+Slack,Channel - #design,1300,Focused,15,5,1
+Netflix,Netflix - Sci-Fi Show,2100,Distracted,9,288,0
+Gmail,Inbox - Client Query,1500,Focused,3,150,1
+Chrome,YouTube - JavaScript Basics,1800,Focused,1,610,1
+Twitter,Twitter - Humor,600,Distracted,21,511,0
+Notion,Notion - Daily Journal,1400,Focused,11,294,1
+Spotify,Spotify - Workout Beats,1000,Distracted,16,417,0
+Zoom,Client Pitch Meeting,2000,Focused,24,39,1
+Chrome,Medium - Leadership Skills,1300,Focused,1,252,1
+Facebook,Facebook - Photos,450,Distracted,2,97,0
+Notepad++,config.c - Configuration,1200,Focused,10,648,1
+Teams,Sprint Demo,1800,Focused,18,420,1
+Chrome,YouTube - Cloud Architecture,1700,Focused,1,586,1
+Reddit,Reddit - Productivity Tips,750,Focused,14,357,1
+Google Docs,Docs - Team Charter,1600,Focused,4,70,1
+WhatsApp,WhatsApp - Study Group,600,Focused,23,559,1
+Stack Overflow,Stack Overflow - React Hooks,1500,Focused,17,453,1
+Chrome,HackerRank - Arrays,2200,Focused,1,135,1
+VS Code,auth.py - Authentication,3200,Focused,22,646,1
+Instagram,Instagram - Shopping,500,Distracted,7,200,0
+Slack,Channel - #product,1400,Focused,15,12,1
+Spotify,Spotify - Focus Beats,900,Focused,16,391,1
+Chrome,YouTube - Cybersecurity,1900,Focused,1,591,1
+Reddit,Reddit - World News,1100,Distracted,14,370,0
+Google Keep,Keep - Meeting Notes,900,Focused,5,211,1
+Netflix,Netflix - Historical Drama,1900,Distracted,9,278,0
+Zoom,Team Building Session,2000,Focused,24,462,1
+Twitter,Twitter - Fashion Trends,550,Distracted,21,507,0
+Notion,Notion - Weekly Planner,1500,Focused,11,313,1
+Chrome,Stack Overflow - AWS Issue,1600,Focused,1,430,1
+Facebook,Facebook - Video Feed,400,Distracted,2,105,0
+Gmail,Inbox - Project Deadline,1400,Focused,3,155,1
+Spotify,Spotify - Classical Piano,800,Focused,16,383,1
+VS Code,app.tsx - React Component,3300,Focused,22,645,1
+Chrome,YouTube - UX Design,1800,Focused,1,633,1
+Instagram,Instagram - Travel Posts,650,Distracted,7,205,0
+Teams,Code Pairing Session,1900,Focused,18,49,1
+Chrome,GeeksforGeeks - Binary Trees,1700,Focused,1,108,1
+Reddit,Reddit - Fitness,700,Distracted,14,336,0
+Google Docs,Docs - Budget Plan,1600,Focused,4,54,1
+Telegram,Telegram - Coding Group,1300,Focused,19,476,1
+Postman,Postman - API Mocking,1500,Focused,13,318,1
+ChatGPT,ChatGPT - Algorithm Design,1700,Focused,0,18,1
+Twitter,Twitter - Political News,600,Distracted,21,517,0
+Zoom,Training - Time Management,2100,Focused,24,499,1
+Chrome,Medium - Data Science Trends,1400,Focused,1,249,1
+Spotify,Spotify - Ambient Sounds,1000,Focused,16,373,1
+Facebook,Facebook - Community Page,450,Distracted,2,78,0
+Notepad++,server.py - API Server,1400,Focused,10,675,1
+Gmail,Gmail - Invoice Review,1500,Focused,3,124,1
+Chrome,YouTube - Full Stack Tutorial,1800,Focused,1,604,1
+Netflix,Netflix - Romantic Comedy,2000,Distracted,9,284,0
+WhatsApp,WhatsApp - Event Planning,600,Focused,23,548,1
+Stack Overflow,Stack Overflow - GraphQL,1600,Focused,17,438,1
+Chrome,LeetCode - Backtracking,2300,Focused,1,229,1
+VS Code,models.py - Database Models,3400,Focused,22,668,1
+Slack,Channel - #security,1400,Focused,15,16,1
+Chrome,YouTube - Ethical Hacking,2000,Focused,1,599,1
+Instagram,Instagram - Food Posts,500,Distracted,7,185,0
+Teams,Project Status Meeting,1800,Focused,18,328,1
+Spotify,Spotify - Motivational Songs,900,Distracted,16,403,0
+Chrome,HackerRank - Greedy Algorithms,2200,Focused,1,142,1
+Reddit,Reddit - Life Hacks,1000,Focused,14,349,1
+Google Docs,Docs - User Manual,1600,Focused,4,74,1
+Netflix,Netflix - Mystery Series,2100,Distracted,9,282,0
+Zoom,Client Onboarding Session,2000,Focused,24,38,1
+Twitter,Twitter - Entertainment News,600,Distracted,21,505,0
+Notion,Notion - Habit Tracker,1400,Focused,11,295,1
+Chrome,YouTube - C++ Tutorial,1700,Focused,1,583,1
+Facebook,Facebook - Live Stream,450,Distracted,2,91,0
+Gmail,Inbox - Team Announcement,1500,Focused,3,160,1
+Spotify,Spotify - Top Hits,800,Distracted,16,416,0
+VS Code,services.py - Microservices,3200,Focused,22,681,1
+Chrome,Stack Overflow - Kubernetes,1800,Focused,1,443,1
+Instagram,Instagram - Art Gallery,700,Distracted,7,174,0
+Teams,Design Review,1900,Focused,18,53,1
+Chrome,YouTube - Blockchain Basics,2000,Focused,1,582,1
+Reddit,Reddit - Travel Tips,750,Distracted,14,369,0
+Google Keep,Keep - Book List,900,Focused,5,208,1
+Telegram,Telegram - Developer Chat,1300,Focused,19,477,1
+Postman,Postman - API Security,1600,Focused,13,320,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Science News,550,Distracted,21,520,0
+Zoom,Workshop - Public Speaking,2100,Focused,24,572,1
+Chrome,Medium - Startup Advice,1300,Focused,1,257,1
+Spotify,Spotify - Instrumental,1000,Focused,16,400,1
+Facebook,Facebook - Gaming Group,400,Distracted,2,84,0
+Notepad++,client.c - Network Client,1400,Focused,10,647,1
+Gmail,Gmail - Contract Review,1500,Focused,3,122,1
+Chrome,YouTube - Game Development,1800,Focused,1,605,1
+Netflix,Netflix - Fantasy Series,1900,Distracted,9,277,0
+WhatsApp,WhatsApp - Hobby Group,600,Distracted,23,553,0
+Stack Overflow,Stack Overflow - Rust Error,1600,Focused,17,454,1
+Chrome,GeeksforGeeks - Sorting Algorithms,1700,Focused,1,113,1
+VS Code,ui.py - GUI Development,3500,Focused,22,690,1
+Slack,Channel - #qa,1400,Focused,15,15,1
+Chrome,YouTube - Robotics Tutorial,2000,Focused,1,623,1
+Instagram,Instagram - Pet Videos,500,Distracted,7,194,0
+Teams,Team Retrospective,1800,Focused,18,466,1
+Spotify,Spotify - Relaxing Jazz,900,Distracted,16,412,0
+Chrome,LeetCode - Matrix Problems,2300,Focused,1,234,1
+Reddit,Reddit - Philosophy,1000,Focused,14,356,1
+Google Docs,Docs - Marketing Strategy,1600,Focused,4,56,1
+Netflix,Netflix - Animated Movie,2100,Distracted,9,266,0
+Zoom,Client Demo - New Feature,2000,Focused,24,33,1
+Twitter,Twitter - Weather Updates,600,Distracted,21,535,0
+Notion,Notion - Travel Itinerary,1400,Focused,11,312,1
+Chrome,YouTube - Ruby on Rails,1700,Focused,1,624,1
+Facebook,Facebook - Local Events,450,Distracted,2,92,0
+Gmail,Inbox - Supplier Quote,1500,Focused,3,158,1
+Spotify,Spotify - Electronic Music,800,Distracted,16,390,0
+VS Code,tests.py - Integration Tests,3200,Focused,22,686,1
+Chrome,Stack Overflow - MongoDB,1800,Focused,1,444,1
+Instagram,Instagram - Fitness Posts,700,Distracted,7,184,0
+Teams,Weekly Planning,1900,Focused,18,536,1
+Chrome,YouTube - AI in Healthcare,2000,Focused,1,576,1
+Reddit,Reddit - Cooking Recipes,750,Distracted,14,333,0
+Google Keep,Keep - Grocery List,900,Distracted,5,209,0
+Telegram,Telegram - Language Learning,1300,Focused,19,481,1
+Postman,Postman - API Performance,1600,Focused,13,319,1
+ChatGPT,ChatGPT - Code Documentation,1700,Focused,0,24,1
+Twitter,Twitter - Business News,550,Distracted,21,501,0
+Zoom,Training - Conflict Resolution,2100,Focused,24,491,1
+Chrome,Medium - Remote Work Tips,1300,Focused,1,255,1
+Spotify,Spotify - Nature Sounds,1000,Focused,16,404,1
+Facebook,Facebook - Alumni Group,400,Distracted,2,76,0
+Notepad++,parser.c - Data Parser,1400,Focused,10,669,1
+Gmail,Gmail - Legal Document,1500,Focused,3,125,1
+Chrome,YouTube - Swift Programming,1800,Focused,1,631,1
+Netflix,Netflix - Thriller Series,1900,Distracted,9,293,0
+WhatsApp,WhatsApp - Volunteer Group,600,Focused,23,560,1
+Stack Overflow,Stack Overflow - Vue.js,1600,Focused,17,458,1
+Chrome,LeetCode - Sliding Window,2300,Focused,1,235,1
+VS Code,deploy.sh - Deployment Script,3400,Focused,22,654,1
+Slack,Channel - #hr,1400,Focused,15,10,1
+Chrome,YouTube - Quantum Computing,2000,Focused,1,621,1
+Instagram,Instagram - Celebrity News,500,Distracted,7,176,0
+Teams,Team Alignment Meeting,1800,Focused,18,460,1
+Spotify,Spotify - Ambient Chill,900,Distracted,16,372,0
+Chrome,HackerRank - Bit Manipulation,2200,Focused,1,136,1
+Reddit,Reddit - History Facts,1000,Focused,14,342,1
+Google Docs,Docs - Product Roadmap,1600,Focused,4,60,1
+VS Code,utils.tsx - Component Code,3300,Focused,22,700,1
+Chrome,YouTube - Graph Theory,1800,Focused,1,606,1
+Instagram,Instagram - Explore Feed,800,Distracted,7,179,0
+Slack,Channel - #project-sync,1400,Focused,15,14,1
+Spotify,Spotify - Study Mix,1100,Focused,16,414,1
+Netflix,Netflix - Crime Drama,2000,Distracted,9,273,0
+Gmail,Inbox - Team Update,1300,Focused,3,165,1
+Chrome,LeetCode - Tree Practice,2200,Focused,1,241,1
+Reddit,Reddit - Humor,700,Distracted,14,343,0
+Google Docs,Docs - Sprint Plan,1600,Focused,4,68,1
+Zoom,Team Sync - Weekly,1800,Focused,24,469,1
+Twitter,Twitter - Tech Updates,600,Distracted,21,525,0
+Notion,Notion - Task Manager,1500,Focused,11,307,1
+Chrome,Stack Overflow - Flask Error,1700,Focused,1,437,1
+Facebook,Facebook - Social Feed,500,Distracted,2,100,0
+WhatsApp,WhatsApp - Project Chat,650,Focused,23,554,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Code Debugging,1800,Focused,0,23,1
+Spotify,Spotify - Pop Classics,900,Distracted,16,409,0
+Teams,Client Review Meeting,1900,Focused,18,40,1
+Chrome,YouTube - Machine Learning Basics,2000,Focused,1,614,1
+Reddit,Reddit - Software Dev,1000,Focused,14,363,1
+Google Keep,Keep - Work Notes,900,Focused,5,225,1
+Telegram,Telegram - Fun Chat,550,Distracted,19,479,0
+VS Code,frontend.js - UI Development,3400,Focused,22,655,1
+Chrome,GeeksforGeeks - Queues,1600,Focused,1,112,1
+Instagram,Instagram - Reels Scroll,700,Distracted,7,198,0
+Slack,Channel - #engineering,1300,Focused,15,7,1
+Netflix,Netflix - Comedy Series,2100,Distracted,9,270,0
+Gmail,Inbox - Project Feedback,1500,Focused,3,156,1
+Chrome,YouTube - Web Design Tutorial,1800,Focused,1,634,1
+Twitter,Twitter - Viral Clips,600,Distracted,21,530,0
+Notion,Notion - Study Schedule,1400,Focused,11,306,1
+Spotify,Spotify - Chill Vibes,1000,Distracted,16,379,0
+Zoom,Client Demo Session,2000,Focused,24,35,1
+Chrome,Medium - Software Engineering,1300,Focused,1,256,1
+Facebook,Facebook - Group Posts,450,Distracted,2,89,0
+Notepad++,config.py - Setup Script,1200,Focused,10,650,1
+Teams,Sprint Planning Meeting,1800,Focused,18,422,1
+Chrome,YouTube - Database Basics,1700,Focused,1,594,1
+Reddit,Reddit - Tech Tips,750,Focused,14,367,1
+Google Docs,Docs - Meeting Summary,1600,Focused,4,58,1
+WhatsApp,WhatsApp - Coding Group,600,Focused,23,547,1
+Stack Overflow,Stack Overflow - Java Query,1500,Focused,17,441,1
+Chrome,HackerRank - Strings,2200,Focused,1,146,1
+VS Code,server.py - Backend API,3200,Focused,22,676,1
+Instagram,Instagram - Live Stream,500,Distracted,7,191,0
+Slack,Channel - #devops,1400,Focused,15,6,1
+Spotify,Spotify - Workout Hits,900,Distracted,16,418,0
+Chrome,YouTube - Algorithms Tutorial,1900,Focused,1,578,1
+Reddit,Reddit - News Updates,1100,Distracted,14,355,0
+Google Keep,Keep - Task List,900,Focused,5,221,1
+Netflix,Netflix - Action Series,1900,Distracted,9,265,0
+Zoom,Workshop - Cloud Computing,2000,Focused,24,567,1
+Twitter,Twitter - Memes Feed,550,Distracted,21,514,0
+Notion,Notion - Project Notes,1500,Focused,11,299,1
+Chrome,Stack Overflow - SQL Error,1600,Focused,1,455,1
+Facebook,Facebook - Marketplace Browse,400,Distracted,2,94,0
+Gmail,Inbox - Client Update,1400,Focused,3,153,1
+Spotify,Spotify - Classical Focus,800,Focused,16,380,1
+VS Code,app.js - Frontend Code,3300,Focused,22,644,1
+Chrome,YouTube - CSS Basics,1800,Focused,1,584,1
+Instagram,Instagram - Stories Share,650,Distracted,7,203,0
+Teams,Code Review Session,1900,Focused,18,51,1
+Chrome,GeeksforGeeks - Arrays,1700,Focused,1,107,1
+Reddit,Reddit - Gaming News,700,Distracted,14,341,0
+Google Docs,Docs - Team Report,1600,Focused,4,72,1
+Telegram,Telegram - Work Chat,1300,Focused,19,489,1
+Postman,Postman - Endpoint Testing,1500,Focused,13,323,1
+ChatGPT,ChatGPT - Algorithm Debug,1700,Focused,0,17,1
+Twitter,Twitter - Funny Posts,600,Distracted,21,509,0
+Zoom,Training - Data Analysis,2100,Focused,24,492,1
+Chrome,Medium - Productivity Hacks,1300,Focused,1,254,1
+Spotify,Spotify - Jazz Classics,1000,Focused,16,401,1
+Facebook,Facebook - Events Page,450,Distracted,2,82,0
+Notepad++,utils.c - Utility Script,1400,Focused,10,695,1
+Gmail,Gmail - Task Review,1500,Focused,3,129,1
+Chrome,YouTube - Backend Basics,1800,Focused,1,579,1
+Netflix,Netflix - Sci-Fi Series,2000,Distracted,9,287,0
+WhatsApp,WhatsApp - Social Group,600,Distracted,23,557,0
+Stack Overflow,Stack Overflow - Python Query,1600,Focused,17,449,1
+Chrome,LeetCode - Graph Problems,2300,Focused,1,232,1
+VS Code,config.tsx - React Setup,3400,Focused,22,651,1
+Slack,Channel - #frontend-dev,1400,Focused,15,9,1
+Chrome,YouTube - DevOps Basics,2000,Focused,1,597,1
+Instagram,Instagram - Ads View,500,Distracted,7,173,0
+Teams,Project Kickoff Meeting,1800,Focused,18,325,1
+Spotify,Spotify - Dance Hits,900,Distracted,16,385,0
+Chrome,HackerRank - Dynamic Programming,2200,Focused,1,138,1
+Reddit,Reddit - Science Facts,1000,Focused,14,360,1
+Google Docs,Docs - Research Draft,1600,Focused,4,66,1
+Netflix,Netflix - Thriller Series,2100,Distracted,9,293,0
+Zoom,Team Workshop - Scrum,2000,Focused,24,473,1
+Twitter,Twitter - Sports Updates,600,Distracted,21,522,0
+Notion,Notion - Task Roadmap,1400,Focused,11,311,1
+Chrome,YouTube - Java Basics,1700,Focused,1,608,1
+Facebook,Facebook - Group Chat,450,Distracted,2,85,0
+Gmail,Inbox - Team Sync,1500,Focused,3,163,1
+Spotify,Spotify - Indie Hits,800,Distracted,16,397,0
+VS Code,api.js - API Service,3200,Focused,22,639,1
+Chrome,Stack Overflow - Node.js Fix,1800,Focused,1,447,1
+Instagram,Instagram - Highlights View,700,Distracted,7,188,0
+Teams,Client Feedback Session,1900,Focused,18,37,1
+Chrome,YouTube - Frontend Basics,2000,Focused,1,600,1
+Reddit,Reddit - Jokes Page,750,Distracted,14,348,0
+Google Keep,Keep - Project Tasks,900,Focused,5,213,1
+Telegram,Telegram - Study Chat,1300,Focused,19,484,1
+Postman,Postman - API Debugging,1600,Focused,13,315,1
+ChatGPT,ChatGPT - Code Fix,1700,Focused,0,26,1
+Twitter,Twitter - Trending Topics,550,Distracted,21,529,0
+Zoom,Workshop - AI Applications,2100,Focused,24,565,1
+Chrome,Medium - Coding Practices,1300,Focused,1,246,1
+Spotify,Spotify - Focus Piano,1000,Focused,16,394,1
+Facebook,Facebook - Social Posts,400,Distracted,2,103,0
+Notepad++,main.py - Script Edit,1400,Focused,10,664,1
+Gmail,Gmail - Client Feedback,1500,Focused,3,117,1
+Chrome,YouTube - Study Stream,1800,Focused,1,629,1
+Netflix,Netflix - Comedy Movie,1900,Distracted,9,269,0
+WhatsApp,WhatsApp - Friends Group,600,Distracted,23,551,0
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused,17,432,1
+Chrome,GeeksforGeeks - Stacks,1700,Focused,1,114,1
+VS Code,router.tsx - Frontend Routing,3500,Focused,22,671,1
+Slack,Channel - #data-analysis,1400,Focused,15,2,1
+Chrome,YouTube - Python Basics,2000,Focused,1,617,1
+Instagram,Instagram - Explore Posts,500,Distracted,7,180,0
+Teams,Weekly Team Meeting,1800,Focused,18,546,1
+Spotify,Spotify - Party Hits,900,Distracted,16,406,0
+Chrome,LeetCode - String Algorithms,2300,Focused,1,236,1
+Reddit,Reddit - Tech News,1000,Focused,14,365,1
+Google Docs,Docs - Project Summary,1600,Focused,4,64,1
+Netflix,Netflix - Action Drama,2100,Distracted,9,263,0
+Zoom,Client Sync Meeting,2000,Focused,24,42,1
+Twitter,Twitter - Viral News,600,Distracted,21,533,0
+Notion,Notion - Meeting Notes,1400,Focused,11,297,1
+Chrome,YouTube - SQL Basics,1700,Focused,1,625,1
+Facebook,Facebook - Photos Page,450,Distracted,2,98,0
+Gmail,Inbox - Work Update,1500,Focused,3,170,1
+Spotify,Spotify - Chill Hits,800,Distracted,16,375,0
+VS Code,db.tsx - Database Component,3200,Focused,22,653,1
+Chrome,Stack Overflow - React Error,1800,Focused,1,451,1
+Instagram,Instagram - Reels View,700,Distracted,7,199,0
+Teams,Sprint Review Session,1900,Focused,18,425,1
+Chrome,YouTube - Cloud Basics,2000,Focused,1,587,1
+Reddit,Reddit - Memes Feed,750,Distracted,14,352,0
+Google Keep,Keep - Study Plan,900,Focused,5,219,1
+Telegram,Telegram - Developer Group,1300,Focused,19,478,1
+Postman,Postman - API Testing,1600,Focused,13,321,1
+ChatGPT,ChatGPT - Code Analysis,1700,Focused,0,22,1
+Twitter,Twitter - Celebrity Updates,550,Distracted,21,504,0
+Zoom,Training - Team Leadership,2100,Focused,24,498,1
+Chrome,Medium - Tech Trends,1300,Focused,1,261,1
+Spotify,Spotify - Classical Hits,1000,Focused,16,381,1
+Facebook,Facebook - Group Events,400,Distracted,2,87,0
+Notepad++,utils.tsx - Component Script,1400,Focused,10,701,1
+Gmail,Gmail - Project Review,1500,Focused,3,127,1
+Chrome,YouTube - Web Dev Basics,1800,Focused,1,635,1
+Netflix,Netflix - Fantasy Movie,1900,Distracted,9,276,0
+WhatsApp,WhatsApp - Study Buddies,600,Focused,23,558,1
+Stack Overflow,Stack Overflow - API Query,1600,Focused,17,429,1
+Chrome,LeetCode - Tree Algorithms,2300,Focused,1,240,1
+VS Code,main.py - Data Processing,3400,Focused,22,663,1
+Slack,Channel - #project-management,1400,Focused,15,13,1
+Chrome,YouTube - AI Basics,2000,Focused,1,574,1
+Instagram,Instagram - Fashion Posts,500,Distracted,7,183,0
+Teams,Team Planning Session,1800,Focused,18,465,1
+Spotify,Spotify - EDM Hits,900,Distracted,16,388,0
+Chrome,HackerRank - Graph Algorithms,2200,Focused,1,139,1
+Reddit,Reddit - DIY Tips,1000,Focused,14,335,1
+Google Docs,Docs - Team Strategy,1600,Focused,4,73,1
+Netflix,Netflix - Mystery Movie,2100,Distracted,9,281,0
+Zoom,Workshop - Data Analysis,2000,Focused,24,568,1
+Twitter,Twitter - Random Feed,600,Distracted,21,518,0
+Notion,Notion - Task Planner,1400,Focused,11,309,1
+Chrome,YouTube - JavaScript Tutorial,1700,Focused,1,612,1
+Facebook,Facebook - News Updates,450,Distracted,2,96,0
+Gmail,Inbox - Client Proposal,1500,Focused,3,149,1
+Spotify,Spotify - Pop Classics,800,Distracted,16,409,0
+VS Code,services.tsx - Service Code,3200,Focused,22,682,1
+Chrome,Stack Overflow - GraphQL Error,1800,Focused,1,439,1
+Instagram,Instagram - Art Posts,700,Distracted,7,175,0
+Teams,Code Sync Meeting,1900,Focused,18,52,1
+Chrome,YouTube - Backend Guide,2000,Focused,1,580,1
+Reddit,Reddit - Humor Clips,750,Distracted,14,344,0
+Google Keep,Keep - Work Ideas,900,Focused,5,224,1
+Telegram,Telegram - Tech Chat,1300,Focused,19,486,1
+Postman,Postman - API Deployment,1600,Focused,13,316,1
+ChatGPT,ChatGPT - Algorithm Optimization,1700,Focused,0,21,1
+Twitter,Twitter - Entertainment Updates,550,Distracted,21,506,0
+Zoom,Training - Public Speaking,2100,Focused,24,496,1
+Chrome,Medium - Startup Tips,1300,Focused,1,258,1
+Spotify,Spotify - Focus Jazz,1000,Focused,16,393,1
+Facebook,Facebook - Community Events,400,Distracted,2,77,0
+Notepad++,server.tsx - Backend Script,1400,Focused,10,677,1
+Gmail,Gmail - Team Feedback,1500,Focused,3,130,1
+Chrome,YouTube - Python Crash Course,1800,Focused,1,618,1
+Netflix,Netflix - Sci-Fi Movie,1900,Distracted,9,286,0
+WhatsApp,WhatsApp - Project Group,600,Focused,23,555,1
+Stack Overflow,Stack Overflow - Database Fix,1600,Focused,17,434,1
+Chrome,LeetCode - Dynamic Programming,2300,Focused,1,230,1
+VS Code,ui.tsx - UI Component,3500,Focused,22,693,1
+Slack,Channel - #data-engineering,1400,Focused,15,3,1
+Chrome,YouTube - Cloud Tutorial,2000,Focused,1,588,1
+Instagram,Instagram - Travel Reels,500,Distracted,7,206,0
+Teams,Weekly Sprint Planning,1800,Focused,18,541,1
+Spotify,Spotify - Party Classics,900,Distracted,16,405,0
+Chrome,HackerRank - Tree Problems,2200,Focused,1,148,1
+Reddit,Reddit - Science News,1000,Focused,14,361,1
+Google Docs,Docs - Project Roadmap,1600,Focused,4,63,1
+Netflix,Netflix - Comedy Drama,2100,Distracted,9,268,0
+Zoom,Client Workshop - Agile,2000,Focused,24,47,1
+Twitter,Twitter - Tech Memes,600,Distracted,21,523,0
+Notion,Notion - Study Notes,1400,Focused,11,304,1
+Chrome,YouTube - SQL Crash Course,1700,Focused,1,626,1
+Facebook,Facebook - Social Media Feed,450,Distracted,2,102,0
+Gmail,Inbox - Work Tasks,1500,Focused,3,169,1
+Spotify,Spotify - Chill Jazz,800,Distracted,16,376,0
+VS Code,api.tsx - API Component,3200,Focused,22,642,1
+Chrome,Stack Overflow - JavaScript Fix,1800,Focused,1,442,1
+Instagram,Instagram - Explore Reels,700,Distracted,7,181,0
+Teams,Team Sync Session,1900,Focused,18,471,1
+Chrome,YouTube - Frontend Tutorial,2000,Focused,1,603,1
+Reddit,Reddit - Funny Videos,750,Distracted,14,339,0
+Google Keep,Keep - Task Ideas,900,Focused,5,220,1
+Telegram,Telegram - Coding Community,1300,Focused,19,475,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Code Debugging,1700,Focused,0,23,1
+Twitter,Twitter - Viral Hashtags,550,Distracted,21,531,0
+Zoom,Training - Data Science,2100,Focused,24,493,1
+Chrome,Medium - Coding Trends,1300,Focused,1,248,1
+Spotify,Spotify - Classical Piano,1000,Focused,16,383,1
+Facebook,Facebook - Group Discussions,400,Distracted,2,86,0
+Notepad++,utils.py - Data Script,1400,Focused,10,696,1
+Gmail,Gmail - Client Sync,1500,Focused,3,119,1
+Chrome,YouTube - Web Development,1800,Focused,1,638,1
+Netflix,Netflix - Action Series,1900,Distracted,9,265,0
+WhatsApp,WhatsApp - Work Chat,600,Focused,23,561,1
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused,17,456,1
+Chrome,LeetCode - Graph Traversal,2300,Focused,1,233,1
+VS Code,main.js - Frontend Code,3400,Focused,22,661,1
+Slack,Channel - #backend-dev,1400,Focused,15,1,1
+Chrome,YouTube - AI Applications,2000,Focused,1,573,1
+Instagram,Instagram - Pet Posts,500,Distracted,7,192,0
+Teams,Project Review Meeting,1800,Focused,18,327,1
+Spotify,Spotify - Dance Classics,900,Distracted,16,384,0
+Chrome,HackerRank - String Problems,2200,Focused,1,145,1
+Reddit,Reddit - Tech Tips,1000,Focused,14,367,1
+Google Docs,Docs - Team Plan,1600,Focused,4,71,1
+Netflix,Netflix - Mystery Drama,2100,Distracted,9,280,0
+Zoom,Client Training Session,2000,Focused,24,46,1
+Twitter,Twitter - News Feed,600,Distracted,21,516,0
+Notion,Notion - Project Tasks,1400,Focused,11,302,1
+Chrome,YouTube - Python Guide,1700,Focused,1,619,1
+Facebook,Facebook - Event Updates,450,Distracted,2,80,0
+Gmail,Inbox - Team Updates,1500,Focused,3,166,1
+Spotify,Spotify - Indie Pop,800,Distracted,16,399,0
+VS Code,services.js - Backend Service,3200,Focused,22,679,1
+Chrome,Stack Overflow - API Fix,1800,Focused,1,428,1
+Instagram,Instagram - Stories Feed,700,Distracted,7,202,0
+Teams,Sprint Sync Meeting,1900,Focused,18,426,1
+Chrome,YouTube - Cloud Architecture,2000,Focused,1,586,1
+Reddit,Reddit - Jokes Feed,750,Distracted,14,347,0
+Google Keep,Keep - Research Notes,900,Focused,5,215,1
+Telegram,Telegram - Tech Discussion,1300,Focused,19,487,1
+Postman,Postman - API Testing,1600,Focused,13,321,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Celebrity Gossip,550,Distracted,21,502,0
+Zoom,Workshop - Machine Learning,2100,Focused,24,571,1
+Chrome,Medium - Tech Insights,1300,Focused,1,260,1
+Spotify,Spotify - Focus Classical,1000,Focused,16,392,1
+Facebook,Facebook - Social Group,400,Distracted,2,101,0
+Notepad++,main.c - System Script,1400,Focused,10,659,1
+Gmail,Gmail - Project Sync,1500,Focused,3,128,1
+Chrome,YouTube - JavaScript Guide,1800,Focused,1,611,1
+Netflix,Netflix - Thriller Movie,1900,Distracted,9,292,0
+WhatsApp,WhatsApp - Study Group,600,Focused,23,559,1
+Stack Overflow,Stack Overflow - React Fix,1600,Focused,17,452,1
+Chrome,LeetCode - Array Problems,2300,Focused,1,227,1
+VS Code,ui.js - UI Script,3500,Focused,22,689,1
+Slack,Channel - #data-science,1400,Focused,15,4,1
+Chrome,YouTube - Database Tutorial,2000,Focused,1,595,1
+Instagram,Instagram - Food Reels,500,Distracted,7,186,0
+Teams,Team Planning Meeting,1800,Focused,18,464,1
+Spotify,Spotify - Party Mix,900,Distracted,16,407,0
+Chrome,HackerRank - Algorithm Practice,2200,Focused,1,133,1
+Reddit,Reddit - Science Updates,1000,Focused,14,362,1
+Google Docs,Docs - Project Report,1600,Focused,4,62,1
+Netflix,Netflix - Comedy Series,2100,Distracted,9,270,0
+Zoom,Client Workshop - Scrum,2000,Focused,24,48,1
+Twitter,Twitter - Viral Posts,600,Distracted,21,534,0
+Notion,Notion - Task Notes,1400,Focused,11,308,1
+Chrome,YouTube - Web Dev Guide,1700,Focused,1,636,1
+Facebook,Facebook - Group Feed,450,Distracted,2,88,0
+Gmail,Inbox - Client Tasks,1500,Focused,3,152,1
+Spotify,Spotify - Chill Pop,800,Distracted,16,378,0
+VS Code,api.py - API Script,3200,Focused,22,641,1
+Chrome,Stack Overflow - Node.js Bug,1800,Focused,1,445,1
+Instagram,Instagram - Explore Stories,700,Distracted,7,182,0
+Teams,Weekly Review Session,1900,Focused,18,540,1
+Chrome,YouTube - Frontend Crash Course,2000,Focused,1,601,1
+Reddit,Reddit - Memes Clips,750,Distracted,14,351,0
+Google Keep,Keep - Study Ideas,900,Focused,5,217,1
+Telegram,Telegram - Project Chat,1300,Focused,19,482,1
+Postman,Postman - API Deployment,1600,Focused,13,316,1
+ChatGPT,ChatGPT - Code Review,1700,Focused,0,29,1
+Twitter,Twitter - Trending News,550,Distracted,21,528,0
+Zoom,Training - Leadership Skills,2100,Focused,24,495,1
+Chrome,Medium - DevOps Trends,1300,Focused,1,251,1
+Spotify,Spotify - Classical Music,1000,Focused,16,382,1
+Facebook,Facebook - Event Page,400,Distracted,2,79,0
+Notepad++,utils.c - Code Script,1400,Focused,10,694,1
+Gmail,Gmail - Team Review,1500,Focused,3,131,1
+Chrome,YouTube - Python Tutorial,1800,Focused,1,620,1
+Netflix,Netflix - Action Movie,1900,Distracted,9,264,0
+WhatsApp,WhatsApp - Work Group,600,Focused,23,562,1
+Stack Overflow,Stack Overflow - Database Query,1600,Focused,17,435,1
+Chrome,LeetCode - String Manipulation,2300,Focused,1,237,1
+VS Code,main.tsx - React App,3500,Focused,22,666,1
+Slack,Channel - #frontend-dev,1400,Focused,15,9,1
+Chrome,YouTube - AI Tutorial,2000,Focused,1,575,1
+Instagram,Instagram - Travel Posts,500,Distracted,7,205,0
+Teams,Project Sync Meeting,1800,Focused,18,329,1
+Spotify,Spotify - EDM Classics,900,Distracted,16,387,0
+Chrome,HackerRank - Graph Problems,2200,Focused,1,140,1
+Reddit,Reddit - Tech Updates,1000,Focused,14,368,1
+Google Docs,Docs - Sprint Report,1600,Focused,4,69,1
+Netflix,Netflix - Sci-Fi Drama,2100,Distracted,9,285,0
+Zoom,Client Training - Agile,2000,Focused,24,44,1
+Twitter,Twitter - News Clips,600,Distracted,21,515,0
+Notion,Notion - Project Plan,1400,Focused,11,300,1
+Chrome,YouTube - SQL Tutorial,1700,Focused,1,627,1
+Facebook,Facebook - Social Feed,450,Distracted,2,100,0
+Gmail,Inbox - Work Feedback,1500,Focused,3,168,1
+Spotify,Spotify - Indie Hits,800,Distracted,16,397,0
+VS Code,services.tsx - Service Component,3200,Focused,22,683,1
+Chrome,Stack Overflow - React Bug,1800,Focused,1,450,1
+Instagram,Instagram - Reels Feed,700,Distracted,7,197,0
+Teams,Sprint Planning Session,1900,Focused,18,423,1
+Chrome,YouTube - Backend Tutorial,2000,Focused,1,581,1
+Reddit,Reddit - Funny Clips,750,Distracted,14,337,0
+Google Keep,Keep - Task Notes,900,Focused,5,222,1
+Telegram,Telegram - Coding Group,1300,Focused,19,476,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Algorithm Fix,1700,Focused,0,19,1
+Twitter,Twitter - Viral Memes,550,Distracted,21,532,0
+Zoom,Workshop - Data Science,2100,Focused,24,569,1
+Chrome,Medium - Coding Tips,1300,Focused,1,247,1
+Spotify,Spotify - Focus Piano,1000,Focused,16,394,1
+Facebook,Facebook - Group Posts,400,Distracted,2,89,0
+Notepad++,main.py - Automation Script,1400,Focused,10,662,1
+Gmail,Gmail - Client Update,1500,Focused,3,121,1
+Chrome,YouTube - Web Development,1800,Focused,1,638,1
+Netflix,Netflix - Comedy Movie,1900,Distracted,9,269,0
+WhatsApp,WhatsApp - Project Chat,600,Focused,23,554,1
+Stack Overflow,Stack Overflow - API Error,1600,Focused,17,427,1
+Chrome,LeetCode - Tree Traversal,2300,Focused,1,242,1
+VS Code,ui.tsx - Frontend Component,3500,Focused,22,692,1
+Slack,Channel - #data-engineering,1400,Focused,15,3,1
+Chrome,YouTube - Cloud Basics,2000,Focused,1,587,1
+Instagram,Instagram - Pet Reels,500,Distracted,7,193,0
+Teams,Team Review Meeting,1800,Focused,18,467,1
+Spotify,Spotify - Dance Hits,900,Distracted,16,385,0
+Chrome,HackerRank - String Algorithms,2200,Focused,1,143,1
+Reddit,Reddit - Science Facts,1000,Focused,14,360,1
+Google Docs,Docs - Project Summary,1600,Focused,4,64,1
+Netflix,Netflix - Thriller Series,2100,Distracted,9,293,0
+Zoom,Client Sync Session,2000,Focused,24,43,1
+Twitter,Twitter - Entertainment News,600,Distracted,21,505,0
+Notion,Notion - Task Roadmap,1400,Focused,11,311,1
+Chrome,YouTube - JavaScript Basics,1700,Focused,1,610,1
+Facebook,Facebook - Event Updates,450,Distracted,2,80,0
+Gmail,Inbox - Team Tasks,1500,Focused,3,164,1
+Spotify,Spotify - Chill Classics,800,Distracted,16,374,0
+VS Code,api.tsx - API Component,3200,Focused,22,642,1
+Chrome,Stack Overflow - Node.js Fix,1800,Focused,1,447,1
+Instagram,Instagram - Stories View,700,Distracted,7,204,0
+Teams,Weekly Planning Session,1900,Focused,18,538,1
+Chrome,YouTube - Frontend Guide,2000,Focused,1,602,1
+Reddit,Reddit - Jokes Clips,750,Distracted,14,346,0
+Google Keep,Keep - Research Ideas,900,Focused,5,214,1
+Telegram,Telegram - Tech Group,1300,Focused,19,488,1
+Postman,Postman - API Testing,1600,Focused,13,321,1
+ChatGPT,ChatGPT - Code Debugging,1700,Focused,0,23,1
+Twitter,Twitter - Trending Hashtags,550,Distracted,21,527,0
+Zoom,Training - Team Leadership,2100,Focused,24,498,1
+Chrome,Medium - Tech Trends,1300,Focused,1,261,1
+Spotify,Spotify - Classical Hits,1000,Focused,16,381,1
+Facebook,Facebook - Social Group,400,Distracted,2,101,0
+Notepad++,utils.py - Script Edit,1400,Focused,10,699,1
+Gmail,Gmail - Project Feedback,1500,Focused,3,126,1
+Chrome,YouTube - Python Guide,1800,Focused,1,619,1
+Netflix,Netflix - Action Series,1900,Distracted,9,265,0
+WhatsApp,WhatsApp - Study Group,600,Focused,23,559,1
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused,17,457,1
+Chrome,LeetCode - Graph Algorithms,2300,Focused,1,231,1
+VS Code,main.js - Frontend App,3500,Focused,22,660,1
+Slack,Channel - #backend-dev,1400,Focused,15,1,1
+Chrome,YouTube - AI Applications,2000,Focused,1,573,1
+Instagram,Instagram - Food Posts,500,Distracted,7,185,0
+Teams,Project Planning Meeting,1800,Focused,18,326,1
+Spotify,Spotify - EDM Mix,900,Distracted,16,389,0
+Chrome,HackerRank - Tree Problems,2200,Focused,1,148,1
+Reddit,Reddit - Tech News,1000,Focused,14,365,1
+Google Docs,Docs - Team Report,1600,Focused,4,72,1
+Netflix,Netflix - Comedy Drama,2100,Distracted,9,268,0
+Zoom,Client Workshop - Agile,2000,Focused,24,47,1
+Twitter,Twitter - Viral News,600,Distracted,21,533,0
+Notion,Notion - Project Notes,1400,Focused,11,299,1
+Chrome,YouTube - SQL Basics,1700,Focused,1,625,1
+Facebook,Facebook - Group Feed,450,Distracted,2,88,0
+Gmail,Inbox - Work Updates,1500,Focused,3,171,1
+Spotify,Spotify - Indie Pop,800,Distracted,16,399,0
+VS Code,services.js - Backend Code,3200,Focused,22,678,1
+Chrome,Stack Overflow - React Error,1800,Focused,1,451,1
+Instagram,Instagram - Reels Scroll,700,Distracted,7,198,0
+Teams,Sprint Review Meeting,1900,Focused,18,424,1
+Chrome,YouTube - Backend Guide,2000,Focused,1,580,1
+Reddit,Reddit - Funny Videos,750,Distracted,14,339,0
+Google Keep,Keep - Study Notes,900,Focused,5,218,1
+Telegram,Telegram - Coding Community,1300,Focused,19,475,1
+Postman,Postman - API Deployment,1600,Focused,13,316,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Celebrity Updates,550,Distracted,21,504,0
+Zoom,Training - Data Science,2100,Focused,24,493,1
+Chrome,Medium - Coding Practices,1300,Focused,1,246,1
+Spotify,Spotify - Focus Classical,1000,Focused,16,392,1
+Facebook,Facebook - Event Page,400,Distracted,2,79,0
+Notepad++,main.c - System Code,1400,Focused,10,658,1
+Gmail,Gmail - Client Tasks,1500,Focused,3,120,1
+Chrome,YouTube - Web Dev Tutorial,1800,Focused,1,637,1
+Netflix,Netflix - Sci-Fi Movie,1900,Distracted,9,286,0
+WhatsApp,WhatsApp - Project Group,600,Focused,23,555,1
+Stack Overflow,Stack Overflow - API Fix,1600,Focused,17,428,1
+Chrome,LeetCode - String Problems,2300,Focused,1,238,1
+VS Code,ui.py - UI Development,3500,Focused,22,691,1
+Slack,Channel - #data-science,1400,Focused,15,4,1
+Chrome,YouTube - Python Crash Course,2000,Focused,1,618,1
+Instagram,Instagram - Explore Reels,500,Distracted,7,181,0
+Teams,Weekly Sync Meeting,1800,Focused,18,544,1
+Spotify,Spotify - Party Classics,900,Distracted,16,405,0
+Chrome,HackerRank - Graph Traversal,2200,Focused,1,141,1
+Reddit,Reddit - Science Updates,1000,Focused,14,362,1
+Google Docs,Docs - Project Roadmap,1600,Focused,4,63,1
+Netflix,Netflix - Thriller Drama,2100,Distracted,9,291,0
+Zoom,Client Training - Scrum,2000,Focused,24,45,1
+Twitter,Twitter - Tech Memes,600,Distracted,21,523,0
+Notion,Notion - Task Planner,1400,Focused,11,309,1
+Chrome,YouTube - JavaScript Tutorial,1700,Focused,1,612,1
+Facebook,Facebook - Social Posts,450,Distracted,2,103,0
+Gmail,Inbox - Team Feedback,1500,Focused,3,161,1
+Spotify,Spotify - Chill Hits,800,Distracted,16,375,0
+VS Code,api.js - API Service,3200,Focused,22,639,1
+Chrome,Stack Overflow - Node.js Bug,1800,Focused,1,445,1
+Instagram,Instagram - Stories Feed,700,Distracted,7,202,0
+Teams,Project Sync Session,1900,Focused,18,330,1
+Chrome,YouTube - Frontend Basics,2000,Focused,1,600,1
+Reddit,Reddit - Jokes Feed,750,Distracted,14,347,0
+Google Keep,Keep - Work Ideas,900,Focused,5,224,1
+Telegram,Telegram - Tech Chat,1300,Focused,19,486,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Code Fix,1700,Focused,0,26,1
+Twitter,Twitter - Viral Hashtags,550,Distracted,21,531,0
+Zoom,Workshop - Machine Learning,2100,Focused,24,571,1
+Chrome,Medium - Tech Insights,1300,Focused,1,260,1
+Spotify,Spotify - Classical Piano,1000,Focused,16,383,1
+Facebook,Facebook - Group Events,400,Distracted,2,87,0
+Notepad++,utils.tsx - Component Script,1400,Focused,10,701,1
+Gmail,Gmail - Project Review,1500,Focused,3,127,1
+Chrome,YouTube - Web Development,1800,Focused,1,638,1
+Netflix,Netflix - Comedy Series,1900,Distracted,9,270,0
+WhatsApp,WhatsApp - Study Buddies,600,Focused,23,558,1
+Stack Overflow,Stack Overflow - Database Query,1600,Focused,17,435,1
+Chrome,LeetCode - Array Algorithms,2300,Focused,1,226,1
+VS Code,main.tsx - React Component,3500,Focused,22,667,1
+Slack,Channel - #frontend-dev,1400,Focused,15,9,1
+Chrome,YouTube - AI Tutorial,2000,Focused,1,575,1
+Instagram,Instagram - Pet Reels,500,Distracted,7,193,0
+Teams,Team Planning Session,1800,Focused,18,465,1
+Spotify,Spotify - Dance Classics,900,Distracted,16,384,0
+Chrome,HackerRank - String Manipulation,2200,Focused,1,144,1
+Reddit,Reddit - Tech Tips,1000,Focused,14,367,1
+Google Docs,Docs - Sprint Plan,1600,Focused,4,68,1
+Netflix,Netflix - Mystery Movie,2100,Distracted,9,281,0
+Zoom,Client Workshop - Agile,2000,Focused,24,47,1
+Twitter,Twitter - Entertainment News,600,Distracted,21,505,0
+Notion,Notion - Project Tasks,1400,Focused,11,302,1
+Chrome,YouTube - SQL Crash Course,1700,Focused,1,626,1
+Facebook,Facebook - Social Feed,450,Distracted,2,100,0
+Gmail,Inbox - Work Tasks,1500,Focused,3,169,1
+Spotify,Spotify - Indie Classics,800,Distracted,16,396,0
+VS Code,services.py - Backend Service,3200,Focused,22,680,1
+Chrome,Stack Overflow - React Fix,1800,Focused,1,452,1
+Instagram,Instagram - Explore Stories,700,Distracted,7,182,0
+Teams,Sprint Review Session,1900,Focused,18,425,1
+Chrome,YouTube - Backend Tutorial,2000,Focused,1,581,1
+Reddit,Reddit - Funny Clips,750,Distracted,14,337,0
+Google Keep,Keep - Study Ideas,900,Focused,5,217,1
+Telegram,Telegram - Coding Group,1300,Focused,19,476,1
+Postman,Postman - API Testing,1600,Focused,13,321,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Trending News,550,Distracted,21,528,0
+Zoom,Training - Leadership Skills,2100,Focused,24,495,1
+Chrome,Medium - DevOps Trends,1300,Focused,1,251,1
+Spotify,Spotify - Classical Hits,1000,Focused,16,381,1
+Facebook,Facebook - Event Updates,400,Distracted,2,80,0
+Notepad++,main.py - Automation Script,1400,Focused,10,662,1
+Gmail,Gmail - Client Feedback,1500,Focused,3,117,1
+Chrome,YouTube - Python Guide,1800,Focused,1,619,1
+Netflix,Netflix - Action Movie,1900,Distracted,9,264,0
+WhatsApp,WhatsApp - Project Chat,600,Focused,23,554,1
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused,17,456,1
+Chrome,LeetCode - Graph Problems,2300,Focused,1,232,1
+VS Code,ui.js - Frontend Script,3500,Focused,22,688,1
+Slack,Channel - #data-engineering,1400,Focused,15,3,1
+Chrome,YouTube - Cloud Tutorial,2000,Focused,1,588,1
+Instagram,Instagram - Food Reels,500,Distracted,7,186,0
+Teams,Weekly Planning Meeting,1800,Focused,18,537,1
+Spotify,Spotify - EDM Hits,900,Distracted,16,388,0
+Chrome,HackerRank - Tree Algorithms,2200,Focused,1,147,1
+Reddit,Reddit - Science Facts,1000,Focused,14,360,1
+Google Docs,Docs - Team Strategy,1600,Focused,4,73,1
+Netflix,Netflix - Comedy Drama,2100,Distracted,9,268,0
+Zoom,Client Sync Session,2000,Focused,24,43,1
+Twitter,Twitter - Viral Memes,600,Distracted,21,532,0
+Notion,Notion - Task Notes,1400,Focused,11,308,1
+Chrome,YouTube - JavaScript Basics,1700,Focused,1,610,1
+Facebook,Facebook - Group Feed,450,Distracted,2,88,0
+Gmail,Inbox - Team Updates,1500,Focused,3,166,1
+Spotify,Spotify - Chill Pop,800,Distracted,16,378,0
+VS Code,api.tsx - API Component,3200,Focused,22,642,1
+Chrome,Stack Overflow - Node.js Error,1800,Focused,1,446,1
+Instagram,Instagram - Stories View,700,Distracted,7,204,0
+Teams,Project Review Meeting,1900,Focused,18,327,1
+Chrome,YouTube - Frontend Guide,2000,Focused,1,602,1
+Reddit,Reddit - Jokes Clips,750,Distracted,14,346,0
+Google Keep,Keep - Research Notes,900,Focused,5,215,1
+Telegram,Telegram - Tech Group,1300,Focused,19,488,1
+Postman,Postman - API Deployment,1600,Focused,13,316,1
+ChatGPT,ChatGPT - Code Debugging,1700,Focused,0,23,1
+Twitter,Twitter - Celebrity Gossip,550,Distracted,21,502,0
+Zoom,Workshop - Data Analysis,2100,Focused,24,568,1
+Chrome,Medium - Coding Trends,1300,Focused,1,248,1
+Spotify,Spotify - Focus Piano,1000,Focused,16,394,1
+Facebook,Facebook - Social Posts,400,Distracted,2,103,0
+Notepad++,utils.c - Code Script,1400,Focused,10,694,1
+Gmail,Gmail - Project Sync,1500,Focused,3,128,1
+Chrome,YouTube - Web Dev Tutorial,1800,Focused,1,637,1
+Netflix,Netflix - Sci-Fi Series,1900,Distracted,9,287,0
+WhatsApp,WhatsApp - Work Group,600,Focused,23,562,1
+Stack Overflow,Stack Overflow - API Query,1600,Focused,17,429,1
+Chrome,LeetCode - String Problems,2300,Focused,1,238,1
+VS Code,main.js - Frontend App,3500,Focused,22,660,1
+Slack,Channel - #backend-dev,1400,Focused,15,1,1
+Chrome,YouTube - AI Applications,2000,Focused,1,573,1
+Instagram,Instagram - Pet Posts,500,Distracted,7,192,0
+Teams,Team Sync Meeting,1800,Focused,18,470,1
+Spotify,Spotify - Dance Classics,900,Distracted,16,384,0
+Chrome,HackerRank - Graph Algorithms,2200,Focused,1,139,1
+Reddit,Reddit - Tech Updates,1000,Focused,14,368,1
+Google Docs,Docs - Project Report,1600,Focused,4,62,1
+Netflix,Netflix - Thriller Movie,2100,Distracted,9,292,0
+Zoom,Client Training - Agile,2000,Focused,24,44,1
+Twitter,Twitter - News Feed,600,Distracted,21,516,0
+Notion,Notion - Task Planner,1400,Focused,11,309,1
+Chrome,YouTube - SQL Tutorial,1700,Focused,1,627,1
+Facebook,Facebook - Event Page,450,Distracted,2,79,0
+Gmail,Inbox - Work Feedback,1500,Focused,3,168,1
+Spotify,Spotify - Indie Hits,800,Distracted,16,397,0
+VS Code,services.tsx - Service Component,3200,Focused,22,683,1
+Chrome,Stack Overflow - React Bug,1800,Focused,1,450,1
+Instagram,Instagram - Reels Feed,700,Distracted,7,197,0
+Teams,Sprint Planning Session,1900,Focused,18,423,1
+Chrome,YouTube - Backend Guide,2000,Focused,1,580,1
+Reddit,Reddit - Funny Videos,750,Distracted,14,339,0
+Google Keep,Keep - Study Notes,900,Focused,5,218,1
+Telegram,Telegram - Coding Community,1300,Focused,19,475,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Trending Hashtags,550,Distracted,21,527,0
+Zoom,Training - Leadership Skills,2100,Focused,24,495,1
+Chrome,Medium - Tech Trends,1300,Focused,1,261,1
+Spotify,Spotify - Classical Piano,1000,Focused,16,383,1
+Facebook,Facebook - Group Events,400,Distracted,2,87,0
+Notepad++,main.c - System Script,1400,Focused,10,659,1
+Gmail,Gmail - Client Tasks,1500,Focused,3,120,1
+Chrome,YouTube - Python Tutorial,1800,Focused,1,620,1
+Netflix,Netflix - Comedy Series,1900,Distracted,9,270,0
+WhatsApp,WhatsApp - Study Group,600,Focused,23,559,1
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused,17,457,1
+Chrome,LeetCode - Array Problems,2300,Focused,1,227,1
+VS Code,ui.tsx - UI Component,3500,Focused,22,693,1
+Slack,Channel - #data-science,1400,Focused,15,4,1
+Chrome,YouTube - Cloud Tutorial,2000,Focused,1,588,1
+Instagram,Instagram - Food Reels,500,Distracted,7,186,0
+Teams,Weekly Review Meeting,1800,Focused,18,539,1
+Spotify,Spotify - EDM Classics,900,Distracted,16,387,0
+Chrome,HackerRank - String Algorithms,2200,Focused,1,143,1
+Reddit,Reddit - Science News,1000,Focused,14,361,1
+Google Docs,Docs - Sprint Report,1600,Focused,4,69,1
+Netflix,Netflix - Mystery Drama,2100,Distracted,9,280,0
+Zoom,Client Workshop - Scrum,2000,Focused,24,48,1
+Twitter,Twitter - Viral Posts,600,Distracted,21,534,0
+Notion,Notion - Project Notes,1400,Focused,11,299,1
+Chrome,YouTube - JavaScript Basics,1700,Focused,1,610,1
+Facebook,Facebook - Social Feed,450,Distracted,2,100,0
+Gmail,Inbox - Team Tasks,1500,Focused,3,164,1
+Spotify,Spotify - Chill Classics,800,Distracted,16,374,0
+VS Code,api.js - API Service,3200,Focused,22,639,1
+Chrome,Stack Overflow - Node.js Fix,1800,Focused,1,447,1
+Instagram,Instagram - Stories View,700,Distracted,7,204,0
+Teams,Project Sync Session,1900,Focused,18,330,1
+Chrome,YouTube - Frontend Crash Course,2000,Focused,1,601,1
+Reddit,Reddit - Jokes Feed,750,Distracted,14,347,0
+Google Keep,Keep - Research Ideas,900,Focused,5,214,1
+Telegram,Telegram - Tech Chat,1300,Focused,19,486,1
+Postman,Postman - API Testing,1600,Focused,13,321,1
+ChatGPT,ChatGPT - Code Debugging,1700,Focused,0,23,1
+Twitter,Twitter - Celebrity News,550,Distracted,21,503,0
+Zoom,Training - Data Science,2100,Focused,24,493,1
+Chrome,Medium - Coding Practices,1300,Focused,1,246,1
+Spotify,Spotify - Focus Classical,1000,Focused,16,392,1
+Facebook,Facebook - Group Posts,400,Distracted,2,89,0
+Notepad++,utils.py - Script Edit,1400,Focused,10,699,1
+Gmail,Gmail - Project Feedback,1500,Focused,3,126,1
+Chrome,YouTube - Web Development,1800,Focused,1,638,1
+Netflix,Netflix - Action Movie,1900,Distracted,9,264,0
+WhatsApp,WhatsApp - Project Group,600,Focused,23,555,1
+Stack Overflow,Stack Overflow - API Fix,1600,Focused,17,428,1
+Chrome,LeetCode - Graph Traversal,2300,Focused,1,233,1
+VS Code,main.tsx - React App,3500,Focused,22,666,1
+Slack,Channel - #frontend-dev,1400,Focused,15,9,1
+Chrome,YouTube - AI Tutorial,2000,Focused,1,575,1
+Instagram,Instagram - Travel Reels,500,Distracted,7,206,0
+Teams,Sprint Planning Meeting,1800,Focused,18,422,1
+Spotify,Spotify - Party Classics,900,Distracted,16,405,0
+Chrome,HackerRank - Tree Problems,2200,Focused,1,148,1
+Reddit,Reddit - Tech Updates,1000,Focused,14,368,1
+Google Docs,Docs - Project Summary,1600,Focused,4,64,1
+Netflix,Netflix - Comedy Drama,2100,Distracted,9,268,0
+Zoom,Client Sync Meeting,2000,Focused,24,42,1
+Twitter,Twitter - News Clips,600,Distracted,21,515,0
+Notion,Notion - Task Roadmap,1400,Focused,11,311,1
+Chrome,YouTube - SQL Crash Course,1700,Focused,1,626,1
+Facebook,Facebook - Event Updates,450,Distracted,2,80,0
+Gmail,Inbox - Work Updates,1500,Focused,3,171,1
+Spotify,Spotify - Indie Pop,800,Distracted,16,399,0
+VS Code,services.js - Backend Service,3200,Focused,22,679,1
+Chrome,Stack Overflow - React Error,1800,Focused,1,451,1
+Instagram,Instagram - Reels Scroll,700,Distracted,7,198,0
+Teams,Weekly Review Session,1900,Focused,18,540,1
+Chrome,YouTube - Backend Tutorial,2000,Focused,1,581,1
+Reddit,Reddit - Funny Clips,750,Distracted,14,337,0
+Google Keep,Keep - Study Notes,900,Focused,5,218,1
+Telegram,Telegram - Coding Group,1300,Focused,19,476,1
+Postman,Postman - API Deployment,1600,Focused,13,316,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Viral Memes,550,Distracted,21,532,0
+Zoom,Workshop - Machine Learning,2100,Focused,24,571,1
+Chrome,Medium - Tech Trends,1300,Focused,1,261,1
+Spotify,Spotify - Classical Hits,1000,Focused,16,381,1
+Facebook,Facebook - Social Group,400,Distracted,2,101,0
+Notepad++,main.c - System Code,1400,Focused,10,658,1
+Gmail,Gmail - Client Feedback,1500,Focused,3,117,1
+Chrome,YouTube - Python Guide,1800,Focused,1,619,1
+Netflix,Netflix - Thriller Series,1900,Distracted,9,293,0
+WhatsApp,WhatsApp - Study Group,600,Focused,23,559,1
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused,17,456,1
+Chrome,LeetCode - Array Algorithms,2300,Focused,1,226,1
+VS Code,ui.py - UI Development,3500,Focused,22,691,1
+Slack,Channel - #data-engineering,1400,Focused,15,3,1
+Chrome,YouTube - Cloud Basics,2000,Focused,1,587,1
+Instagram,Instagram - Food Posts,500,Distracted,7,185,0
+Teams,Team Planning Session,1800,Focused,18,465,1
+Spotify,Spotify - EDM Hits,900,Distracted,16,388,0
+Chrome,HackerRank - String Problems,2200,Focused,1,145,1
+Reddit,Reddit - Science Facts,1000,Focused,14,360,1
+Google Docs,Docs - Team Strategy,1600,Focused,4,73,1
+Netflix,Netflix - Mystery Movie,2100,Distracted,9,281,0
+Zoom,Client Workshop - Agile,2000,Focused,24,47,1
+Twitter,Twitter - Entertainment News,600,Distracted,21,505,0
+Notion,Notion - Task Planner,1400,Focused,11,309,1
+Chrome,YouTube - JavaScript Tutorial,1700,Focused,1,612,1
+Facebook,Facebook - Group Feed,450,Distracted,2,88,0
+Gmail,Inbox - Team Tasks,1500,Focused,3,164,1
+Spotify,Spotify - Chill Classics,800,Distracted,16,374,0
+VS Code,api.tsx - API Component,3200,Focused,22,642,1
+Chrome,Stack Overflow - Node.js Bug,1800,Focused,1,445,1
+Instagram,Instagram - Stories View,700,Distracted,7,204,0
+Teams,Project Review Meeting,1900,Focused,18,327,1
+Chrome,YouTube - Frontend Guide,2000,Focused,1,602,1
+Reddit,Reddit - Jokes Clips,750,Distracted,14,346,0
+Google Keep,Keep - Research Ideas,900,Focused,5,214,1
+Telegram,Telegram - Tech Chat,1300,Focused,19,486,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Code Fix,1700,Focused,0,26,1
+Twitter,Twitter - Trending Hashtags,550,Distracted,21,527,0
+Zoom,Training - Leadership Skills,2100,Focused,24,495,1
+Chrome,Medium - DevOps Trends,1300,Focused,1,251,1
+Spotify,Spotify - Classical Piano,1000,Focused,16,383,1
+Facebook,Facebook - Event Page,400,Distracted,2,79,0
+Notepad++,utils.c - Code Script,1400,Focused,10,694,1
+Gmail,Gmail - Project Sync,1500,Focused,3,128,1
+Chrome,YouTube - Web Dev Tutorial,1800,Focused,1,637,1
+Netflix,Netflix - Comedy Series,1900,Distracted,9,270,0
+WhatsApp,WhatsApp - Project Group,600,Focused,23,555,1
+Stack Overflow,Stack Overflow - API Query,1600,Focused,17,429,1
+Chrome,LeetCode - Graph Problems,2300,Focused,1,232,1
+VS Code,main.js - Frontend App,3500,Focused,22,660,1
+Slack,Channel - #backend-dev,1400,Focused,15,1,1
+Chrome,YouTube - AI Applications,2000,Focused,1,573,1
+Instagram,Instagram - Pet Posts,500,Distracted,7,192,0
+Teams,Team Sync Meeting,1800,Focused,18,470,1
+Spotify,Spotify - Dance Classics,900,Distracted,16,384,0
+Chrome,HackerRank - Tree Problems,2200,Focused,1,148,1
+Reddit,Reddit - Tech Updates,1000,Focused,14,368,1
+Google Docs,Docs - Project Report,1600,Focused,4,62,1
+Netflix,Netflix - Thriller Drama,2100,Distracted,9,291,0
+Zoom,Client Training - Agile,2000,Focused,24,44,1
+Twitter,Twitter - News Feed,600,Distracted,21,516,0
+Notion,Notion - Task Notes,1400,Focused,11,308,1
+Chrome,YouTube - SQL Tutorial,1700,Focused,1,627,1
+Facebook,Facebook - Social Posts,450,Distracted,2,103,0
+Gmail,Inbox - Work Feedback,1500,Focused,3,168,1
+Spotify,Spotify - Indie Hits,800,Distracted,16,397,0
+VS Code,services.tsx - Service Component,3200,Focused,22,683,1
+Chrome,Stack Overflow - React Fix,1800,Focused,1,452,1
+Instagram,Instagram - Reels Feed,700,Distracted,7,197,0
+Teams,Sprint Review Session,1900,Focused,18,425,1
+Chrome,YouTube - Backend Guide,2000,Focused,1,580,1
+Reddit,Reddit - Funny Videos,750,Distracted,14,339,0
+Google Keep,Keep - Study Notes,900,Focused,5,218,1
+Telegram,Telegram - Coding Community,1300,Focused,19,475,1
+Postman,Postman - API Testing,1600,Focused,13,321,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Celebrity Updates,550,Distracted,21,504,0
+Zoom,Workshop - Data Science,2100,Focused,24,569,1
+Chrome,Medium - Coding Practices,1300,Focused,1,246,1
+Spotify,Spotify - Focus Classical,1000,Focused,16,392,1
+Facebook,Facebook - Group Events,400,Distracted,2,87,0
+Notepad++,main.py - Automation Script,1400,Focused,10,662,1
+Gmail,Gmail - Client Tasks,1500,Focused,3,120,1
+Chrome,YouTube - Web Development,1800,Focused,1,638,1
+Netflix,Netflix - Action Movie,1900,Distracted,9,264,0
+WhatsApp,WhatsApp - Study Group,600,Focused,23,559,1
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused,17,457,1
+Chrome,LeetCode - Array Problems,2300,Focused,1,227,1
+VS Code,ui.tsx - UI Component,3500,Focused,22,693,1
+Slack,Channel - #data-science,1400,Focused,15,4,1
+Chrome,YouTube - Python Tutorial,2000,Focused,1,620,1
+Instagram,Instagram - Food Reels,500,Distracted,7,186,0
+Teams,Weekly Planning Meeting,1800,Focused,18,537,1
+Spotify,Spotify - EDM Classics,900,Distracted,16,387,0
+Chrome,HackerRank - String Algorithms,2200,Focused,1,143,1
+Reddit,Reddit - Science News,1000,Focused,14,361,1
+Google Docs,Docs - Sprint Report,1600,Focused,4,69,1
+Netflix,Netflix - Comedy Drama,2100,Distracted,9,268,0
+Zoom,Client Workshop - Scrum,2000,Focused,24,48,1
+Twitter,Twitter - Viral Posts,600,Distracted,21,534,0
+Notion,Notion - Project Notes,1400,Focused,11,299,1
+Chrome,YouTube - JavaScript Basics,1700,Focused,1,610,1
+Facebook,Facebook - Event Updates,450,Distracted,2,80,0
+Gmail,Inbox - Team Updates,1500,Focused,3,166,1
+Spotify,Spotify - Chill Classics,800,Distracted,16,374,0
+VS Code,api.js - API Service,3200,Focused,22,639,1
+Chrome,Stack Overflow - Node.js Fix,1800,Focused,1,447,1
+Instagram,Instagram - Stories View,700,Distracted,7,204,0
+Teams,Project Sync Session,1900,Focused,18,330,1
+Chrome,YouTube - Frontend Crash Course,2000,Focused,1,601,1
+Reddit,Reddit - Jokes Feed,750,Distracted,14,347,0
+Google Keep,Keep - Research Ideas,900,Focused,5,214,1
+Telegram,Telegram - Tech Chat,1300,Focused,19,486,1
+Postman,Postman - API Deployment,1600,Focused,13,316,1
+ChatGPT,ChatGPT - Code Debugging,1700,Focused,0,23,1
+Twitter,Twitter - Trending Hashtags,550,Distracted,21,527,0
+Zoom,Training - Leadership Skills,2100,Focused,24,495,1
+Chrome,Medium - Tech Trends,1300,Focused,1,261,1
+Spotify,Spotify - Classical Piano,1000,Focused,16,383,1
+Facebook,Facebook - Social Group,400,Distracted,2,101,0
+Notepad++,utils.c - Code Script,1400,Focused,10,694,1
+Gmail,Gmail - Project Feedback,1500,Focused,3,126,1
+Chrome,YouTube - Web Dev Tutorial,1800,Focused,1,637,1
+Netflix,Netflix - Thriller Series,1900,Distracted,9,293,0
+WhatsApp,WhatsApp - Project Group,600,Focused,23,555,1
+Stack Overflow,Stack Overflow - API Fix,1600,Focused,17,428,1
+Chrome,LeetCode - Graph Traversal,2300,Focused,1,233,1
+VS Code,main.tsx - React App,3500,Focused,22,666,1
+Slack,Channel - #frontend-dev,1400,Focused,15,9,1
+Chrome,YouTube - AI Tutorial,2000,Focused,1,575,1
+Instagram,Instagram - Travel Reels,500,Distracted,7,206,0
+Teams,Sprint Planning Meeting,1800,Focused,18,422,1
+Spotify,Spotify - Party Classics,900,Distracted,16,405,0
+Chrome,HackerRank - Tree Problems,2200,Focused,1,148,1
+Reddit,Reddit - Tech Updates,1000,Focused,14,368,1
+Google Docs,Docs - Project Summary,1600,Focused,4,64,1
+Netflix,Netflix - Comedy Series,2100,Distracted,9,270,0
+Zoom,Client Sync Meeting,2000,Focused,24,42,1
+Twitter,Twitter - News Clips,600,Distracted,21,515,0
+Notion,Notion - Task Roadmap,1400,Focused,11,311,1
+Chrome,YouTube - SQL Crash Course,1700,Focused,1,626,1
+Facebook,Facebook - Social Feed,450,Distracted,2,100,0
+Gmail,Inbox - Work Tasks,1500,Focused,3,169,1
+Spotify,Spotify - Indie Pop,800,Distracted,16,399,0
+VS Code,services.js - Backend Service,3200,Focused,22,679,1
+Chrome,Stack Overflow - React Error,1800,Focused,1,451,1
+Instagram,Instagram - Reels Scroll,700,Distracted,7,198,0
+Teams,Weekly Review Session,1900,Focused,18,540,1
+Chrome,YouTube - Backend Tutorial,2000,Focused,1,581,1
+Reddit,Reddit - Funny Clips,750,Distracted,14,337,0
+Google Keep,Keep - Study Notes,900,Focused,5,218,1
+Telegram,Telegram - Coding Group,1300,Focused,19,476,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Viral Memes,550,Distracted,21,532,0
+Zoom,Workshop - Machine Learning,2100,Focused,24,571,1
+Chrome,Medium - Coding Practices,1300,Focused,1,246,1
+Spotify,Spotify - Focus Classical,1000,Focused,16,392,1
+Facebook,Facebook - Group Posts,400,Distracted,2,89,0
+Notepad++,main.c - System Code,1400,Focused,10,658,1
+Gmail,Gmail - Client Feedback,1500,Focused,3,117,1
+Chrome,YouTube - Python Guide,1800,Focused,1,619,1
+Netflix,Netflix - Action Movie,1900,Distracted,9,264,0
+WhatsApp,WhatsApp - Study Group,600,Focused,23,559,1
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused,17,456,1
+Chrome,LeetCode - Array Algorithms,2300,Focused,1,226,1
+VS Code,ui.py - UI Development,3500,Focused,22,691,1
+Slack,Channel - #data-engineering,1400,Focused,15,3,1
+Chrome,YouTube - Cloud Basics,2000,Focused,1,587,1
+Instagram,Instagram - Food Posts,500,Distracted,7,185,0
+Teams,Team Planning Session,1800,Focused,18,465,1
+Spotify,Spotify - EDM Hits,900,Distracted,16,388,0
+Chrome,HackerRank - String Problems,2200,Focused,1,145,1
+Reddit,Reddit - Science Facts,1000,Focused,14,360,1
+Google Docs,Docs - Team Strategy,1600,Focused,4,73,1
+Netflix,Netflix - Mystery Movie,2100,Distracted,9,281,0
+Zoom,Client Workshop - Agile,2000,Focused,24,47,1
+Twitter,Twitter - Entertainment News,600,Distracted,21,505,0
+Notion,Notion - Task Planner,1400,Focused,11,309,1
+Chrome,YouTube - JavaScript Tutorial,1700,Focused,1,612,1
+Facebook,Facebook - Group Feed,450,Distracted,2,88,0
+Gmail,Inbox - Team Tasks,1500,Focused,3,164,1
+Spotify,Spotify - Chill Classics,800,Distracted,16,374,0
+VS Code,api.tsx - API Component,3200,Focused,22,642,1
+Chrome,Stack Overflow - Node.js Bug,1800,Focused,1,445,1
+Instagram,Instagram - Stories View,700,Distracted,7,204,0
+Teams,Project Review Meeting,1900,Focused,18,327,1
+Chrome,YouTube - Frontend Guide,2000,Focused,1,602,1
+Reddit,Reddit - Jokes Clips,750,Distracted,14,346,0
+Google Keep,Keep - Research Ideas,900,Focused,5,214,1
+Telegram,Telegram - Tech Chat,1300,Focused,19,486,1
+Postman,Postman - API Testing,1600,Focused,13,321,1
+ChatGPT,ChatGPT - Code Debugging,1700,Focused,0,23,1
+Twitter,Twitter - Trending Hashtags,550,Distracted,21,527,0
+Zoom,Training - Leadership Skills,2100,Focused,24,495,1
+Chrome,Medium - DevOps Trends,1300,Focused,1,251,1
+Spotify,Spotify - Classical Piano,1000,Focused,16,383,1
+Facebook,Facebook - Event Page,400,Distracted,2,79,0
+Notepad++,utils.c - Code Script,1400,Focused,10,694,1
+Gmail,Gmail - Project Sync,1500,Focused,3,128,1
+Chrome,YouTube - Web Dev Tutorial,1800,Focused,1,637,1
+Netflix,Netflix - Comedy Series,1900,Distracted,9,270,0
+WhatsApp,WhatsApp - Project Group,600,Focused,23,555,1
+Stack Overflow,Stack Overflow - API Query,1600,Focused,17,429,1
+Chrome,LeetCode - Graph Problems,2300,Focused,1,232,1
+VS Code,main.js - Frontend App,3500,Focused,22,660,1
+Slack,Channel - #backend-dev,1400,Focused,15,1,1
+Chrome,YouTube - AI Applications,2000,Focused,1,573,1
+Instagram,Instagram - Pet Posts,500,Distracted,7,192,0
+Teams,Team Sync Meeting,1800,Focused,18,470,1
+Spotify,Spotify - Dance Classics,900,Distracted,16,384,0
+Chrome,HackerRank - Tree Problems,2200,Focused,1,148,1
+Reddit,Reddit - Tech Updates,1000,Focused,14,368,1
+Google Docs,Docs - Project Report,1600,Focused,4,62,1
+Netflix,Netflix - Thriller Drama,2100,Distracted,9,291,0
+Zoom,Client Training - Agile,2000,Focused,24,44,1
+Twitter,Twitter - News Feed,600,Distracted,21,516,0
+Notion,Notion - Task Notes,1400,Focused,11,308,1
+Chrome,YouTube - SQL Tutorial,1700,Focused,1,627,1
+Facebook,Facebook - Social Posts,450,Distracted,2,103,0
+Gmail,Inbox - Work Feedback,1500,Focused,3,168,1
+Spotify,Spotify - Indie Hits,800,Distracted,16,397,0
+VS Code,services.tsx - Service Component,3200,Focused,22,683,1
+Chrome,Stack Overflow - React Fix,1800,Focused,1,452,1
+Instagram,Instagram - Reels Feed,700,Distracted,7,197,0
+Teams,Sprint Review Session,1900,Focused,18,425,1
+Chrome,YouTube - Backend Guide,2000,Focused,1,580,1
+Reddit,Reddit - Funny Videos,750,Distracted,14,339,0
+Google Keep,Keep - Study Notes,900,Focused,5,218,1
+Telegram,Telegram - Coding Community,1300,Focused,19,475,1
+Postman,Postman - API Validation,1600,Focused,13,322,1
+ChatGPT,ChatGPT - Code Optimization,1700,Focused,0,27,1
+Twitter,Twitter - Celebrity Updates,550,Distracted,21,504,0
+Zoom,Workshop - Data Science,2100,Focused,24,569,1
+Chrome,Medium - Coding Practices,1300,Focused,1,246,1
+Spotify,Spotify - Focus Classical,1000,Focused,16,392,1
+Facebook,Facebook - Group Events,400,Distracted,2,87,0
+Notepad++,main.py - Automation Script,1400,Focused,10,662,1
+Gmail,Gmail - Client Tasks,1500,,3,120,2

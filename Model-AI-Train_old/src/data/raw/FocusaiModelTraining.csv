@@ -1,0 +1,2536 @@
+App_Name,Tab_Name,Usage_Seconds,Label
+VS Code,Main.py - Project Code,3600,Focused
+Chrome,YouTube - DSA Tutorial,1800,Focused
+Chrome,YouTube - Memes,1200,Distracted
+Instagram,Instagram Feed,900,Distracted
+Chrome,LeetCode - Arrays Practice,2400,Focused
+Facebook,Facebook Homepage,600,Distracted
+Slack,Team Discussion - #dev,1500,Focused
+Spotify,Spotify - Focus Playlist,1200,Focused
+Spotify,Spotify - Party Mix,800,Distracted
+Gmail,Inbox - Project Update,1300,Focused
+Netflix,Netflix - Stranger Things,1800,Distracted
+Google Meet,Weekly Team Call,2000,Focused
+Reddit,Reddit - Funny Jokes,700,Distracted
+Chrome,Stack Overflow - React Bug,1600,Focused
+Chrome,Twitter - Trending,600,Distracted
+Zoom,Client Call - Onboarding,1900,Focused
+WhatsApp,WhatsApp - Friends Chat,500,Distracted
+Notion,Notion - Research Notes,1700,Focused
+Google Docs,Docs - Final Report,1500,Focused
+VS Code,app.js - Debugging,3400,Focused
+Chrome,YouTube - Coding Interview,2000,Focused
+Chrome,YouTube - Comedy Clips,1000,Distracted
+Messenger,Messenger - College Group,650,Distracted
+Trello,Trello - Task Board,1400,Focused
+Outlook,Inbox - Client Replies,1100,Focused
+Chrome,Wikipedia - Sorting,1300,Focused
+Netflix,Netflix - Comedy Show,2100,Distracted
+Instagram,Instagram - Reels,400,Distracted
+Teams,Sprint Planning Call,1800,Focused
+Chrome,YouTube - System Design,1600,Focused
+Reddit,Reddit - Memes,800,Distracted
+Google Keep,Keep - Ideas List,700,Focused
+Telegram,Telegram - Fun Group,500,Distracted
+Postman,Postman - API Testing,1500,Focused
+ChatGPT,ChatGPT - Fix Code,1800,Focused
+Twitter,Twitter - Feed,550,Distracted
+Zoom,Workshop - AI Ethics,2100,Focused
+Chrome,Medium - Productivity Article,1400,Focused
+Chrome,YouTube - Productivity Tips,1200,Focused
+Facebook,Facebook - Stories,300,Distracted
+Notepad++,main.c - File Open,1200,Focused
+Spotify,Spotify - Chill Lofi,1000,Distracted
+Gmail,Gmail - Assignment Reply,1600,Focused
+Chrome,YouTube - Study With Me,1800,Focused
+Netflix,Netflix - Movie,1500,Distracted
+WhatsApp,WhatsApp Web - Chat,600,Distracted
+Stack Overflow,Stack Overflow App,1400,Focused
+Chrome,GeeksforGeeks - Trees,1700,Focused
+VS Code,style.css - Portfolio,3600,Focused
+VS Code,server.js - Backend Code,3200,Focused
+Chrome,YouTube - Machine Learning,1900,Focused
+Instagram,Instagram - Stories,750,Distracted
+Slack,Project Updates - #general,1300,Focused
+Spotify,Spotify - Workout Mix,900,Distracted
+Chrome,HackerRank - Algorithms,2200,Focused
+Reddit,Reddit - Programming,1100,Focused
+Google Docs,Docs - Meeting Notes,1600,Focused
+Netflix,Netflix - Documentary,2000,Distracted
+Zoom,Team Sync - Daily Standup,1800,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Task Planning,1500,Focused
+Chrome,YouTube - Web Dev Tutorial,1700,Focused
+Facebook,Facebook - Group Chat,500,Distracted
+Gmail,Inbox - Team Feedback,1400,Focused
+Spotify,Spotify - Pop Hits,800,Distracted
+VS Code,config.json - Setup,3000,Focused
+Chrome,Stack Overflow - Python Error,1800,Focused
+Instagram,Instagram - Explore,650,Distracted
+Teams,Retrospective Call,1900,Focused
+Chrome,YouTube - Data Structures,2000,Focused
+Reddit,Reddit - News,700,Distracted
+Google Keep,Keep - Project Ideas,900,Focused
+Telegram,Telegram - Study Group,1200,Focused
+Postman,Postman - Endpoint Testing,1600,Focused
+ChatGPT,ChatGPT - Code Explanation,1700,Focused
+Twitter,Twitter - Memes,550,Distracted
+Zoom,Client Demo - Product,2100,Focused
+Chrome,Medium - Tech Article,1300,Focused
+Spotify,Spotify - Classical Music,1100,Focused
+Facebook,Facebook - Marketplace,400,Distracted
+Notepad++,script.py - Automation,1400,Focused
+Gmail,Gmail - Client Proposal,1500,Focused
+Chrome,YouTube - Interview Prep,1800,Focused
+Netflix,Netflix - Series Binge,1900,Distracted
+WhatsApp,WhatsApp - Family Chat,600,Distracted
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused
+Chrome,GeeksforGeeks - Graphs,1700,Focused
+VS Code,frontend.tsx - UI Code,3500,Focused
+Slack,Channel - #backend,1400,Focused
+Chrome,YouTube - Cloud Tutorial,2000,Focused
+Instagram,Instagram - DMs,500,Distracted
+Teams,Planning Session,1800,Focused
+Spotify,Spotify - Dance Mix,900,Distracted
+Chrome,LeetCode - Dynamic Programming,2300,Focused
+Reddit,Reddit - Tech Support,1000,Focused
+Google Docs,Docs - Presentation,1600,Focused
+Netflix,Netflix - Reality Show,2100,Distracted
+Zoom,Workshop - Data Science,2000,Focused
+Twitter,Twitter - Viral Posts,600,Distracted
+Notion,Notion - Study Plan,1400,Focused
+Chrome,YouTube - SQL Tutorial,1700,Focused
+Facebook,Facebook - Events,450,Distracted
+Gmail,Inbox - Work Emails,1500,Focused
+Spotify,Spotify - Rap Playlist,800,Distracted
+VS Code,api.py - API Development,3200,Focused
+Chrome,Stack Overflow - JS Bug,1800,Focused
+Instagram,Instagram - Live,700,Distracted
+Teams,Code Review Call,1900,Focused
+Chrome,YouTube - DevOps Guide,2000,Focused
+Reddit,Reddit - Gaming,750,Distracted
+Google Keep,Keep - To-Do List,900,Focused
+Telegram,Telegram - Work Group,1300,Focused
+Postman,Postman - API Debugging,1600,Focused
+ChatGPT,ChatGPT - Algorithm Help,1700,Focused
+Twitter,Twitter - Funny Videos,550,Distracted
+Zoom,Training - Soft Skills,2100,Focused
+Chrome,Medium - Career Advice,1300,Focused
+Spotify,Spotify - Jazz Vibes,1000,Focused
+Facebook,Facebook - Ads,400,Distracted
+Notepad++,utils.py - Script,1400,Focused
+Gmail,Gmail - Team Update,1500,Focused
+Chrome,YouTube - CSS Tutorial,1800,Focused
+Netflix,Netflix - Anime,1900,Distracted
+WhatsApp,WhatsApp - Group Chat,600,Distracted
+Stack Overflow,Stack Overflow - CSS Fix,1600,Focused
+Chrome,GeeksforGeeks - Linked Lists,1700,Focused
+VS Code,router.js - Backend,3400,Focused
+Slack,Channel - #frontend,1400,Focused
+Chrome,YouTube - AI Tutorial,2000,Focused
+Instagram,Instagram - Posts,500,Distracted
+Teams,Team Brainstorm,1800,Focused
+Spotify,Spotify - EDM Mix,900,Distracted
+Chrome,HackerRank - Data Structures,2200,Focused
+Reddit,Reddit - DIY Projects,1000,Focused
+Google Docs,Docs - Project Plan,1600,Focused
+Netflix,Netflix - Thriller Movie,2100,Distracted
+Zoom,Client Feedback Call,2000,Focused
+Twitter,Twitter - Sports News,600,Distracted
+Notion,Notion - Meeting Agenda,1400,Focused
+Chrome,YouTube - Java Tutorial,1700,Focused
+Facebook,Facebook - News Feed,450,Distracted
+Gmail,Inbox - Task Assignment,1500,Focused
+Spotify,Spotify - Indie Playlist,800,Distracted
+VS Code,tests.py - Unit Tests,3200,Focused
+Chrome,Stack Overflow - API Error,1800,Focused
+Instagram,Instagram - Highlights,700,Distracted
+Teams,Weekly Sync,1900,Focused
+Chrome,YouTube - Backend Tutorial,2000,Focused
+Reddit,Reddit - Jokes,750,Distracted
+Google Keep,Keep - Research Ideas,900,Focused
+Telegram,Telegram - Project Group,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Debug Code,1700,Focused
+Twitter,Twitter - Celebrity News,550,Distracted
+Zoom,Workshop - ML Models,2100,Focused
+Chrome,Medium - Coding Tips,1300,Focused
+Spotify,Spotify - Focus Classical,1000,Focused
+Facebook,Facebook - Groups,400,Distracted
+Notepad++,server.c - File Edit,1400,Focused
+Gmail,Gmail - Follow-Up Email,1500,Focused
+Chrome,YouTube - Study Session,1800,Focused
+Netflix,Netflix - Comedy Special,1900,Distracted
+WhatsApp,WhatsApp - Social Chat,600,Distracted
+Stack Overflow,Stack Overflow - DB Query,1600,Focused
+Chrome,GeeksforGeeks - Stacks,1700,Focused
+VS Code,main.tsx - Frontend Code,3500,Focused
+Slack,Channel - #data-science,1400,Focused
+Chrome,YouTube - Python Tutorial,2000,Focused
+Instagram,Instagram - Ads,500,Distracted
+Teams,Project Kickoff Call,1800,Focused
+Spotify,Spotify - Party Playlist,900,Distracted
+Chrome,LeetCode - Strings Practice,2300,Focused
+Reddit,Reddit - Science,1000,Focused
+Google Docs,Docs - Research Paper,1600,Focused
+Netflix,Netflix - Action Movie,2100,Distracted
+Zoom,Team Workshop - Agile,2000,Focused
+Twitter,Twitter - Random Posts,600,Distracted
+Notion,Notion - Project Roadmap,1400,Focused
+Chrome,YouTube - Algorithms Guide,1700,Focused
+Facebook,Facebook - Friend Requests,450,Distracted
+Gmail,Inbox - Manager Feedback,1500,Focused
+Spotify,Spotify - Chill Pop,800,Distracted
+VS Code,db.py - Database Code,3200,Focused
+Chrome,Stack Overflow - Node.js Error,1800,Focused
+Instagram,Instagram - Stories View,700,Distracted
+Teams,Client Sync Call,1900,Focused
+Chrome,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - Memes Page,750,Distracted
+Google Keep,Keep - Study Notes,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Review,1700,Focused
+Twitter,Twitter - Trending Hashtags,550,Distracted
+Zoom,Training - Leadership,2100,Focused
+Chrome,Medium - DevOps Article,1300,Focused
+VS Code,utils.py - Helper Functions,3300,Focused
+Chrome,YouTube - React Tutorial,1900,Focused
+Instagram,Instagram - Explore,800,Distracted
+Slack,Channel - #marketing,1400,Focused
+Spotify,Spotify - Study Music,1100,Focused
+Netflix,Netflix - Crime Series,2000,Distracted
+Gmail,Inbox - Team Meeting,1300,Focused
+Chrome,LeetCode - Two Pointers,2200,Focused
+Reddit,Reddit - Tech Memes,700,Distracted
+Google Docs,Docs - Project Timeline,1600,Focused
+Zoom,Team Retrospective,1800,Focused
+Twitter,Twitter - Industry News,600,Distracted
+Notion,Notion - Personal Goals,1500,Focused
+Chrome,Stack Overflow - Django Error,1700,Focused
+Facebook,Facebook - Profile Page,500,Distracted
+WhatsApp,WhatsApp - Work Group,650,Focused
+Postman,Postman - API Documentation,1600,Focused
+ChatGPT,ChatGPT - Code Refactoring,1800,Focused
+Spotify,Spotify - Relaxing Tunes,900,Distracted
+Teams,Weekly Standup,1900,Focused
+Chrome,YouTube - Deep Learning,2000,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Keep,Keep - Shopping List,900,Distracted
+Telegram,Telegram - Casual Chat,550,Distracted
+VS Code,styles.css - Website Design,3400,Focused
+Chrome,GeeksforGeeks - Heaps,1600,Focused
+Instagram,Instagram - Influencer Posts,700,Distracted
+Slack,Channel - #design,1300,Focused
+Netflix,Netflix - Sci-Fi Show,2100,Distracted
+Gmail,Inbox - Client Query,1500,Focused
+Chrome,YouTube - JavaScript Basics,1800,Focused
+Twitter,Twitter - Humor,600,Distracted
+Notion,Notion - Daily Journal,1400,Focused
+Spotify,Spotify - Workout Beats,1000,Distracted
+Zoom,Client Pitch Meeting,2000,Focused
+Chrome,Medium - Leadership Skills,1300,Focused
+Facebook,Facebook - Photos,450,Distracted
+Notepad++,config.c - Configuration,1200,Focused
+Teams,Sprint Demo,1800,Focused
+Chrome,YouTube - Cloud Architecture,1700,Focused
+Reddit,Reddit - Productivity Tips,750,Focused
+Google Docs,Docs - Team Charter,1600,Focused
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - React Hooks,1500,Focused
+Chrome,HackerRank - Arrays,2200,Focused
+VS Code,auth.py - Authentication,3200,Focused
+Instagram,Instagram - Shopping,500,Distracted
+Slack,Channel - #product,1400,Focused
+Spotify,Spotify - Focus Beats,900,Focused
+Chrome,YouTube - Cybersecurity,1900,Focused
+Reddit,Reddit - World News,1100,Distracted
+Google Keep,Keep - Meeting Notes,900,Focused
+Netflix,Netflix - Historical Drama,1900,Distracted
+Zoom,Team Building Session,2000,Focused
+Twitter,Twitter - Fashion Trends,550,Distracted
+Notion,Notion - Weekly Planner,1500,Focused
+Chrome,Stack Overflow - AWS Issue,1600,Focused
+Facebook,Facebook - Video Feed,400,Distracted
+Gmail,Inbox - Project Deadline,1400,Focused
+Spotify,Spotify - Classical Piano,800,Focused
+VS Code,app.tsx - React Component,3300,Focused
+Chrome,YouTube - UX Design,1800,Focused
+Instagram,Instagram - Travel Posts,650,Distracted
+Teams,Code Pairing Session,1900,Focused
+Chrome,GeeksforGeeks - Binary Trees,1700,Focused
+Reddit,Reddit - Fitness,700,Distracted
+Google Docs,Docs - Budget Plan,1600,Focused
+Telegram,Telegram - Coding Group,1300,Focused
+Postman,Postman - API Mocking,1500,Focused
+ChatGPT,ChatGPT - Algorithm Design,1700,Focused
+Twitter,Twitter - Political News,600,Distracted
+Zoom,Training - Time Management,2100,Focused
+Chrome,Medium - Data Science Trends,1400,Focused
+Spotify,Spotify - Ambient Sounds,1000,Focused
+Facebook,Facebook - Community Page,450,Distracted
+Notepad++,server.py - API Server,1400,Focused
+Gmail,Gmail - Invoice Review,1500,Focused
+Chrome,YouTube - Full Stack Tutorial,1800,Focused
+Netflix,Netflix - Romantic Comedy,2000,Distracted
+WhatsApp,WhatsApp - Event Planning,600,Focused
+Stack Overflow,Stack Overflow - GraphQL,1600,Focused
+Chrome,LeetCode - Backtracking,2300,Focused
+VS Code,models.py - Database Models,3400,Focused
+Slack,Channel - #security,1400,Focused
+Chrome,YouTube - Ethical Hacking,2000,Focused
+Instagram,Instagram - Food Posts,500,Distracted
+Teams,Project Status Meeting,1800,Focused
+Spotify,Spotify - Motivational Songs,900,Distracted
+Chrome,HackerRank - Greedy Algorithms,2200,Focused
+Reddit,Reddit - Life Hacks,1000,Focused
+Google Docs,Docs - User Manual,1600,Focused
+Netflix,Netflix - Mystery Series,2100,Distracted
+Zoom,Client Onboarding Session,2000,Focused
+Twitter,Twitter - Entertainment News,600,Distracted
+Notion,Notion - Habit Tracker,1400,Focused
+Chrome,YouTube - C++ Tutorial,1700,Focused
+Facebook,Facebook - Live Stream,450,Distracted
+Gmail,Inbox - Team Announcement,1500,Focused
+Spotify,Spotify - Top Hits,800,Distracted
+VS Code,services.py - Microservices,3200,Focused
+Chrome,Stack Overflow - Kubernetes,1800,Focused
+Instagram,Instagram - Art Gallery,700,Distracted
+Teams,Design Review,1900,Focused
+Chrome,YouTube - Blockchain Basics,2000,Focused
+Reddit,Reddit - Travel Tips,750,Distracted
+Google Keep,Keep - Book List,900,Focused
+Telegram,Telegram - Developer Chat,1300,Focused
+Postman,Postman - API Security,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Science News,550,Distracted
+Zoom,Workshop - Public Speaking,2100,Focused
+Chrome,Medium - Startup Advice,1300,Focused
+Spotify,Spotify - Instrumental,1000,Focused
+Facebook,Facebook - Gaming Group,400,Distracted
+Notepad++,client.c - Network Client,1400,Focused
+Gmail,Gmail - Contract Review,1500,Focused
+Chrome,YouTube - Game Development,1800,Focused
+Netflix,Netflix - Fantasy Series,1900,Distracted
+WhatsApp,WhatsApp - Hobby Group,600,Distracted
+Stack Overflow,Stack Overflow - Rust Error,1600,Focused
+Chrome,GeeksforGeeks - Sorting Algorithms,1700,Focused
+VS Code,ui.py - GUI Development,3500,Focused
+Slack,Channel - #qa,1400,Focused
+Chrome,YouTube - Robotics Tutorial,2000,Focused
+Instagram,Instagram - Pet Videos,500,Distracted
+Teams,Team Retrospective,1800,Focused
+Spotify,Spotify - Relaxing Jazz,900,Distracted
+Chrome,LeetCode - Matrix Problems,2300,Focused
+Reddit,Reddit - Philosophy,1000,Focused
+Google Docs,Docs - Marketing Strategy,1600,Focused
+Netflix,Netflix - Animated Movie,2100,Distracted
+Zoom,Client Demo - New Feature,2000,Focused
+Twitter,Twitter - Weather Updates,600,Distracted
+Notion,Notion - Travel Itinerary,1400,Focused
+Chrome,YouTube - Ruby on Rails,1700,Focused
+Facebook,Facebook - Local Events,450,Distracted
+Gmail,Inbox - Supplier Quote,1500,Focused
+Spotify,Spotify - Electronic Music,800,Distracted
+VS Code,tests.py - Integration Tests,3200,Focused
+Chrome,Stack Overflow - MongoDB,1800,Focused
+Instagram,Instagram - Fitness Posts,700,Distracted
+Teams,Weekly Planning,1900,Focused
+Chrome,YouTube - AI in Healthcare,2000,Focused
+Reddit,Reddit - Cooking Recipes,750,Distracted
+Google Keep,Keep - Grocery List,900,Distracted
+Telegram,Telegram - Language Learning,1300,Focused
+Postman,Postman - API Performance,1600,Focused
+ChatGPT,ChatGPT - Code Documentation,1700,Focused
+Twitter,Twitter - Business News,550,Distracted
+Zoom,Training - Conflict Resolution,2100,Focused
+Chrome,Medium - Remote Work Tips,1300,Focused
+Spotify,Spotify - Nature Sounds,1000,Focused
+Facebook,Facebook - Alumni Group,400,Distracted
+Notepad++,parser.c - Data Parser,1400,Focused
+Gmail,Gmail - Legal Document,1500,Focused
+Chrome,YouTube - Swift Programming,1800,Focused
+Netflix,Netflix - Thriller Series,1900,Distracted
+WhatsApp,WhatsApp - Volunteer Group,600,Focused
+Stack Overflow,Stack Overflow - Vue.js,1600,Focused
+Chrome,LeetCode - Sliding Window,2300,Focused
+VS Code,deploy.sh - Deployment Script,3400,Focused
+Slack,Channel - #hr,1400,Focused
+Chrome,YouTube - Quantum Computing,2000,Focused
+Instagram,Instagram - Celebrity News,500,Distracted
+Teams,Team Alignment Meeting,1800,Focused
+Spotify,Spotify - Ambient Chill,900,Distracted
+Chrome,HackerRank - Bit Manipulation,2200,Focused
+Reddit,Reddit - History Facts,1000,Focused
+Google Docs,Docs - Product Roadmap,1600,Focused
+VS Code,utils.tsx - Component Code,3300,Focused
+Chrome,YouTube - Graph Theory,1800,Focused
+Instagram,Instagram - Explore Feed,800,Distracted
+Slack,Channel - #project-sync,1400,Focused
+Spotify,Spotify - Study Mix,1100,Focused
+Netflix,Netflix - Crime Drama,2000,Distracted
+Gmail,Inbox - Team Update,1300,Focused
+Chrome,LeetCode - Tree Practice,2200,Focused
+Reddit,Reddit - Humor,700,Distracted
+Google Docs,Docs - Sprint Plan,1600,Focused
+Zoom,Team Sync - Weekly,1800,Focused
+Twitter,Twitter - Tech Updates,600,Distracted
+Notion,Notion - Task Manager,1500,Focused
+Chrome,Stack Overflow - Flask Error,1700,Focused
+Facebook,Facebook - Social Feed,500,Distracted
+WhatsApp,WhatsApp - Project Chat,650,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1800,Focused
+Spotify,Spotify - Pop Classics,900,Distracted
+Teams,Client Review Meeting,1900,Focused
+Chrome,YouTube - Machine Learning Basics,2000,Focused
+Reddit,Reddit - Software Dev,1000,Focused
+Google Keep,Keep - Work Notes,900,Focused
+Telegram,Telegram - Fun Chat,550,Distracted
+VS Code,frontend.js - UI Development,3400,Focused
+Chrome,GeeksforGeeks - Queues,1600,Focused
+Instagram,Instagram - Reels Scroll,700,Distracted
+Slack,Channel - #engineering,1300,Focused
+Netflix,Netflix - Comedy Series,2100,Distracted
+Gmail,Inbox - Project Feedback,1500,Focused
+Chrome,YouTube - Web Design Tutorial,1800,Focused
+Twitter,Twitter - Viral Clips,600,Distracted
+Notion,Notion - Study Schedule,1400,Focused
+Spotify,Spotify - Chill Vibes,1000,Distracted
+Zoom,Client Demo Session,2000,Focused
+Chrome,Medium - Software Engineering,1300,Focused
+Facebook,Facebook - Group Posts,450,Distracted
+Notepad++,config.py - Setup Script,1200,Focused
+Teams,Sprint Planning Meeting,1800,Focused
+Chrome,YouTube - Database Basics,1700,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Google Docs,Docs - Meeting Summary,1600,Focused
+WhatsApp,WhatsApp - Coding Group,600,Focused
+Stack Overflow,Stack Overflow - Java Query,1500,Focused
+Chrome,HackerRank - Strings,2200,Focused
+VS Code,server.py - Backend API,3200,Focused
+Instagram,Instagram - Live Stream,500,Distracted
+Slack,Channel - #devops,1400,Focused
+Spotify,Spotify - Workout Hits,900,Distracted
+Chrome,YouTube - Algorithms Tutorial,1900,Focused
+Reddit,Reddit - News Updates,1100,Distracted
+Google Keep,Keep - Task List,900,Focused
+Netflix,Netflix - Action Series,1900,Distracted
+Zoom,Workshop - Cloud Computing,2000,Focused
+Twitter,Twitter - Memes Feed,550,Distracted
+Notion,Notion - Project Notes,1500,Focused
+Chrome,Stack Overflow - SQL Error,1600,Focused
+Facebook,Facebook - Marketplace Browse,400,Distracted
+Gmail,Inbox - Client Update,1400,Focused
+Spotify,Spotify - Classical Focus,800,Focused
+VS Code,app.js - Frontend Code,3300,Focused
+Chrome,YouTube - CSS Basics,1800,Focused
+Instagram,Instagram - Stories Share,650,Distracted
+Teams,Code Review Session,1900,Focused
+Chrome,GeeksforGeeks - Arrays,1700,Focused
+Reddit,Reddit - Gaming News,700,Distracted
+Google Docs,Docs - Team Report,1600,Focused
+Telegram,Telegram - Work Chat,1300,Focused
+Postman,Postman - Endpoint Testing,1500,Focused
+ChatGPT,ChatGPT - Algorithm Debug,1700,Focused
+Twitter,Twitter - Funny Posts,600,Distracted
+Zoom,Training - Data Analysis,2100,Focused
+Chrome,Medium - Productivity Hacks,1300,Focused
+Spotify,Spotify - Jazz Classics,1000,Focused
+Facebook,Facebook - Events Page,450,Distracted
+Notepad++,utils.c - Utility Script,1400,Focused
+Gmail,Gmail - Task Review,1500,Focused
+Chrome,YouTube - Backend Basics,1800,Focused
+Netflix,Netflix - Sci-Fi Series,2000,Distracted
+WhatsApp,WhatsApp - Social Group,600,Distracted
+Stack Overflow,Stack Overflow - Python Query,1600,Focused
+Chrome,LeetCode - Graph Problems,2300,Focused
+VS Code,config.tsx - React Setup,3400,Focused
+Slack,Channel - #frontend-dev,1400,Focused
+Chrome,YouTube - DevOps Basics,2000,Focused
+Instagram,Instagram - Ads View,500,Distracted
+Teams,Project Kickoff Meeting,1800,Focused
+Spotify,Spotify - Dance Hits,900,Distracted
+Chrome,HackerRank - Dynamic Programming,2200,Focused
+Reddit,Reddit - Science Facts,1000,Focused
+Google Docs,Docs - Research Draft,1600,Focused
+Netflix,Netflix - Thriller Series,2100,Distracted
+Zoom,Team Workshop - Scrum,2000,Focused
+Twitter,Twitter - Sports Updates,600,Distracted
+Notion,Notion - Task Roadmap,1400,Focused
+Chrome,YouTube - Java Basics,1700,Focused
+Facebook,Facebook - Group Chat,450,Distracted
+Gmail,Inbox - Team Sync,1500,Focused
+Spotify,Spotify - Indie Hits,800,Distracted
+VS Code,api.js - API Service,3200,Focused
+Chrome,Stack Overflow - Node.js Fix,1800,Focused
+Instagram,Instagram - Highlights View,700,Distracted
+Teams,Client Feedback Session,1900,Focused
+Chrome,YouTube - Frontend Basics,2000,Focused
+Reddit,Reddit - Jokes Page,750,Distracted
+Google Keep,Keep - Project Tasks,900,Focused
+Telegram,Telegram - Study Chat,1300,Focused
+Postman,Postman - API Debugging,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Trending Topics,550,Distracted
+Zoom,Workshop - AI Applications,2100,Focused
+Chrome,Medium - Coding Practices,1300,Focused
+Spotify,Spotify - Focus Piano,1000,Focused
+Facebook,Facebook - Social Posts,400,Distracted
+Notepad++,main.py - Script Edit,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Chrome,YouTube - Study Stream,1800,Focused
+Netflix,Netflix - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Friends Group,600,Distracted
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Chrome,GeeksforGeeks - Stacks,1700,Focused
+VS Code,router.tsx - Frontend Routing,3500,Focused
+Slack,Channel - #data-analysis,1400,Focused
+Chrome,YouTube - Python Basics,2000,Focused
+Instagram,Instagram - Explore Posts,500,Distracted
+Teams,Weekly Team Meeting,1800,Focused
+Spotify,Spotify - Party Hits,900,Distracted
+Chrome,LeetCode - String Algorithms,2300,Focused
+Reddit,Reddit - Tech News,1000,Focused
+Google Docs,Docs - Project Summary,1600,Focused
+Netflix,Netflix - Action Drama,2100,Distracted
+Zoom,Client Sync Meeting,2000,Focused
+Twitter,Twitter - Viral News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Chrome,YouTube - SQL Basics,1700,Focused
+Facebook,Facebook - Photos Page,450,Distracted
+Gmail,Inbox - Work Update,1500,Focused
+Spotify,Spotify - Chill Hits,800,Distracted
+VS Code,db.tsx - Database Component,3200,Focused
+Chrome,Stack Overflow - React Error,1800,Focused
+Instagram,Instagram - Reels View,700,Distracted
+Teams,Sprint Review Session,1900,Focused
+Chrome,YouTube - Cloud Basics,2000,Focused
+Reddit,Reddit - Memes Feed,750,Distracted
+Google Keep,Keep - Study Plan,900,Focused
+Telegram,Telegram - Developer Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Analysis,1700,Focused
+Twitter,Twitter - Celebrity Updates,550,Distracted
+Zoom,Training - Team Leadership,2100,Focused
+Chrome,Medium - Tech Trends,1300,Focused
+Spotify,Spotify - Classical Hits,1000,Focused
+Facebook,Facebook - Group Events,400,Distracted
+Notepad++,utils.tsx - Component Script,1400,Focused
+Gmail,Gmail - Project Review,1500,Focused
+Chrome,YouTube - Web Dev Basics,1800,Focused
+Netflix,Netflix - Fantasy Movie,1900,Distracted
+WhatsApp,WhatsApp - Study Buddies,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Chrome,LeetCode - Tree Algorithms,2300,Focused
+VS Code,main.py - Data Processing,3400,Focused
+Slack,Channel - #project-management,1400,Focused
+Chrome,YouTube - AI Basics,2000,Focused
+Instagram,Instagram - Fashion Posts,500,Distracted
+Teams,Team Planning Session,1800,Focused
+Spotify,Spotify - EDM Hits,900,Distracted
+Chrome,HackerRank - Graph Algorithms,2200,Focused
+Reddit,Reddit - DIY Tips,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Netflix,Netflix - Mystery Movie,2100,Distracted
+Zoom,Workshop - Data Analysis,2000,Focused
+Twitter,Twitter - Random Feed,600,Distracted
+Notion,Notion - Task Planner,1400,Focused
+Chrome,YouTube - JavaScript Tutorial,1700,Focused
+Facebook,Facebook - News Updates,450,Distracted
+Gmail,Inbox - Client Proposal,1500,Focused
+Spotify,Spotify - Pop Classics,800,Distracted
+VS Code,services.tsx - Service Code,3200,Focused
+Chrome,Stack Overflow - GraphQL Error,1800,Focused
+Instagram,Instagram - Art Posts,700,Distracted
+Teams,Code Sync Meeting,1900,Focused
+Chrome,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Humor Clips,750,Distracted
+Google Keep,Keep - Work Ideas,900,Focused
+Telegram,Telegram - Tech Chat,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Algorithm Optimization,1700,Focused
+Twitter,Twitter - Entertainment Updates,550,Distracted
+Zoom,Training - Public Speaking,2100,Focused
+Chrome,Medium - Startup Tips,1300,Focused
+Spotify,Spotify - Focus Jazz,1000,Focused
+Facebook,Facebook - Community Events,400,Distracted
+Notepad++,server.tsx - Backend Script,1400,Focused
+Gmail,Gmail - Team Feedback,1500,Focused
+Chrome,YouTube - Python Crash Course,1800,Focused
+Netflix,Netflix - Sci-Fi Movie,1900,Distracted
+WhatsApp,WhatsApp - Project Group,600,Focused
+Stack Overflow,Stack Overflow - Database Fix,1600,Focused
+Chrome,LeetCode - Dynamic Programming,2300,Focused
+VS Code,ui.tsx - UI Component,3500,Focused
+Slack,Channel - #data-engineering,1400,Focused
+Chrome,YouTube - Cloud Tutorial,2000,Focused
+Instagram,Instagram - Travel Reels,500,Distracted
+Teams,Weekly Sprint Planning,1800,Focused
+Spotify,Spotify - Party Classics,900,Distracted
+Chrome,HackerRank - Tree Problems,2200,Focused
+Reddit,Reddit - Science News,1000,Focused
+Google Docs,Docs - Project Roadmap,1600,Focused
+Netflix,Netflix - Comedy Drama,2100,Distracted
+Zoom,Client Workshop - Agile,2000,Focused
+Twitter,Twitter - Tech Memes,600,Distracted
+Notion,Notion - Study Notes,1400,Focused
+Chrome,YouTube - SQL Crash Course,1700,Focused
+Facebook,Facebook - Social Media Feed,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Spotify,Spotify - Chill Jazz,800,Distracted
+VS Code,api.tsx - API Component,3200,Focused
+Chrome,Stack Overflow - JavaScript Fix,1800,Focused
+Instagram,Instagram - Explore Reels,700,Distracted
+Teams,Team Sync Session,1900,Focused
+Chrome,YouTube - Frontend Tutorial,2000,Focused
+Reddit,Reddit - Funny Videos,750,Distracted
+Google Keep,Keep - Task Ideas,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Viral Hashtags,550,Distracted
+Zoom,Training - Data Science,2100,Focused
+Chrome,Medium - Coding Trends,1300,Focused
+Spotify,Spotify - Classical Piano,1000,Focused
+Facebook,Facebook - Group Discussions,400,Distracted
+Notepad++,utils.py - Data Script,1400,Focused
+Gmail,Gmail - Client Sync,1500,Focused
+Chrome,YouTube - Web Development,1800,Focused
+Netflix,Netflix - Action Series,1900,Distracted
+WhatsApp,WhatsApp - Work Chat,600,Focused
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused
+Chrome,LeetCode - Graph Traversal,2300,Focused
+VS Code,main.js - Frontend Code,3400,Focused
+Slack,Channel - #backend-dev,1400,Focused
+Chrome,YouTube - AI Applications,2000,Focused
+Instagram,Instagram - Pet Posts,500,Distracted
+Teams,Project Review Meeting,1800,Focused
+Spotify,Spotify - Dance Classics,900,Distracted
+Chrome,HackerRank - String Problems,2200,Focused
+Reddit,Reddit - Tech Tips,1000,Focused
+Google Docs,Docs - Team Plan,1600,Focused
+Netflix,Netflix - Mystery Drama,2100,Distracted
+Zoom,Client Training Session,2000,Focused
+Twitter,Twitter - News Feed,600,Distracted
+Notion,Notion - Project Tasks,1400,Focused
+Chrome,YouTube - Python Guide,1700,Focused
+Facebook,Facebook - Event Updates,450,Distracted
+Gmail,Inbox - Team Updates,1500,Focused
+Spotify,Spotify - Indie Pop,800,Distracted
+VS Code,services.js - Backend Service,3200,Focused
+Chrome,Stack Overflow - API Fix,1800,Focused
+Instagram,Instagram - Stories Feed,700,Distracted
+Teams,Sprint Sync Meeting,1900,Focused
+Chrome,YouTube - Cloud Architecture,2000,Focused
+Reddit,Reddit - Jokes Feed,750,Distracted
+Google Keep,Keep - Research Notes,900,Focused
+Telegram,Telegram - Tech Discussion,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Celebrity Gossip,550,Distracted
+Zoom,Workshop - Machine Learning,2100,Focused
+Chrome,Medium - Tech Insights,1300,Focused
+Spotify,Spotify - Focus Classical,1000,Focused
+Facebook,Facebook - Social Group,400,Distracted
+Notepad++,main.c - System Script,1400,Focused
+Gmail,Gmail - Project Sync,1500,Focused
+Chrome,YouTube - JavaScript Guide,1800,Focused
+Netflix,Netflix - Thriller Movie,1900,Distracted
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - React Fix,1600,Focused
+Chrome,LeetCode - Array Problems,2300,Focused
+VS Code,ui.js - UI Script,3500,Focused
+Slack,Channel - #data-science,1400,Focused
+Chrome,YouTube - Database Tutorial,2000,Focused
+Instagram,Instagram - Food Reels,500,Distracted
+Teams,Team Planning Meeting,1800,Focused
+Spotify,Spotify - Party Mix,900,Distracted
+Chrome,HackerRank - Algorithm Practice,2200,Focused
+Reddit,Reddit - Science Updates,1000,Focused
+Google Docs,Docs - Project Report,1600,Focused
+Netflix,Netflix - Comedy Series,2100,Distracted
+Zoom,Client Workshop - Scrum,2000,Focused
+Twitter,Twitter - Viral Posts,600,Distracted
+Notion,Notion - Task Notes,1400,Focused
+Chrome,YouTube - Web Dev Guide,1700,Focused
+Facebook,Facebook - Group Feed,450,Distracted
+Gmail,Inbox - Client Tasks,1500,Focused
+Spotify,Spotify - Chill Pop,800,Distracted
+VS Code,api.py - API Script,3200,Focused
+Chrome,Stack Overflow - Node.js Bug,1800,Focused
+Instagram,Instagram - Explore Stories,700,Distracted
+Teams,Weekly Review Session,1900,Focused
+Chrome,YouTube - Frontend Crash Course,2000,Focused
+Reddit,Reddit - Memes Clips,750,Distracted
+Google Keep,Keep - Study Ideas,900,Focused
+Telegram,Telegram - Project Chat,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Review,1700,Focused
+Twitter,Twitter - Trending News,550,Distracted
+Zoom,Training - Leadership Skills,2100,Focused
+Chrome,Medium - DevOps Trends,1300,Focused
+Spotify,Spotify - Classical Music,1000,Focused
+Facebook,Facebook - Event Page,400,Distracted
+Notepad++,utils.c - Code Script,1400,Focused
+Gmail,Gmail - Team Review,1500,Focused
+Chrome,YouTube - Python Tutorial,1800,Focused
+Netflix,Netflix - Action Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - Database Query,1600,Focused
+Chrome,LeetCode - String Manipulation,2300,Focused
+VS Code,main.tsx - React App,3500,Focused
+Slack,Channel - #frontend-dev,1400,Focused
+Chrome,YouTube - AI Tutorial,2000,Focused
+Instagram,Instagram - Travel Posts,500,Distracted
+Teams,Project Sync Meeting,1800,Focused
+Spotify,Spotify - EDM Classics,900,Distracted
+Chrome,HackerRank - Graph Problems,2200,Focused
+Reddit,Reddit - Tech Updates,1000,Focused
+Google Docs,Docs - Sprint Report,1600,Focused
+Netflix,Netflix - Sci-Fi Drama,2100,Distracted
+Zoom,Client Training - Agile,2000,Focused
+Twitter,Twitter - News Clips,600,Distracted
+Notion,Notion - Project Plan,1400,Focused
+Chrome,YouTube - SQL Tutorial,1700,Focused
+Facebook,Facebook - Social Feed,450,Distracted
+Gmail,Inbox - Work Feedback,1500,Focused
+Spotify,Spotify - Indie Hits,800,Distracted
+VS Code,services.tsx - Service Component,3200,Focused
+Chrome,Stack Overflow - React Bug,1800,Focused
+Instagram,Instagram - Reels Feed,700,Distracted
+Teams,Sprint Planning Session,1900,Focused
+Chrome,YouTube - Backend Tutorial,2000,Focused
+Reddit,Reddit - Funny Clips,750,Distracted
+Google Keep,Keep - Task Notes,900,Focused
+Telegram,Telegram - Coding Group,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Algorithm Fix,1700,Focused
+Twitter,Twitter - Viral Memes,550,Distracted
+Zoom,Workshop - Data Science,2100,Focused
+Chrome,Medium - Coding Tips,1300,Focused
+Spotify,Spotify - Focus Piano,1000,Focused
+Facebook,Facebook - Group Posts,400,Distracted
+Notepad++,main.py - Automation Script,1400,Focused
+Gmail,Gmail - Client Update,1500,Focused
+Chrome,YouTube - Web Development,1800,Focused
+Netflix,Netflix - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Project Chat,600,Focused
+Stack Overflow,Stack Overflow - API Error,1600,Focused
+Chrome,LeetCode - Tree Traversal,2300,Focused
+VS Code,ui.tsx - Frontend Component,3500,Focused
+Slack,Channel - #data-engineering,1400,Focused
+Chrome,YouTube - Cloud Basics,2000,Focused
+Instagram,Instagram - Pet Reels,500,Distracted
+Teams,Team Review Meeting,1800,Focused
+Spotify,Spotify - Dance Hits,900,Distracted
+Chrome,HackerRank - String Algorithms,2200,Focused
+Reddit,Reddit - Science Facts,1000,Focused
+Google Docs,Docs - Project Summary,1600,Focused
+Netflix,Netflix - Thriller Series,2100,Distracted
+Zoom,Client Sync Session,2000,Focused
+Twitter,Twitter - Entertainment News,600,Distracted
+Notion,Notion - Task Roadmap,1400,Focused
+Chrome,YouTube - JavaScript Basics,1700,Focused
+Facebook,Facebook - Event Updates,450,Distracted
+Gmail,Inbox - Team Tasks,1500,Focused
+Spotify,Spotify - Chill Classics,800,Distracted
+VS Code,api.tsx - API Component,3200,Focused
+Chrome,Stack Overflow - Node.js Fix,1800,Focused
+Instagram,Instagram - Stories View,700,Distracted
+Teams,Weekly Planning Session,1900,Focused
+Chrome,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - Jokes Clips,750,Distracted
+Google Keep,Keep - Research Ideas,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Trending Hashtags,550,Distracted
+Zoom,Training - Team Leadership,2100,Focused
+Chrome,Medium - Tech Trends,1300,Focused
+Spotify,Spotify - Classical Hits,1000,Focused
+Facebook,Facebook - Social Group,400,Distracted
+Notepad++,utils.py - Script Edit,1400,Focused
+Gmail,Gmail - Project Feedback,1500,Focused
+Chrome,YouTube - Python Guide,1800,Focused
+Netflix,Netflix - Action Series,1900,Distracted
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused
+Chrome,LeetCode - Graph Algorithms,2300,Focused
+VS Code,main.js - Frontend App,3500,Focused
+Slack,Channel - #backend-dev,1400,Focused
+Chrome,YouTube - AI Applications,2000,Focused
+Instagram,Instagram - Food Posts,500,Distracted
+Teams,Project Planning Meeting,1800,Focused
+Spotify,Spotify - EDM Mix,900,Distracted
+Chrome,HackerRank - Tree Problems,2200,Focused
+Reddit,Reddit - Tech News,1000,Focused
+Google Docs,Docs - Team Report,1600,Focused
+Netflix,Netflix - Comedy Drama,2100,Distracted
+Zoom,Client Workshop - Agile,2000,Focused
+Twitter,Twitter - Viral News,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Chrome,YouTube - SQL Basics,1700,Focused
+Facebook,Facebook - Group Feed,450,Distracted
+Gmail,Inbox - Work Updates,1500,Focused
+Spotify,Spotify - Indie Pop,800,Distracted
+VS Code,services.js - Backend Code,3200,Focused
+Chrome,Stack Overflow - React Error,1800,Focused
+Instagram,Instagram - Reels Scroll,700,Distracted
+Teams,Sprint Review Meeting,1900,Focused
+Chrome,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Funny Videos,750,Distracted
+Google Keep,Keep - Study Notes,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Celebrity Updates,550,Distracted
+Zoom,Training - Data Science,2100,Focused
+Chrome,Medium - Coding Practices,1300,Focused
+Spotify,Spotify - Focus Classical,1000,Focused
+Facebook,Facebook - Event Page,400,Distracted
+Notepad++,main.c - System Code,1400,Focused
+Gmail,Gmail - Client Tasks,1500,Focused
+Chrome,YouTube - Web Dev Tutorial,1800,Focused
+Netflix,Netflix - Sci-Fi Movie,1900,Distracted
+WhatsApp,WhatsApp - Project Group,600,Focused
+Stack Overflow,Stack Overflow - API Fix,1600,Focused
+Chrome,LeetCode - String Problems,2300,Focused
+VS Code,ui.py - UI Development,3500,Focused
+Slack,Channel - #data-science,1400,Focused
+Chrome,YouTube - Python Crash Course,2000,Focused
+Instagram,Instagram - Explore Reels,500,Distracted
+Teams,Weekly Sync Meeting,1800,Focused
+Spotify,Spotify - Party Classics,900,Distracted
+Chrome,HackerRank - Graph Traversal,2200,Focused
+Reddit,Reddit - Science Updates,1000,Focused
+Google Docs,Docs - Project Roadmap,1600,Focused
+Netflix,Netflix - Thriller Drama,2100,Distracted
+Zoom,Client Training - Scrum,2000,Focused
+Twitter,Twitter - Tech Memes,600,Distracted
+Notion,Notion - Task Planner,1400,Focused
+Chrome,YouTube - JavaScript Tutorial,1700,Focused
+Facebook,Facebook - Social Posts,450,Distracted
+Gmail,Inbox - Team Feedback,1500,Focused
+Spotify,Spotify - Chill Hits,800,Distracted
+VS Code,api.js - API Service,3200,Focused
+Chrome,Stack Overflow - Node.js Bug,1800,Focused
+Instagram,Instagram - Stories Feed,700,Distracted
+Teams,Project Sync Session,1900,Focused
+Chrome,YouTube - Frontend Basics,2000,Focused
+Reddit,Reddit - Jokes Feed,750,Distracted
+Google Keep,Keep - Work Ideas,900,Focused
+Telegram,Telegram - Tech Chat,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Hashtags,550,Distracted
+Zoom,Workshop - Machine Learning,2100,Focused
+Chrome,Medium - Tech Insights,1300,Focused
+Spotify,Spotify - Classical Piano,1000,Focused
+Facebook,Facebook - Group Events,400,Distracted
+Notepad++,utils.tsx - Component Script,1400,Focused
+Gmail,Gmail - Project Review,1500,Focused
+Chrome,YouTube - Web Development,1800,Focused
+Netflix,Netflix - Comedy Series,1900,Distracted
+WhatsApp,WhatsApp - Study Buddies,600,Focused
+Stack Overflow,Stack Overflow - Database Query,1600,Focused
+Chrome,LeetCode - Array Algorithms,2300,Focused
+VS Code,main.tsx - React Component,3500,Focused
+Slack,Channel - #frontend-dev,1400,Focused
+Chrome,YouTube - AI Tutorial,2000,Focused
+Instagram,Instagram - Pet Reels,500,Distracted
+Teams,Team Planning Session,1800,Focused
+Spotify,Spotify - Dance Classics,900,Distracted
+Chrome,HackerRank - String Manipulation,2200,Focused
+Reddit,Reddit - Tech Tips,1000,Focused
+Google Docs,Docs - Sprint Plan,1600,Focused
+Netflix,Netflix - Mystery Movie,2100,Distracted
+Zoom,Client Workshop - Agile,2000,Focused
+Twitter,Twitter - Entertainment News,600,Distracted
+Notion,Notion - Project Tasks,1400,Focused
+Chrome,YouTube - SQL Crash Course,1700,Focused
+Facebook,Facebook - Social Feed,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Spotify,Spotify - Indie Classics,800,Distracted
+VS Code,services.py - Backend Service,3200,Focused
+Chrome,Stack Overflow - React Fix,1800,Focused
+Instagram,Instagram - Explore Stories,700,Distracted
+Teams,Sprint Review Session,1900,Focused
+Chrome,YouTube - Backend Tutorial,2000,Focused
+Reddit,Reddit - Funny Clips,750,Distracted
+Google Keep,Keep - Study Ideas,900,Focused
+Telegram,Telegram - Coding Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Trending News,550,Distracted
+Zoom,Training - Leadership Skills,2100,Focused
+Chrome,Medium - DevOps Trends,1300,Focused
+Spotify,Spotify - Classical Hits,1000,Focused
+Facebook,Facebook - Event Updates,400,Distracted
+Notepad++,main.py - Automation Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Chrome,YouTube - Python Guide,1800,Focused
+Netflix,Netflix - Action Movie,1900,Distracted
+WhatsApp,WhatsApp - Project Chat,600,Focused
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused
+Chrome,LeetCode - Graph Problems,2300,Focused
+VS Code,ui.js - Frontend Script,3500,Focused
+Slack,Channel - #data-engineering,1400,Focused
+Chrome,YouTube - Cloud Tutorial,2000,Focused
+Instagram,Instagram - Food Reels,500,Distracted
+Teams,Weekly Planning Meeting,1800,Focused
+Spotify,Spotify - EDM Hits,900,Distracted
+Chrome,HackerRank - Tree Algorithms,2200,Focused
+Reddit,Reddit - Science Facts,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Netflix,Netflix - Comedy Drama,2100,Distracted
+Zoom,Client Sync Session,2000,Focused
+Twitter,Twitter - Viral Memes,600,Distracted
+Notion,Notion - Task Notes,1400,Focused
+Chrome,YouTube - JavaScript Basics,1700,Focused
+Facebook,Facebook - Group Feed,450,Distracted
+Gmail,Inbox - Team Updates,1500,Focused
+Spotify,Spotify - Chill Pop,800,Distracted
+VS Code,api.tsx - API Component,3200,Focused
+Chrome,Stack Overflow - Node.js Error,1800,Focused
+Instagram,Instagram - Stories View,700,Distracted
+Teams,Project Review Meeting,1900,Focused
+Chrome,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - Jokes Clips,750,Distracted
+Google Keep,Keep - Research Notes,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Celebrity Gossip,550,Distracted
+Zoom,Workshop - Data Analysis,2100,Focused
+Chrome,Medium - Coding Trends,1300,Focused
+Spotify,Spotify - Focus Piano,1000,Focused
+Facebook,Facebook - Social Posts,400,Distracted
+Notepad++,utils.c - Code Script,1400,Focused
+Gmail,Gmail - Project Sync,1500,Focused
+Chrome,YouTube - Web Dev Tutorial,1800,Focused
+Netflix,Netflix - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Chrome,LeetCode - String Problems,2300,Focused
+VS Code,main.js - Frontend App,3500,Focused
+Slack,Channel - #backend-dev,1400,Focused
+Chrome,YouTube - AI Applications,2000,Focused
+Instagram,Instagram - Pet Posts,500,Distracted
+Teams,Team Sync Meeting,1800,Focused
+Spotify,Spotify - Dance Classics,900,Distracted
+Chrome,HackerRank - Graph Algorithms,2200,Focused
+Reddit,Reddit - Tech Updates,1000,Focused
+Google Docs,Docs - Project Report,1600,Focused
+Netflix,Netflix - Thriller Movie,2100,Distracted
+Zoom,Client Training - Agile,2000,Focused
+Twitter,Twitter - News Feed,600,Distracted
+Notion,Notion - Task Planner,1400,Focused
+Chrome,YouTube - SQL Tutorial,1700,Focused
+Facebook,Facebook - Event Page,450,Distracted
+Gmail,Inbox - Work Feedback,1500,Focused
+Spotify,Spotify - Indie Hits,800,Distracted
+VS Code,services.tsx - Service Component,3200,Focused
+Chrome,Stack Overflow - React Bug,1800,Focused
+Instagram,Instagram - Reels Feed,700,Distracted
+Teams,Sprint Planning Session,1900,Focused
+Chrome,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Funny Videos,750,Distracted
+Google Keep,Keep - Study Notes,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Trending Hashtags,550,Distracted
+Zoom,Training - Leadership Skills,2100,Focused
+Chrome,Medium - Tech Trends,1300,Focused
+Spotify,Spotify - Classical Piano,1000,Focused
+Facebook,Facebook - Group Events,400,Distracted
+Notepad++,main.c - System Script,1400,Focused
+Gmail,Gmail - Client Tasks,1500,Focused
+Chrome,YouTube - Python Tutorial,1800,Focused
+Netflix,Netflix - Comedy Series,1900,Distracted
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused
+Chrome,LeetCode - Array Problems,2300,Focused
+VS Code,ui.tsx - UI Component,3500,Focused
+Slack,Channel - #data-science,1400,Focused
+Chrome,YouTube - Cloud Tutorial,2000,Focused
+Instagram,Instagram - Food Reels,500,Distracted
+Teams,Weekly Review Meeting,1800,Focused
+Spotify,Spotify - EDM Classics,900,Distracted
+Chrome,HackerRank - String Algorithms,2200,Focused
+Reddit,Reddit - Science News,1000,Focused
+Google Docs,Docs - Sprint Report,1600,Focused
+Netflix,Netflix - Mystery Drama,2100,Distracted
+Zoom,Client Workshop - Scrum,2000,Focused
+Twitter,Twitter - Viral Posts,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Chrome,YouTube - JavaScript Basics,1700,Focused
+Facebook,Facebook - Social Feed,450,Distracted
+Gmail,Inbox - Team Tasks,1500,Focused
+Spotify,Spotify - Chill Classics,800,Distracted
+VS Code,api.js - API Service,3200,Focused
+Chrome,Stack Overflow - Node.js Fix,1800,Focused
+Instagram,Instagram - Stories View,700,Distracted
+Teams,Project Sync Session,1900,Focused
+Chrome,YouTube - Frontend Crash Course,2000,Focused
+Reddit,Reddit - Jokes Feed,750,Distracted
+Google Keep,Keep - Research Ideas,900,Focused
+Telegram,Telegram - Tech Chat,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Celebrity News,550,Distracted
+Zoom,Training - Data Science,2100,Focused
+Chrome,Medium - Coding Practices,1300,Focused
+Spotify,Spotify - Focus Classical,1000,Focused
+Facebook,Facebook - Group Posts,400,Distracted
+Notepad++,utils.py - Script Edit,1400,Focused
+Gmail,Gmail - Project Feedback,1500,Focused
+Chrome,YouTube - Web Development,1800,Focused
+Netflix,Netflix - Action Movie,1900,Distracted
+WhatsApp,WhatsApp - Project Group,600,Focused
+Stack Overflow,Stack Overflow - API Fix,1600,Focused
+Chrome,LeetCode - Graph Traversal,2300,Focused
+VS Code,main.tsx - React App,3500,Focused
+Slack,Channel - #frontend-dev,1400,Focused
+Chrome,YouTube - AI Tutorial,2000,Focused
+Instagram,Instagram - Travel Reels,500,Distracted
+Teams,Sprint Planning Meeting,1800,Focused
+Spotify,Spotify - Party Classics,900,Distracted
+Chrome,HackerRank - Tree Problems,2200,Focused
+Reddit,Reddit - Tech Updates,1000,Focused
+Google Docs,Docs - Project Summary,1600,Focused
+Netflix,Netflix - Comedy Drama,2100,Distracted
+Zoom,Client Sync Meeting,2000,Focused
+Twitter,Twitter - News Clips,600,Distracted
+Notion,Notion - Task Roadmap,1400,Focused
+Chrome,YouTube - SQL Crash Course,1700,Focused
+Facebook,Facebook - Event Updates,450,Distracted
+Gmail,Inbox - Work Updates,1500,Focused
+Spotify,Spotify - Indie Pop,800,Distracted
+VS Code,services.js - Backend Service,3200,Focused
+Chrome,Stack Overflow - React Error,1800,Focused
+Instagram,Instagram - Reels Scroll,700,Distracted
+Teams,Weekly Review Session,1900,Focused
+Chrome,YouTube - Backend Tutorial,2000,Focused
+Reddit,Reddit - Funny Clips,750,Distracted
+Google Keep,Keep - Study Notes,900,Focused
+Telegram,Telegram - Coding Group,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Viral Memes,550,Distracted
+Zoom,Workshop - Machine Learning,2100,Focused
+Chrome,Medium - Tech Trends,1300,Focused
+Spotify,Spotify - Classical Hits,1000,Focused
+Facebook,Facebook - Social Group,400,Distracted
+Notepad++,main.c - System Code,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Chrome,YouTube - Python Guide,1800,Focused
+Netflix,Netflix - Thriller Series,1900,Distracted
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused
+Chrome,LeetCode - Array Algorithms,2300,Focused
+VS Code,ui.py - UI Development,3500,Focused
+Slack,Channel - #data-engineering,1400,Focused
+Chrome,YouTube - Cloud Basics,2000,Focused
+Instagram,Instagram - Food Posts,500,Distracted
+Teams,Team Planning Session,1800,Focused
+Spotify,Spotify - EDM Hits,900,Distracted
+Chrome,HackerRank - String Problems,2200,Focused
+Reddit,Reddit - Science Facts,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Netflix,Netflix - Mystery Movie,2100,Distracted
+Zoom,Client Workshop - Agile,2000,Focused
+Twitter,Twitter - Entertainment News,600,Distracted
+Notion,Notion - Task Planner,1400,Focused
+Chrome,YouTube - JavaScript Tutorial,1700,Focused
+Facebook,Facebook - Group Feed,450,Distracted
+Gmail,Inbox - Team Tasks,1500,Focused
+Spotify,Spotify - Chill Classics,800,Distracted
+VS Code,api.tsx - API Component,3200,Focused
+Chrome,Stack Overflow - Node.js Bug,1800,Focused
+Instagram,Instagram - Stories View,700,Distracted
+Teams,Project Review Meeting,1900,Focused
+Chrome,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - Jokes Clips,750,Distracted
+Google Keep,Keep - Research Ideas,900,Focused
+Telegram,Telegram - Tech Chat,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Trending Hashtags,550,Distracted
+Zoom,Training - Leadership Skills,2100,Focused
+Chrome,Medium - DevOps Trends,1300,Focused
+Spotify,Spotify - Classical Piano,1000,Focused
+Facebook,Facebook - Event Page,400,Distracted
+Notepad++,utils.c - Code Script,1400,Focused
+Gmail,Gmail - Project Sync,1500,Focused
+Chrome,YouTube - Web Dev Tutorial,1800,Focused
+Netflix,Netflix - Comedy Series,1900,Distracted
+WhatsApp,WhatsApp - Project Group,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Chrome,LeetCode - Graph Problems,2300,Focused
+VS Code,main.js - Frontend App,3500,Focused
+Slack,Channel - #backend-dev,1400,Focused
+Chrome,YouTube - AI Applications,2000,Focused
+Instagram,Instagram - Pet Posts,500,Distracted
+Teams,Team Sync Meeting,1800,Focused
+Spotify,Spotify - Dance Classics,900,Distracted
+Chrome,HackerRank - Tree Problems,2200,Focused
+Reddit,Reddit - Tech Updates,1000,Focused
+Google Docs,Docs - Project Report,1600,Focused
+Netflix,Netflix - Thriller Drama,2100,Distracted
+Zoom,Client Training - Agile,2000,Focused
+Twitter,Twitter - News Feed,600,Distracted
+Notion,Notion - Task Notes,1400,Focused
+Chrome,YouTube - SQL Tutorial,1700,Focused
+Facebook,Facebook - Social Posts,450,Distracted
+Gmail,Inbox - Work Feedback,1500,Focused
+Spotify,Spotify - Indie Hits,800,Distracted
+VS Code,services.tsx - Service Component,3200,Focused
+Chrome,Stack Overflow - React Fix,1800,Focused
+Instagram,Instagram - Reels Feed,700,Distracted
+Teams,Sprint Review Session,1900,Focused
+Chrome,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Funny Videos,750,Distracted
+Google Keep,Keep - Study Notes,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Celebrity Updates,550,Distracted
+Zoom,Workshop - Data Science,2100,Focused
+Chrome,Medium - Coding Practices,1300,Focused
+Spotify,Spotify - Focus Classical,1000,Focused
+Facebook,Facebook - Group Events,400,Distracted
+Notepad++,main.py - Automation Script,1400,Focused
+Gmail,Gmail - Client Tasks,1500,Focused
+Chrome,YouTube - Web Development,1800,Focused
+Netflix,Netflix - Action Movie,1900,Distracted
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - SQL Query,1600,Focused
+Chrome,LeetCode - Array Problems,2300,Focused
+VS Code,ui.tsx - UI Component,3500,Focused
+Slack,Channel - #data-science,1400,Focused
+Chrome,YouTube - Python Tutorial,2000,Focused
+Instagram,Instagram - Food Reels,500,Distracted
+Teams,Weekly Planning Meeting,1800,Focused
+Spotify,Spotify - EDM Classics,900,Distracted
+Chrome,HackerRank - String Algorithms,2200,Focused
+Reddit,Reddit - Science News,1000,Focused
+Google Docs,Docs - Sprint Report,1600,Focused
+Netflix,Netflix - Comedy Drama,2100,Distracted
+Zoom,Client Workshop - Scrum,2000,Focused
+Twitter,Twitter - Viral Posts,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Chrome,YouTube - JavaScript Basics,1700,Focused
+Facebook,Facebook - Event Updates,450,Distracted
+Gmail,Inbox - Team Updates,1500,Focused
+Spotify,Spotify - Chill Classics,800,Distracted
+VS Code,api.js - API Service,3200,Focused
+Chrome,Stack Overflow - Node.js Fix,1800,Focused
+Instagram,Instagram - Stories View,700,Distracted
+Teams,Project Sync Session,1900,Focused
+Chrome,YouTube - Frontend Crash Course,2000,Focused
+Reddit,Reddit - Jokes Feed,750,Distracted
+Google Keep,Keep - Research Ideas,900,Focused
+Telegram,Telegram - Tech Chat,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Trending Hashtags,550,Distracted
+Zoom,Training - Leadership Skills,2100,Focused
+Chrome,Medium - Tech Trends,1300,Focused
+Spotify,Spotify - Classical Piano,1000,Focused
+Facebook,Facebook - Social Group,400,Distracted
+Notepad++,utils.c - Code Script,1400,Focused
+Gmail,Gmail - Project Feedback,1500,Focused
+Chrome,YouTube - Web Dev Tutorial,1800,Focused
+Netflix,Netflix - Thriller Series,1900,Distracted
+WhatsApp,WhatsApp - Project Group,600,Focused
+Stack Overflow,Stack Overflow - API Fix,1600,Focused
+Chrome,LeetCode - Graph Traversal,2300,Focused
+VS Code,main.tsx - React App,3500,Focused
+Slack,Channel - #frontend-dev,1400,Focused
+Chrome,YouTube - AI Tutorial,2000,Focused
+Instagram,Instagram - Travel Reels,500,Distracted
+Teams,Sprint Planning Meeting,1800,Focused
+Spotify,Spotify - Party Classics,900,Distracted
+Chrome,HackerRank - Tree Problems,2200,Focused
+Reddit,Reddit - Tech Updates,1000,Focused
+Google Docs,Docs - Project Summary,1600,Focused
+Netflix,Netflix - Comedy Series,2100,Distracted
+Zoom,Client Sync Meeting,2000,Focused
+Twitter,Twitter - News Clips,600,Distracted
+Notion,Notion - Task Roadmap,1400,Focused
+Chrome,YouTube - SQL Crash Course,1700,Focused
+Facebook,Facebook - Social Feed,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Spotify,Spotify - Indie Pop,800,Distracted
+VS Code,services.js - Backend Service,3200,Focused
+Chrome,Stack Overflow - React Error,1800,Focused
+Instagram,Instagram - Reels Scroll,700,Distracted
+Teams,Weekly Review Session,1900,Focused
+Chrome,YouTube - Backend Tutorial,2000,Focused
+Reddit,Reddit - Funny Clips,750,Distracted
+Google Keep,Keep - Study Notes,900,Focused
+Telegram,Telegram - Coding Group,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Viral Memes,550,Distracted
+Zoom,Workshop - Machine Learning,2100,Focused
+Chrome,Medium - Coding Practices,1300,Focused
+Spotify,Spotify - Focus Classical,1000,Focused
+Facebook,Facebook - Group Posts,400,Distracted
+Notepad++,main.c - System Code,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Chrome,YouTube - Python Guide,1800,Focused
+Netflix,Netflix - Action Movie,1900,Distracted
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - SQL Fix,1600,Focused
+Chrome,LeetCode - Array Algorithms,2300,Focused
+VS Code,ui.py - UI Development,3500,Focused
+Slack,Channel - #data-engineering,1400,Focused
+Chrome,YouTube - Cloud Basics,2000,Focused
+Instagram,Instagram - Food Posts,500,Distracted
+Teams,Team Planning Session,1800,Focused
+Spotify,Spotify - EDM Hits,900,Distracted
+Chrome,HackerRank - String Problems,2200,Focused
+Reddit,Reddit - Science Facts,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Netflix,Netflix - Mystery Movie,2100,Distracted
+Zoom,Client Workshop - Agile,2000,Focused
+Twitter,Twitter - Entertainment News,600,Distracted
+Notion,Notion - Task Planner,1400,Focused
+Chrome,YouTube - JavaScript Tutorial,1700,Focused
+Facebook,Facebook - Group Feed,450,Distracted
+Gmail,Inbox - Team Tasks,1500,Focused
+Spotify,Spotify - Chill Classics,800,Distracted
+VS Code,api.tsx - API Component,3200,Focused
+Chrome,Stack Overflow - Node.js Bug,1800,Focused
+Instagram,Instagram - Stories View,700,Distracted
+Teams,Project Review Meeting,1900,Focused
+Chrome,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - Jokes Clips,750,Distracted
+Google Keep,Keep - Research Ideas,900,Focused
+Telegram,Telegram - Tech Chat,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Trending Hashtags,550,Distracted
+Zoom,Training - Leadership Skills,2100,Focused
+Chrome,Medium - DevOps Trends,1300,Focused
+Spotify,Spotify - Classical Piano,1000,Focused
+Facebook,Facebook - Event Page,400,Distracted
+Notepad++,utils.c - Code Script,1400,Focused
+Gmail,Gmail - Project Sync,1500,Focused
+Chrome,YouTube - Web Dev Tutorial,1800,Focused
+Netflix,Netflix - Comedy Series,1900,Distracted
+WhatsApp,WhatsApp - Project Group,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Chrome,LeetCode - Graph Problems,2300,Focused
+VS Code,main.js - Frontend App,3500,Focused
+Slack,Channel - #backend-dev,1400,Focused
+Chrome,YouTube - AI Applications,2000,Focused
+Instagram,Instagram - Pet Posts,500,Distracted
+Teams,Team Sync Meeting,1800,Focused
+Spotify,Spotify - Dance Classics,900,Distracted
+Chrome,HackerRank - Tree Problems,2200,Focused
+Reddit,Reddit - Tech Updates,1000,Focused
+Google Docs,Docs - Project Report,1600,Focused
+Netflix,Netflix - Thriller Drama,2100,Distracted
+Zoom,Client Training - Agile,2000,Focused
+Twitter,Twitter - News Feed,600,Distracted
+Notion,Notion - Task Notes,1400,Focused
+Chrome,YouTube - SQL Tutorial,1700,Focused
+Facebook,Facebook - Social Posts,450,Distracted
+Gmail,Inbox - Work Feedback,1500,Focused
+Spotify,Spotify - Indie Hits,800,Distracted
+VS Code,services.tsx - Service Component,3200,Focused
+Chrome,Stack Overflow - React Fix,1800,Focused
+Instagram,Instagram - Reels Feed,700,Distracted
+Teams,Sprint Review Session,1900,Focused
+Chrome,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Funny Videos,750,Distracted
+Google Keep,Keep - Study Notes,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Celebrity Updates,550,Distracted
+Zoom,Workshop - Data Science,2100,Focused
+Chrome,Medium - Coding Practices,1300,Focused
+Spotify,Spotify - Focus Classical,1000,Focused
+Facebook,Facebook - Group Events,400,Distracted
+Notepad++,main.py - Automation Script,1400,Focused
+Gmail,Gmail - Client Tasks,1500,
+IntelliJ IDEA,ProjectX.java - Backend Logic,4200,Focused
+Edge,GitHub - Repo Dashboard,2000,Focused
+Edge,YouTube - Music Playlist,1100,Distracted
+TikTok,TikTok Feed,850,Distracted
+Edge,Codeforces - Contest Prep,2600,Focused
+LinkedIn,LinkedIn - Networking,700,Distracted
+Discord,Team Channel - #coding,1800,Focused
+Apple Music,Apple Music - Study Mix,1300,Focused
+Apple Music,Apple Music - Pop Hits,900,Distracted
+Outlook,Email - Project Proposal,1600,Focused
+Hulu,Hulu - TV Series,2200,Distracted
+Skype,Skype - Team Meeting,2100,Focused
+Reddit,Reddit - Tech News,800,Distracted
+Edge,Stack Overflow - Java Query,1900,Focused
+Edge,Twitter - Tech Tweets,650,Distracted
+Zoom,Zoom - Code Review,2300,Focused
+WhatsApp,WhatsApp - Peer Chat,550,Distracted
+Obsidian,Obsidian - Project Notes,2000,Focused
+Google Docs,Docs - Technical Spec,1700,Focused
+IntelliJ IDEA,app.py - ML Model,3800,Focused
+Edge,YouTube - ML Tutorial,2100,Focused
+Edge,YouTube - Viral Videos,1000,Distracted
+Messenger,Messenger - Work Group,600,Distracted
+Asana,Asana - Task Management,1600,Focused
+Gmail,Inbox - Client Feedback,1400,Focused
+Edge,Wikipedia - Algorithms,1500,Focused
+Hulu,Hulu - Movie Night,2000,Distracted
+TikTok,TikTok - Trending,450,Distracted
+Microsoft Teams,Teams - Sprint Planning,1900,Focused
+Edge,YouTube - Cloud Computing,1800,Focused
+Reddit,Reddit - Programming Tips,900,Focused
+Notion,Notion - Study Guide,1600,Focused
+Telegram,Telegram - Social Group,500,Distracted
+Postman,Postman - API Calls,1700,Focused
+ChatGPT,ChatGPT - Code Help,2000,Focused
+Twitter,Twitter - News Feed,600,Distracted
+Zoom,Zoom - Workshop Session,2200,Focused
+Edge,Medium - Tech Blog,1400,Focused
+Apple Music,Apple Music - Chill Vibes,1000,Distracted
+LinkedIn,LinkedIn - Job Search,400,Distracted
+Sublime Text,script.js - Frontend Code,1500,Focused
+Gmail,Gmail - Team Update,1600,Focused
+Edge,YouTube - Data Science,1900,Focused
+Hulu,Hulu - Comedy Special,2100,Distracted
+WhatsApp,WhatsApp - Family Group,650,Distracted
+Stack Overflow,Stack Overflow - SQL Help,1700,Focused
+Edge,GeeksforGeeks - Graphs,1800,Focused
+IntelliJ IDEA,main.cpp - Algorithm,3600,Focused
+Discord,Channel - #devops,1500,Focused
+Edge,YouTube - DevOps Guide,2000,Focused
+TikTok,TikTok - Dance Videos,500,Distracted
+Microsoft Teams,Teams - Project Sync,1800,Focused
+Apple Music,Apple Music - Workout Mix,900,Distracted
+Edge,Codeforces - Problem Set,2300,Focused
+Reddit,Reddit - Software Dev,1100,Focused
+Google Docs,Docs - Team Notes,1600,Focused
+Hulu,Hulu - Drama Series,2000,Distracted
+Zoom,Zoom - Client Call,2100,Focused
+Twitter,Twitter - Tech Updates,600,Distracted
+Notion,Notion - Task Planner,1400,Focused
+Edge,YouTube - Web Dev Guide,1700,Focused
+LinkedIn,LinkedIn - Profile View,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Classical,800,Focused
+IntelliJ IDEA,server.js - API Code,3200,Focused
+Edge,Stack Overflow - Node.js,1800,Focused
+TikTok,TikTok - Comedy Clips,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - AI Basics,2000,Focused
+Reddit,Reddit - Tech Memes,750,Distracted
+Notion,Notion - Project Plan,900,Focused
+Telegram,Telegram - Coding Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Debug Session,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Career Tips,1300,Focused
+Apple Music,Apple Music - Jazz,1000,Focused
+LinkedIn,LinkedIn - Groups,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Client Reply,1500,Focused
+Edge,YouTube - Python Guide,1800,Focused
+Hulu,Hulu - Sci-Fi Show,1900,Distracted
+WhatsApp,WhatsApp - Work Chat,600,Focused
+Stack Overflow,Stack Overflow - CSS Fix,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,frontend.tsx - UI Code,3500,Focused
+Discord,Channel - #frontend,1400,Focused
+Edge,YouTube - React Tutorial,2000,Focused
+TikTok,TikTok - Food Videos,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Mix,900,Distracted
+Edge,Codeforces - Algorithms,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Sprint Plan,1600,Focused
+Hulu,Hulu - Action Movie,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Industry News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - SQL Tutorial,1700,Focused
+LinkedIn,LinkedIn - Messages,450,Distracted
+Gmail,Inbox - Team Feedback,1500,Focused
+Apple Music,Apple Music - Chill Hits,800,Distracted
+IntelliJ IDEA,db.py - Database Code,3200,Focused
+Edge,Stack Overflow - Python Bug,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Call,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - News Updates,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Debug,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Tech Insights,1300,Focused
+Apple Music,Apple Music - Classical Focus,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,main.js - Frontend,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Data Structures,1800,Focused
+Hulu,Hulu - Comedy Series,1900,Distracted
+WhatsApp,WhatsApp - Study Group,600,Focused
+Stack Overflow,Stack Overflow - API Help,1600,Focused
+Edge,GeeksforGeeks - Trees,1700,Focused
+IntelliJ IDEA,tests.py - Unit Tests,3500,Focused
+Discord,Channel - #backend,1400,Focused
+Edge,YouTube - Cloud Basics,2000,Focused
+TikTok,TikTok - Pet Videos,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Problem Solving,2200,Focused
+Reddit,Reddit - Tech Support,1000,Focused
+Google Docs,Docs - Research Paper,1600,Focused
+Hulu,Hulu - Thriller Movie,2100,Distracted
+Zoom,Zoom - Client Demo,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Study Plan,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Work Emails,1500,Focused
+Apple Music,Apple Music - Indie Hits,800,Distracted
+IntelliJ IDEA,api.js - API Service,3200,Focused
+Edge,Stack Overflow - React Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Sync,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - Memes Page,750,Distracted
+Notion,Notion - Project Roadmap,900,Focused
+Telegram,Telegram - Developer Chat,1300,Focused
+Postman,Postman - API Validation,1600,Focused
+ChatGPT,ChatGPT - Algorithm Help,1700,Focused
+Twitter,Twitter - Viral Memes,550,Distracted
+Zoom,Zoom - Training ML,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,utils.tsx - Component Code,1400,Focused
+Gmail,Gmail - Client Tasks,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Project Chat,600,Focused
+Stack Overflow,Stack Overflow - DB Query,1600,Focused
+Edge,GeeksforGeeks - Stacks,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Videos,500,Distracted
+Microsoft Teams,Teams - Weekly Sync,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Programming Help,1000,Focused
+Google Docs,Docs - Team Plan,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Team Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Task Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Team Updates,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Reels,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Tutorial,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Notes,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Posts,550,Distracted
+Zoom,Zoom - Client Sync,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Hits,1000,Focused
+LinkedIn,LinkedIn - Job Listings,400,Distracted
+Sublime Text,main.py - Automation,1400,Focused
+Gmail,Gmail - Project Feedback,1500,Focused
+Edge,YouTube - Data Science Basics,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Linked Lists,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Planning,1800,Focused
+Apple Music,Apple Music - Dance Mix,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Review,2000,Focused
+Twitter,Twitter - Tech Memes,600,Distracted
+Notion,Notion - Meeting Agenda,1400,Focused
+Edge,YouTube - Web Dev Tutorial,1700,Focused
+LinkedIn,LinkedIn - Social Posts,450,Distracted
+Gmail,Inbox - Client Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.tsx - Database Component,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Reels,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Basics,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task Roadmap,900,Focused
+Telegram,Telegram - Tech Chat,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Optimization,1700,Focused
+Twitter,Twitter - Viral News,550,Distracted
+Zoom,Zoom - Workshop ML,2100,Focused
+Edge,Medium - Coding Practices,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Group Discussions,400,Distracted
+Sublime Text,utils.js - Helper Script,1400,Focused
+Gmail,Gmail - Team Sync,1500,Focused
+Edge,YouTube - Python Tutorial,1800,Focused
+Hulu,Hulu - Sci-Fi Movie,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.py - Data Script,3500,Focused
+Discord,Channel - #data-engineering,1400,Focused
+Edge,YouTube - Cloud Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Hits,900,Distracted
+Edge,Codeforces - Problem Set,2200,Focused
+Reddit,Reddit - Coding Tips,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Series,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry News,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Basics,1700,Focused
+LinkedIn,LinkedIn - Job Search,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Jazz,800,Distracted
+IntelliJ IDEA,services.tsx - Service Code,3200,Focused
+Edge,Stack Overflow - Node.js Bug,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Call,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Updates,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Group,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Insights,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Fix,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.py - ML Model,3500,Focused
+Discord,Channel - #frontend,1400,Focused
+Edge,YouTube - React Tutorial,2000,Focused
+TikTok,TikTok - Pet Videos,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Dev,1000,Focused
+Google Docs,Docs - Project Plan,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Hits,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+Edge,Stack Overflow - Node.js Fix,1800,Focused
+TikTok,TikTok - Fashion Posts,700,Distracted
+Microsoft Teams,Teams - Planning Session,1900,Focused
+Edge,YouTube - Backend Guide,2000,Focused
+Reddit,Reddit - Tech Tips,750,Focused
+Notion,Notion - Study Plan,900,Focused
+Telegram,Telegram - Coding Community,1300,Focused
+Postman,Postman - API Deployment,1600,Focused
+ChatGPT,ChatGPT - Code Debugging,1700,Focused
+Twitter,Twitter - Funny Clips,550,Distracted
+Zoom,Zoom - Training Session,2100,Focused
+Edge,Medium - Tech Trends,1300,Focused
+Apple Music,Apple Music - Classical Piano,1000,Focused
+LinkedIn,LinkedIn - Social Feed,400,Distracted
+Sublime Text,main.js - Frontend Script,1400,Focused
+Gmail,Gmail - Client Feedback,1500,Focused
+Edge,YouTube - Data Science Guide,1800,Focused
+Hulu,Hulu - Comedy Movie,1900,Distracted
+WhatsApp,WhatsApp - Work Group,600,Focused
+Stack Overflow,Stack Overflow - CSS Query,1600,Focused
+Edge,GeeksforGeeks - Arrays,1700,Focused
+IntelliJ IDEA,app.tsx - Frontend Code,3500,Focused
+Discord,Channel - #frontend-dev,1400,Focused
+Edge,YouTube - React Guide,2000,Focused
+TikTok,TikTok - Pet Reels,500,Distracted    
+Microsoft Teams,Teams - Sprint Review,1800,Focused
+Apple Music,Apple Music - Dance Hits,900,Distracted
+Edge,Codeforces - Algorithm Practice,2200,Focused
+Reddit,Reddit - Software Tips,1000,Focused
+Google Docs,Docs - Project Outline,1600,Focused
+Hulu,Hulu - Thriller Series,2100,Distracted
+Zoom,Zoom - Team Sync,2000,Focused
+Twitter,Twitter - Tech News,600,Distracted
+Notion,Notion - Meeting Notes,1400,Focused
+Edge,YouTube - Web Dev Basics,1700,Focused
+LinkedIn,LinkedIn - Events,450,Distracted
+Gmail,Inbox - Team Emails,1500,Focused
+Apple Music,Apple Music - Indie Pop,800,Distracted
+IntelliJ IDEA,db.js - Database Code,3200,Focused
+Edge,Stack Overflow - Python Error,1800,Focused
+TikTok,TikTok - Explore Feed,700,Distracted
+Microsoft Teams,Teams - Code Review,1900,Focused
+Edge,YouTube - Frontend Guide,2000,Focused
+Reddit,Reddit - News Feed,750,Distracted
+Notion,Notion - Task List,900,Focused
+Telegram,Telegram - Tech Group,1300,Focused
+Postman,Postman - API Testing,1600,Focused
+ChatGPT,ChatGPT - Code Fix,1700,Focused
+Twitter,Twitter - Viral Posts,550,Distracted
+Zoom,Zoom - Workshop AI,2100,Focused
+Edge,Medium - Coding Tips,1300,Focused
+Apple Music,Apple Music - Focus Classical,1000,Focused
+LinkedIn,LinkedIn - Job Posts,400,Distracted
+Sublime Text,utils.py - Script,1400,Focused
+Gmail,Gmail - Project Update,1500,Focused
+Edge,YouTube - Python Basics,1800,Focused
+Hulu,Hulu - Sci-Fi Series,1900,Distracted
+WhatsApp,WhatsApp - Study Chat,600,Focused
+Stack Overflow,Stack Overflow - API Query,1600,Focused
+Edge,GeeksforGeeks - Graphs,1700,Focused
+IntelliJ IDEA,main.tsx - React App,3500,Focused
+Discord,Channel - #data-science,1400,Focused
+Edge,YouTube - AI Tutorial,2000,Focused
+TikTok,TikTok - Comedy Reels,500,Distracted
+Microsoft Teams,Teams - Daily Standup,1800,Focused
+Apple Music,Apple Music - Pop Classics,900,Distracted
+Edge,Codeforces - Coding Challenge,2200,Focused
+Reddit,Reddit - Coding Help,1000,Focused
+Google Docs,Docs - Team Strategy,1600,Focused
+Hulu,Hulu - Action Drama,2100,Distracted
+Zoom,Zoom - Client Workshop,2000,Focused
+Twitter,Twitter - Industry Updates,600,Distracted
+Notion,Notion - Project Notes,1400,Focused
+Edge,YouTube - SQL Crash Course,1700,Focused
+LinkedIn,LinkedIn - Profile Updates,450,Distracted
+Gmail,Inbox - Work Tasks,1500,Focused
+Apple Music,Apple Music - Chill Pop,800,Distracted
+IntelliJ IDEA,services.py - Backend Code,3200,Focused
+
