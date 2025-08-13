@@ -4,97 +4,14 @@ const auth = require('../middleware/auth');
 const Gamification = require('../models/Gamification');
 const UserProfile = require('../models/UserProfile');
 const ProductivitySummary = require('../models/ProductivitySummary');
+const gamificationController = require('../controller/gamificationController');
 
 /**
  * @route   GET /api/gamification/stats
  * @desc    Get user's gamification stats
  * @access  Private
  */
-router.get('/stats', auth, async (req, res) => {
-  try {
-    const userId = req.user._id; // Use _id from the user document
-    const email = req.user.email; // Get email from the user document
-    
-    // Find the user's gamification data
-    let gamificationData = await Gamification.findOne({ userId });
-    
-    // If no gamification data exists, create a new one
-    if (!gamificationData) {
-      gamificationData = new Gamification({
-        userId,
-        email, // Include the email field
-        points: {
-          total: 0,
-          daily: 0,
-          weekly: 0,
-          monthly: 0
-        },
-        level: {
-          current: 1,
-          progress: 0,
-          nextLevelAt: 1000
-        },
-        badges: [],
-        challenges: [],
-        streaks: {
-          current: 0,
-          longest: 0,
-          lastActiveDate: new Date()
-        },
-        statistics: {
-          totalFocusTime: 0,
-          totalProductiveTime: 0,
-          totalDistractionTime: 0,
-          averageFocusScore: 0,
-          sessionsCompleted: 0
-        }
-      });
-      await gamificationData.save();
-    }
-    
-    // Format the data for frontend
-    const nextLevelPoints = calculateNextLevelPoints(gamificationData.level.current);
-    const currentLevelPoints = calculateNextLevelPoints(gamificationData.level.current - 1);
-    const pointsNeeded = nextLevelPoints - currentLevelPoints;
-    
-    const stats = {
-      level: gamificationData.level.current,
-      points: gamificationData.points.total,
-      pointsToNextLevel: nextLevelPoints - gamificationData.points.total,
-      totalPointsForLevel: pointsNeeded,
-      badgeCount: gamificationData.badges.length,
-      achievements: {
-        total: gamificationData.challenges.length + gamificationData.badges.length,
-        completed: gamificationData.challenges.filter(c => c.completed).length + gamificationData.badges.length,
-      },
-      challenges: {
-        total: gamificationData.challenges.length,
-        completed: gamificationData.challenges.filter(c => c.completed).length,
-        active: gamificationData.challenges.filter(c => !c.completed && (!c.expiryDate || new Date(c.expiryDate) > new Date())).length,
-      },
-      streak: {
-        current: gamificationData.streaks.current,
-        longest: gamificationData.streaks.longest,
-      },
-      badges: {
-        bronze: gamificationData.badges.filter(b => b.rarity === 'bronze').length,
-        silver: gamificationData.badges.filter(b => b.rarity === 'silver').length,
-        gold: gamificationData.badges.filter(b => b.rarity === 'gold').length,
-        platinum: gamificationData.badges.filter(b => b.rarity === 'platinum').length,
-        diamond: gamificationData.badges.filter(b => b.rarity === 'diamond').length,
-        master: gamificationData.badges.filter(b => b.rarity === 'master').length,
-        legendary: gamificationData.badges.filter(b => b.rarity === 'legendary').length,
-      },
-      nextLevelPoints: nextLevelPoints,
-      progressToNextLevel: calculateProgressPercentage(gamificationData.points.total, gamificationData.level.current)
-    };
-    
-    res.json({ success: true, stats });
-  } catch (error) {
-    console.error('Error fetching gamification stats:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
+router.get('/stats', auth, gamificationController.getStats);
 
 /**
  * @route   GET /api/gamification/achievements
@@ -155,45 +72,10 @@ router.get('/achievements', auth, async (req, res) => {
 
 /**
  * @route   GET /api/gamification/challenges
- * @desc    Get user's active challenges
+ * @desc    Get user's challenges
  * @access  Private
  */
-router.get('/challenges', auth, async (req, res) => {
-  try {
-    const userId = req.user._id;
-    
-    // Find the user's gamification data
-    const gamificationData = await Gamification.findOne({ userId });
-    
-    if (!gamificationData) {
-      return res.json({ success: true, challenges: [] });
-    }
-    
-    // Format challenges for frontend
-    const challenges = gamificationData.challenges.map(challenge => ({
-      id: challenge.challengeId,
-      name: challenge.name,
-      description: challenge.description,
-      progress: challenge.progress,
-      target: challenge.target,
-      deadline: challenge.expiryDate,
-      pointsAwarded: challenge.reward,
-      completed: challenge.completed,
-      completedAt: challenge.completedAt,
-      category: challenge.category || 'focus',
-      isActive: !challenge.completed && (!challenge.expiryDate || new Date(challenge.expiryDate) > new Date()),
-      status: challenge.completed ? 'completed' : 
-              (challenge.expiryDate && new Date(challenge.expiryDate) < new Date() ? 'expired' : 'active'),
-      icon: challenge.icon || 'flag',
-      type: determineBadgeType(challenge.reward) // Helper function to determine badge type
-    }));
-    
-    res.json({ success: true, challenges });
-  } catch (error) {
-    console.error('Error fetching challenges:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
+router.get('/challenges', auth, gamificationController.getChallenges);
 
 /**
  * @route   GET /api/gamification/leaderboard
@@ -516,91 +398,7 @@ router.get('/timeline', auth, async (req, res) => {
 });
 
 // Add this endpoint for joining challenges
-router.post('/challenges/:challengeId/join', auth, async (req, res) => {
-  try {
-    const { challengeId } = req.params;
-    const userId = req.user._id;
-    
-    // Find user's gamification data
-    let gamification = await Gamification.findOne({ userId });
-    
-    if (!gamification) {
-      // Create new gamification data for the user if it doesn't exist
-      gamification = new Gamification({
-        userId,
-        email: req.user.email,
-        points: { total: 0, daily: 0, weekly: 0, monthly: 0 },
-        level: { current: 1, progress: 0 },
-        badges: [],
-        challenges: [],
-        streaks: { current: 0, longest: 0, lastActiveDate: new Date() }
-      });
-    }
-    
-    // Check if challenge already exists in user's challenges
-    const existingChallenge = gamification.challenges.find(c => c.challengeId === challengeId);
-    
-    if (existingChallenge) {
-      // If challenge exists but isn't active, activate it
-      if (!existingChallenge.isActive) {
-        existingChallenge.isActive = true;
-        await gamification.save();
-        return res.json({ 
-          success: true, 
-          message: 'Challenge activated successfully'
-        });
-      }
-      
-      // Challenge is already active
-      return res.json({ 
-        success: true, 
-        message: 'Challenge is already active', 
-        challenge: existingChallenge
-      });
-    }
-    
-    // Challenge doesn't exist for this user - add it
-    // Parse the challenge type from the ID
-    const challengeType = challengeId.split('_')[0];
-    const timestamp = parseInt(challengeId.split('_')[1]);
-    
-    // Create a new challenge based on the type
-    const newChallenge = {
-      challengeId,
-      name: `${challengeType.charAt(0).toUpperCase() + challengeType.slice(1)} Challenge`,
-      description: `Complete this ${challengeType} challenge to earn points`,
-      type: challengeType,
-      category: challengeType,
-      isActive: true,
-      progress: 0,
-      target: challengeType === 'daily' ? 60 : challengeType === 'weekly' ? 300 : 1200, // Minutes
-      reward: challengeType === 'daily' ? 100 : challengeType === 'weekly' ? 500 : 2000,
-      startDate: new Date(),
-      deadline: new Date(Date.now() + (
-        challengeType === 'daily' ? 86400000 : // 1 day
-        challengeType === 'weekly' ? 604800000 : // 1 week
-        2592000000 // 1 month
-      ))
-    };
-    
-    // Add the challenge to user's challenges
-    gamification.challenges.push(newChallenge);
-    await gamification.save();
-    
-    res.json({
-      success: true,
-      message: 'Challenge joined successfully',
-      challenge: newChallenge
-    });
-    
-  } catch (error) {
-    console.error('Error joining challenge:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to join challenge'
-    });
-  }
-});
+router.post('/challenges/:challengeId/join', auth, gamificationController.joinChallenge);
 
 // Helper functions
 function calculateNextLevelPoints(currentLevel) {
