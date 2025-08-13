@@ -403,6 +403,299 @@ const gamificationController = {
       res.status(500).json({ error: 'Failed to get user rank' });
     }
   },
+  
+  // Get available challenges
+  async getChallenges(req, res) {
+    try {
+      const Challenge = require('../models/Challenge');
+      const email = req.user.email;
+      
+      // Get all active challenges
+      const challenges = await Challenge.find({ isActive: true });
+      
+      // Format challenges for frontend
+      const formattedChallenges = challenges.map(challenge => {
+        // Check if user is already part of this challenge
+        const userProgress = challenge.userProgress.find(p => p.email === email);
+        const isJoined = !!userProgress;
+        const isCompleted = userProgress?.completedAt ? true : false;
+        const progress = userProgress?.completionPercentage || 0;
+        
+        // Map difficulty to badge type for frontend
+        const difficultyToBadgeType = {
+          'bronze': 'bronze',
+          'silver': 'silver',
+          'gold': 'gold',
+          'platinum': 'platinum'
+        };
+        
+        return {
+          id: challenge._id.toString(),
+          name: challenge.title,
+          description: challenge.description,
+          icon: getChallengeIcon(challenge.category),
+          type: difficultyToBadgeType[challenge.difficulty] || 'bronze',
+          progress: progress,
+          target: challenge.targetValue,
+          completed: isCompleted,
+          deadline: challenge.endDate,
+          completedAt: userProgress?.completedAt,
+          pointsAwarded: challenge.points,
+          category: challenge.category,
+          isActive: isJoined && !isCompleted
+        };
+      });
+      
+      res.json({ 
+        success: true, 
+        challenges: formattedChallenges 
+      });
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch challenges' 
+      });
+    }
+  },
+  
+  // Join a challenge
+  async joinChallenge(req, res) {
+    try {
+      const { challengeId } = req.params;
+      const email = req.user.email;
+      const userId = req.user._id;
+      
+      const Challenge = require('../models/Challenge');
+      const challenge = await Challenge.findById(challengeId);
+      
+      if (!challenge) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Challenge not found' 
+        });
+      }
+      
+      // Check if challenge is still active
+      if (!challenge.isActive || (challenge.endDate && new Date(challenge.endDate) < new Date())) {
+        return res.status(400).json({
+          success: false,
+          error: 'This challenge is no longer active'
+        });
+      }
+      
+      // Check if user is already part of this challenge
+      const userProgressIndex = challenge.userProgress.findIndex(p => p.email === email);
+      
+      if (userProgressIndex >= 0) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'You have already joined this challenge' 
+        });
+      }
+      
+      // Add user to challenge with enhanced data
+      challenge.userProgress.push({
+        email: email,
+        userId: userId,
+        completionPercentage: 0,
+        currentValue: 0,
+        pointsEarned: 0,
+        joinedAt: new Date(),
+        status: 'joined'
+      });
+      
+      // Increment users in progress count
+      challenge.usersInProgress = (challenge.usersInProgress || 0) + 1;
+      
+      await challenge.save();
+      
+      // Also add challenge to user's gamification profile
+      const gamification = await Gamification.findOne({ userId });
+      if (gamification) {
+        // Check if this challenge is already in user's challenges
+        const existingChallengeIndex = gamification.challenges.findIndex(
+          c => c.challengeId === challengeId
+        );
+        
+        if (existingChallengeIndex === -1) {
+          gamification.challenges.push({
+            challengeId: challenge._id.toString(),
+            name: challenge.title,
+            description: challenge.description,
+            category: challenge.category,
+            target: challenge.targetValue,
+            progress: 0,
+            reward: challenge.points,
+            completed: false,
+            claimed: false,
+            expiryDate: challenge.endDate
+          });
+          
+          await gamification.save();
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: 'Successfully joined the challenge',
+        challenge: {
+          id: challenge._id,
+          title: challenge.title,
+          description: challenge.description,
+          difficulty: challenge.difficulty,
+          points: challenge.points,
+          progress: 0,
+          target: challenge.targetValue,
+          category: challenge.category,
+          endDate: challenge.endDate,
+          icon: challenge.icon || getChallengeIcon(challenge.category)
+        }
+      });
+    } catch (error) {
+      console.error('Error joining challenge:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to join challenge' 
+      });
+    }
+  },
+  
+  // Complete a challenge
+  async completeChallenge(req, res) {
+    try {
+      const { challengeId } = req.body;
+      const email = req.user.email;
+      const userId = req.user._id;
+      
+      const Challenge = require('../models/Challenge');
+      const challenge = await Challenge.findById(challengeId);
+      
+      if (!challenge) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Challenge not found' 
+        });
+      }
+      
+      // Check if challenge is still active
+      if (!challenge.isActive || (challenge.endDate && new Date(challenge.endDate) < new Date())) {
+        return res.status(400).json({
+          success: false,
+          error: 'This challenge has expired'
+        });
+      }
+      
+      // Find user progress for this challenge
+      const userProgressIndex = challenge.userProgress.findIndex(p => p.email === email);
+      
+      if (userProgressIndex === -1) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'You have not joined this challenge' 
+        });
+      }
+      
+      // Check if already completed
+      if (challenge.userProgress[userProgressIndex].status === 'completed' || 
+          challenge.userProgress[userProgressIndex].status === 'claimed') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'You have already completed this challenge' 
+        });
+      }
+      
+      // Mark as completed and award points
+      challenge.userProgress[userProgressIndex].completionPercentage = 100;
+      challenge.userProgress[userProgressIndex].currentValue = challenge.targetValue;
+      challenge.userProgress[userProgressIndex].completedAt = new Date();
+      challenge.userProgress[userProgressIndex].status = 'completed';
+      challenge.userProgress[userProgressIndex].pointsEarned = challenge.points;
+      
+      // Update challenge stats
+      challenge.usersInProgress = Math.max(0, (challenge.usersInProgress || 1) - 1);
+      challenge.usersCompleted = (challenge.usersCompleted || 0) + 1;
+      
+      await challenge.save();
+      
+      // Update user gamification stats
+      const gamification = await Gamification.findOne({ userId });
+      
+      if (gamification) {
+        // Add points
+        gamification.points.total += challenge.points;
+        gamification.points.daily += challenge.points;
+        gamification.points.weekly += challenge.points;
+        gamification.points.monthly += challenge.points;
+        
+        // Check for level up
+        const oldLevel = gamification.level.current;
+        const newLevel = calculateLevel(gamification.points.total);
+        const leveledUp = newLevel > oldLevel;
+        
+        if (leveledUp) {
+          gamification.level.current = newLevel;
+        }
+        
+        // Find and update or add the challenge in user's challenges
+        const userChallengeIndex = gamification.challenges.findIndex(
+          c => c.challengeId === challengeId
+        );
+        
+        if (userChallengeIndex >= 0) {
+          // Update existing challenge
+          gamification.challenges[userChallengeIndex].progress = challenge.targetValue;
+          gamification.challenges[userChallengeIndex].completed = true;
+          gamification.challenges[userChallengeIndex].claimed = true;
+          gamification.challenges[userChallengeIndex].claimedDate = new Date();
+        } else {
+          // Add to completed challenges if not already tracked
+          gamification.challenges.push({
+            challengeId: challenge._id.toString(),
+            name: challenge.title,
+            description: challenge.description,
+            category: challenge.category,
+            target: challenge.targetValue,
+            progress: challenge.targetValue,
+            reward: challenge.points,
+            completed: true,
+            claimed: true,
+            claimedDate: new Date()
+          });
+        }
+        
+        await gamification.save();
+        
+        // Also update user profile stats
+        await updateUserProfileStats(userId, gamification);
+        
+        res.json({
+          success: true,
+          challenge: {
+            id: challenge._id,
+            title: challenge.title,
+            description: challenge.description,
+            points: challenge.points
+          },
+          pointsAwarded: challenge.points,
+          leveledUp,
+          newLevel: gamification.level.current,
+          totalPoints: gamification.points.total
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          error: 'Gamification profile not found' 
+        });
+      }
+    } catch (error) {
+      console.error('Error completing challenge:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to complete challenge' 
+      });
+    }
+  },
 
   // Get user's gamification stats
   async getStats(req, res) {
@@ -604,6 +897,24 @@ function countBadgesByRarity(badges) {
   });
   
   return counts;
+}
+
+// Helper function to get appropriate icon for a challenge based on category
+function getChallengeIcon(category) {
+  const categoryIcons = {
+    'focus': 'Target',
+    'productivity': 'TrendingUp',
+    'time': 'Clock',
+    'distraction': 'Zap',
+    'habit': 'Calendar',
+    'learning': 'BookOpen',
+    'daily': 'Clock',
+    'weekly': 'Calendar',
+    'monthly': 'Calendar',
+    'general': 'Award'
+  };
+  
+  return categoryIcons[category] || 'Trophy';
 }
 
 module.exports = gamificationController;

@@ -42,6 +42,9 @@ import {
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
+// Define API base URL
+const API_BASE_URL = 'http://localhost:5001';
+
 // Define achievement badge types
 type BadgeType = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'legendary';
 
@@ -87,6 +90,10 @@ interface LeaderboardEntry {
   level: number;
   position: number;
   streak: number;
+  focusScore?: number;
+  productiveTime?: number;
+  sessionsCount?: number;
+  isCurrentUser?: boolean;
 }
 
 // Define user gamification stats interface
@@ -159,7 +166,7 @@ const Gamification = () => {
   // Check backend connection
   const checkBackendConnection = async () => {
     try {
-      await axios.get('http://localhost:5001/api/health', { timeout: 3000 });
+      await axios.get(`${API_BASE_URL}/api/health`, { timeout: 3000 });
       setBackendStatus('connected');
       return true;
     } catch (err) {
@@ -179,31 +186,31 @@ const Gamification = () => {
       // Check backend connection first
       const isConnected = await checkBackendConnection();
       if (!isConnected) {
-        throw new Error('Cannot connect to backend server. Please ensure the server is running at http://localhost:5001');
+        throw new Error('Cannot connect to backend server. Please ensure the server is running at ' + API_BASE_URL);
       }
       
       console.log('Fetching gamification data...');
       
       // Fetch data sequentially to better identify which endpoint fails
-      const statsResponse = await axios.get('http://localhost:5001/api/gamification/stats', { 
+      const statsResponse = await axios.get(`${API_BASE_URL}/api/gamification/stats`, { 
         headers: getAuthHeader(),
         timeout: 5000
       });
       console.log('Stats data fetched successfully');
       
-      const achievementsResponse = await axios.get('http://localhost:5001/api/gamification/achievements', { 
+      const achievementsResponse = await axios.get(`${API_BASE_URL}/api/gamification/achievements`, { 
         headers: getAuthHeader(),
         timeout: 5000
       });
       console.log('Achievements data fetched successfully');
       
-      const challengesResponse = await axios.get('http://localhost:5001/api/gamification/challenges', { 
+      const challengesResponse = await axios.get(`${API_BASE_URL}/api/gamification/challenges`, { 
         headers: getAuthHeader(),
         timeout: 5000
       });
       console.log('Challenges data fetched successfully');
       
-      const leaderboardResponse = await axios.get('http://localhost:5001/api/gamification/leaderboard', { 
+      const leaderboardResponse = await axios.get(`${API_BASE_URL}/api/gamification/leaderboard`, { 
         headers: getAuthHeader(),
         timeout: 5000
       });
@@ -217,7 +224,7 @@ const Gamification = () => {
       
       // Try to fetch timeline data but don't fail if it's not available
       try {
-        const timelineResponse = await axios.get('http://localhost:5001/api/gamification/timeline', { 
+        const timelineResponse = await axios.get(`${API_BASE_URL}/api/gamification/timeline`, { 
           headers: getAuthHeader(),
           timeout: 5000
         });
@@ -287,10 +294,10 @@ const Gamification = () => {
       }
       
       // Use the correct endpoint for claiming achievements
-      // This endpoint is likely /api/gamification/achievements/:id/claim
+      // This endpoint maps to the completeChallenge controller function
       await axios.post(
-        `http://localhost:5001/api/gamification/achievements/${achievementId}/claim`, 
-        {}, 
+        `${API_BASE_URL}/api/gamification/challenge/complete`, 
+        { challengeId: achievementId }, 
         { headers: getAuthHeader() }
       );
       
@@ -352,7 +359,7 @@ const Gamification = () => {
       
       // Use the correct endpoint for joining challenges
       const response = await axios.post(
-        `http://localhost:5001/api/gamification/challenges/${challengeId}/join`, 
+        `${API_BASE_URL}/api/gamification/challenges/${challengeId}/join`, 
         {}, 
         { headers: getAuthHeader() }
       );
@@ -444,7 +451,7 @@ const Gamification = () => {
       
       // Use the correct endpoint for completing challenges
       const response = await axios.post(
-        'http://localhost:5001/api/gamification/challenge/complete',
+        `${API_BASE_URL}/api/gamification/challenge/complete`,
         { challengeId },
         { headers: getAuthHeader() }
       );
