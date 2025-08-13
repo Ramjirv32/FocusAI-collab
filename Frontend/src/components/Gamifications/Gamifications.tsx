@@ -289,7 +289,7 @@ export function GamificationDashboard({
           </div>
 
           <div className="text-center">
-            <div className="text-xl font-bold text-orange-600">{gamificationData.streaks.current}</div>
+            <div className="text-xl font-bold text-orange-600">{gamificationData.streaks?.current || 0}</div>
             <div className="text-sm text-gray-500">Day Streak</div>
           </div>
 
@@ -349,9 +349,9 @@ export function GamificationDashboard({
 
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-orange-600">{gamificationData.streaks.current}</div>
+            <div className="text-3xl font-bold text-orange-600">{gamificationData.streaks?.current || 0}</div>
             <div className="text-sm text-gray-500">Current Streak</div>
-            <div className="text-xs text-gray-400">Best: {gamificationData.streaks.longest}</div>
+            <div className="text-xs text-gray-400">Best: {gamificationData.streaks?.longest || 0}</div>
           </CardContent>
         </Card>
       </div>
