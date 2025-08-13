@@ -64,8 +64,16 @@ app.use('/api/chat', chatRoutes);
 console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoutes, newRoutes, appUsageRoutes, statisticsRoutes, healthRoutes');
 
 
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 'Server is running' });
+
+app.get('/ch', auth, async (req, res) => {
+    try {
+        const email = req.user.email; // Get email from authenticated user
+        const data = await ProductivitySummary.find({email: email}); // Use find() not findAll()
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching productivity summary:', error);
+        res.status(500).json({ error: 'Failed to fetch productivity data' });
+    }
 });
 
 const generateToken = (user) => {
