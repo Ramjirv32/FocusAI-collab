@@ -1,210 +1,158 @@
 import axios from 'axios';
 
-// Define types for better type safety
-interface ProductivityData {
-  focusScore: number;
-  productiveTime: number;
-  distractions: Array<{name: string, duration: number}>;
-  topApps: Array<{name: string, duration: number}>;
-  streak: number;
-  totalAppUsage: number;
-}
-
-interface ChatResponse {
-  success: boolean;
-  response: string;
-  historyId?: string;
-  hasProductivityData: boolean;
-  focusScore?: number;
-  productiveHours?: number;
-  uniqueApps?: number;
-  streak?: number;
-  error?: string;
-}
-
-// Use a hardcoded API_URL to avoid process.env issues
-const API_URL = 'http://localhost:5001/api';
+const API_URL = 'http://localhost:5001';
 
 export const chatService = {
-  // Send a message to the AI assistant
-  async sendMessage(message: string, historyId?: string, userData?: ProductivityData | null): Promise<ChatResponse> {
+  // Send a message to the chat service with optional productivity data
+  sendMessage: async (message, historyId = null, userData = null) => {
     try {
       console.log('🤖 Sending chat message:', message);
       console.log('📊 Including user data:', userData);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await axios.post<ChatResponse>(
-        `${API_URL}/chat`, 
-        { 
-          message, 
-          historyId,
-          userData // Include the user data in the request
-        },
-        { 
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 20000 // Increase timeout to 20 seconds for AI processing
+      const response = await axios.post(`${API_URL}/api/chat/message`, {
+        message,
+        historyId,
+        userData
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      );
-
+      });
+      
       console.log('📨 Chat response received:', response.data);
       return response.data;
-    } catch (error: any) {
-      console.error('❌ Chat service error:', error);
+    } catch (error) {
+      console.error('❌ Error sending chat message:', error);
+      return {
+        success: false,
+        error: error.message,
+        response: "I'm having trouble connecting to my AI capabilities right now. Please try again in a moment."
+      };
+    }
+  },
+  
+  // Get user productivity data from the server for enhanced chat responses
+  getUserProductivityData: async () => {
+    try {
+      console.log('📊 Fetching user productivity data for chat');
       
-      // Check for specific error types and provide appropriate responses
-      if (error.code === 'ECONNABORTED') {
+      // First try to get a comprehensive productivity overview
+      try {
+        const response = await axios.get(`${API_URL}/api/statistics/overview`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.data && response.data.focusScore) {
+          console.log('✅ Got productivity overview data');
+          return response.data;
+        }
+      } catch (overviewError) {
+        console.log('⚠️ Could not get overview stats, trying alternative endpoint');
+      }
+      
+      // If that fails, try the fallback endpoint for all productivity summaries
+      const response = await axios.get(`${API_URL}/ch`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      // Process the productivity summaries
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        console.log(`✅ Got ${response.data.length} productivity summaries`);
+        
+        // Get the most recent summary
+        const sortedSummaries = [...response.data].sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        
+        const latestSummary = sortedSummaries[0];
+        
         return {
-          success: false,
-          response: "The request took too long to process. The server might be busy. Please try a shorter message or try again later.",
-          error: "Request timeout",
-          hasProductivityData: false
+          ...latestSummary,
+          allSummaries: sortedSummaries,
+          historicalDataPoints: sortedSummaries.length
         };
       }
       
-      if (error.response) {
-        // The server responded with an error status code
-        console.log('Server error details:', error.response.data);
-        
-        // If the server sent back a specific error message, use it
-        if (error.response.data && error.response.data.response) {
-          return {
-            success: false,
-            response: error.response.data.response,
-            error: error.response.data.error || "Server error",
-            hasProductivityData: false
-          };
-        }
-      }
+      console.log('⚠️ No productivity data found');
+      return null;
+    } catch (error) {
+      console.error('❌ Error fetching user productivity data:', error);
+      return null;
+    }
+  },
+  
+  // Get chat histories for the user
+  getChatHistories: async () => {
+    try {
+      console.log('🔍 Fetching chat histories');
       
-      // Default error response
-      return {
-        success: false,
-        response: "I'm having trouble connecting to the server right now. Please try again in a moment.",
-        error: error.message || 'Unknown error',
-        hasProductivityData: false
-      };
-    }
-  },
-
-  // Get chat history list
-  async getChatHistories() {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await axios.get(`${API_URL}/chat/history`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      return response.data.histories || [];
+      const response = await axios.get(`${API_URL}/api/chat/histories`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      console.log('📚 Received chat histories:', response.data);
+      return response.data;
     } catch (error) {
-      console.error('Error fetching chat histories:', error);
-      return [];
-    }
-  },
-
-  // Get specific chat history
-  async getChatHistoryById(historyId: string) {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await axios.get(`${API_URL}/chat/history/${historyId}`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      return response.data.history;
-    } catch (error) {
-      console.error('Error fetching chat history:', error);
-      return {
-        _id: null,
-        title: 'Error loading chat',
-        messages: []
-      };
-    }
-  },
-
-  // Create a new chat history
-  async createChatHistory(title?: string) {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await axios.post(`${API_URL}/chat/history`, 
-        { title }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      return response.data.history;
-    } catch (error) {
-      console.error('Error creating chat history:', error);
-      throw error;
-    }
-  },
-
-  // Delete a chat history
-  async deleteChatHistory(historyId: string) {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      await axios.delete(`${API_URL}/chat/history/${historyId}`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      return true;
-    } catch (error) {
-      console.error('Error deleting chat history:', error);
+      console.error('❌ Error fetching chat histories:', error);
       throw error;
     }
   },
   
-  // Fetch user productivity data
-  async getUserProductivityData(): Promise<ProductivityData | null> {
+  // Get a specific chat history by ID
+  getChatHistoryById: async (historyId) => {
     try {
-      console.log('🔍 Fetching user productivity data');
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
-      // Get data from multiple endpoints to compile a complete picture
-      const [focusResponse, statsResponse] = await Promise.all([
-        axios.get(`${API_URL}/focus/summary`, { 
-          headers: { Authorization: `Bearer ${token}` } 
-        }),
-        axios.get(`${API_URL}/statistics/overview`, { 
-          headers: { Authorization: `Bearer ${token}` } 
-        })
-      ]);
-
-      // Combine data from different sources
-      const userData: ProductivityData = {
-        focusScore: focusResponse.data.focusScore || 0,
-        productiveTime: focusResponse.data.productiveTime || 0,
-        distractions: focusResponse.data.distractions || [],
-        topApps: statsResponse.data.topApps || [],
-        streak: statsResponse.data.streak || 0,
-        totalAppUsage: statsResponse.data.totalAppUsage || 0
-      };
-
-      console.log('📊 User productivity data:', userData);
-      return userData;
+      console.log(`🔍 Fetching chat history: ${historyId}`);
+      
+      const response = await axios.get(`${API_URL}/api/chat/history/${historyId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      console.log('📜 Received chat history:', response.data);
+      return response.data;
     } catch (error) {
-      console.error('❌ Error fetching user productivity data:', error);
-      return null;
+      console.error('❌ Error fetching chat history:', error);
+      throw error;
+    }
+  },
+  
+  // Create a new empty chat history
+  createChatHistory: async () => {
+    try {
+      const response = await axios.post(`${API_URL}/api/chat/history`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error creating chat history:', error);
+      throw error;
+    }
+  },
+  
+  // Delete a chat history by ID
+  deleteChatHistory: async (historyId) => {
+    try {
+      const response = await axios.delete(`${API_URL}/api/chat/history/${historyId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error deleting chat history:', error);
+      throw error;
     }
   }
 };

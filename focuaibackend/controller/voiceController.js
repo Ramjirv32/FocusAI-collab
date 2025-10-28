@@ -5,7 +5,7 @@ const ChatHistory = require('../models/ChatHistory');
 const { getUserProductivityData } = require('./chatController');
 
 const groq = new Groq({
-  apiKey: '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'
+  apiKey: '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'
 });
 
 // Process voice message from the meeting interface

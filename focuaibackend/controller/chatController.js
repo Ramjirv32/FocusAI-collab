@@ -5,7 +5,7 @@ const ProductivitySummary = require('../models/ProductivitySummary');
 const ChatHistory = require('../models/ChatHistory');
 
 const groq = new Groq({
-  apiKey: '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'
+  apiKey: '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'
 });
 
 // Helper function to get user's productivity data - SAME LOGIC AS usageController.js
@@ -282,7 +282,24 @@ const calculateStreak = async (userId) => {
   }
 };
 
-// Send message to chat - MAIN FUNCTION
+// New helper function to fetch all productivity summaries for a user
+const getAllProductivitySummaries = async (email) => {
+  try {
+    console.log(`\n📊 === FETCHING ALL PRODUCTIVITY SUMMARIES ===`);
+    console.log(`👤 User email: ${email}`);
+    
+    const summaries = await ProductivitySummary.find({ email: email });
+    
+    console.log(`✅ Found ${summaries.length} productivity summaries for ${email}`);
+    
+    return summaries;
+  } catch (error) {
+    console.error('❌ Error fetching all productivity summaries:', error);
+    return [];
+  }
+};
+
+// Updated sendMessage function to include historical productivity data
 const sendMessage = async (req, res) => {
   try {
     const { message, historyId, userData } = req.body;
@@ -316,10 +333,20 @@ const sendMessage = async (req, res) => {
       }
     }
     
+    // Get all productivity summaries for historical analysis
+    let allProductivitySummaries = [];
+    try {
+      allProductivitySummaries = await getAllProductivitySummaries(email);
+      console.log(`📈 Retrieved ${allProductivitySummaries.length} historical productivity summaries`);
+    } catch (summariesError) {
+      console.error('Error fetching historical productivity summaries:', summariesError);
+      // Continue with whatever data we have
+    }
+    
     let contextualPrompt = "";
     
     if (productivityData) {
-      console.log(`🎉 SUCCESS: Found productivity data for chat response`);
+      // Build contextual prompt with user's productivity data
       
       // Extract common properties, handle different data structures
       const focusScore = productivityData.focusScore || 0;
@@ -327,36 +354,17 @@ const sendMessage = async (req, res) => {
       const totalNonProductiveTime = productivityData.totalNonProductiveTime || productivityData.distractionTime || 0;
       const overallTotalUsage = productivityData.overallTotalUsage || productivityData.totalAppUsage || 0;
       
-      // Fix the hours calculation - replace these lines:
-      // const productiveHours = productivityData.productiveHours || 
-      //               (typeof totalProductiveTime === 'number' ? 
-      //                 Math.round((totalProductiveTime / 60) * 10) / 10 : 0);
-      //                 
-      // const distractionHours = productivityData.distractionHours || 
-      //                (typeof totalNonProductiveTime === 'number' ? 
-      //                  Math.round((totalNonProductiveTime / 60) * 10) / 10 : 0);
-      // With these corrected calculations:
-      // If values come from raw data, they need to be converted from seconds to hours
-      // If they come from summary, they need to be converted from minutes to hours
       const productiveHours = productivityData.productiveHours || 
                     (typeof totalProductiveTime === 'number' ? 
                       (productivityData.isCalculated ? 
-                        // If calculated from raw data, totalProductiveTime is in minutes (converted from seconds)
-                        // so divide by 60 to get hours
                         Math.round((totalProductiveTime / 60) * 10) / 10 : 
-                        // If from summary, totalProductiveTime is already in minutes
-                        // so divide by 60 to get hours
                         Math.round((totalProductiveTime / 60) * 10) / 10) : 
                     0);
                     
       const distractionHours = productivityData.distractionHours || 
                      (typeof totalNonProductiveTime === 'number' ? 
                        (productivityData.isCalculated ? 
-                         // If calculated from raw data, totalNonProductiveTime is in minutes (converted from seconds)
-                         // so divide by 60 to get hours
                          Math.round((totalNonProductiveTime / 60) * 10) / 10 : 
-                         // If from summary, totalNonProductiveTime is already in minutes
-                         // so divide by 60 to get hours
                          Math.round((totalNonProductiveTime / 60) * 10) / 10) : 
                      0);
       const streak = productivityData.streak || await calculateStreak(userId) || 0;
@@ -397,7 +405,6 @@ const sendMessage = async (req, res) => {
 
       const topProductiveApps = topApps.length > 0 ? 
         topApps.slice(0, 3).map(app => {
-          // Convert minutes to hours for display
           const hours = app.duration / 60;
           if (hours < 1) {
             return `${app.name} (${app.duration}min)`;
@@ -409,7 +416,6 @@ const sendMessage = async (req, res) => {
 
       const topWebsites = topSites.length > 0 ? 
         topSites.slice(0, 3).map(site => {
-          // Convert minutes to hours for display
           const hours = site.duration / 60;
           if (hours < 1) {
             return `${site.name} (${site.duration}min)`;
@@ -419,34 +425,58 @@ const sendMessage = async (req, res) => {
         }).join(', ') : 
         'No sites recorded';
       
+      // Generate historical trends section if we have multiple data points
+      let historicalTrendsSection = "";
+      if (allProductivitySummaries.length > 1) {
+        // Sort summaries by date
+        const sortedSummaries = [...allProductivitySummaries].sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        
+        // Calculate average focus score
+        const avgFocusScore = Math.round(
+          sortedSummaries.reduce((sum, s) => sum + (s.focusScore || 0), 0) / sortedSummaries.length
+        );
+        
+        // Get focus score trend (last 7 days if available)
+        const recentSummaries = sortedSummaries.slice(-7);
+        const focusScoreTrend = recentSummaries.map(s => ({
+          date: s.date,
+          score: s.focusScore || 0
+        }));
+        
+        historicalTrendsSection = `
+HISTORICAL TRENDS (${sortedSummaries.length} days of data):
+• Average Focus Score: ${avgFocusScore}%
+• Recent Focus Scores: ${focusScoreTrend.map(fs => `${fs.date}: ${fs.score}%`).join(', ')}
+• Progress: ${productivityData.focusScore > avgFocusScore ? `Improving (${productivityData.focusScore - avgFocusScore}% above average)` : 
+                                         productivityData.focusScore < avgFocusScore ? `Declining (${avgFocusScore - productivityData.focusScore}% below average)` : 
+                                         'Steady (matching average)'}
+`;
+      }
+      
       contextualPrompt = `
-You are FocusAI, an advanced productivity assistant. The user has REAL productivity data from ${date}.
+You are FocusAI, an advanced productivity assistant. The user has REAL productivity data from ${productivityData.date || 'today'}.
 
-IMPORTANT: Use these EXACT numbers from their ${isCalculated ? 'calculated' : 'stored'} productivity data:
+IMPORTANT: Use these EXACT numbers from their productivity data:
 
 📊 REAL USER PRODUCTIVITY STATS:
-• Focus Score: ${focusScore}% (their actual calculated productivity score)
-• Total Productive Time: ${Math.round(productiveHours)/10} hours
-• Total Distraction Time: ${Math.round(distractionHours)/10} hours
-• Overall Screen Time: ${Math.round(overallTotalUsage)/10} hours
-• Most Productive App: ${maxProductiveApp}
-• Most Used App Overall: ${mostUsedApp}
-• Most Visited Website: ${mostVisitedTab}
-• Top Productive Apps: ${topProductiveApps}
-• Top Websites Visited: ${topWebsites}
-• Unique Apps Used: ${uniqueApps}
-• Unique Sites Visited: ${uniqueSites}
-• Work Sessions Completed: ${sessionsCompleted}
-• Current Streak: ${streak} days
-• Productivity Level: ${level}
-• Total Points Earned: ${totalPoints}
+• Focus Score: ${productivityData.focusScore || 0}%
+• Total Productive Time: ${productivityData.productiveHours || 0} hours
+• Total Distraction Time: ${productivityData.distractionHours || 0} hours
+• Overall Screen Time: ${productivityData.overallTotalUsage ? Math.round(productivityData.overallTotalUsage / 60 * 10) / 10 : 0} hours
+• Most Productive App: ${productivityData.maxProductiveApp || 'Not identified'}
+• Most Used App Overall: ${productivityData.mostUsedApp || 'Not identified'}
+• Most Visited Website: ${productivityData.mostVisitedTab || 'Not identified'}
+• Current Streak: ${productivityData.streak || 0} days
+${historicalTrendsSection}
 
 RESPONSE RULES:
-1. ALWAYS mention their exact focus score of ${focusScore}%
+1. ALWAYS mention their exact focus score of ${productivityData.focusScore || 0}%
 2. Reference their specific app usage times and patterns
 3. ONLY present time durations in HOURS - never minutes or seconds
-4. When referring to Total Productive Time, only say ${productiveHours} hours
-5. When referring to Total Distraction Time, only say ${distractionHours} hours
+4. When referring to Total Productive Time, only say ${productivityData.productiveHours || 0} hours
+5. When referring to Total Distraction Time, only say ${productivityData.distractionHours || 0} hours
 6. For app usage times, use hours (e.g., 2.5 hours, not 150 minutes)
 7. Give personalized advice based on their actual usage data
 8. Use emojis to make it engaging
@@ -454,6 +484,7 @@ RESPONSE RULES:
 10. Be conversational and supportive
 11. NEVER convert hours back to minutes in your response
 12. Provide actionable insights based on their actual app usage patterns
+${allProductivitySummaries.length > 1 ? "13. Include insights about their progress over time based on historical data" : ""}
 
 USER QUESTION: "${message}"
 
@@ -562,6 +593,7 @@ USER QUESTION: "${message}"`;
 
     console.log(`💬 === CHAT REQUEST END ===\n`);
 
+    // Return enhanced response with historical data points
     res.json({
       success: true,
       response: response,
@@ -571,13 +603,15 @@ USER QUESTION: "${message}"`;
       productiveHours: productivityData?.productiveHours || 0,
       uniqueApps: productivityData?.uniqueApps || 0,
       streak: productivityData?.streak || 0,
+      historicalDataPoints: allProductivitySummaries.length,
       debugInfo: {
         userId: userId.toString(),
         email: email,
         dataFound: !!productivityData,
         dataDate: productivityData?.date || 'No date',
         focusScore: productivityData?.focusScore || 'No score',
-        isCalculated: productivityData?.isCalculated || false
+        isCalculated: productivityData?.isCalculated || false,
+        historicalDataAvailable: allProductivitySummaries.length > 0
       }
     });
 

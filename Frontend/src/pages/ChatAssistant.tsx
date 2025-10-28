@@ -173,12 +173,21 @@ const ChatAssistant: React.FC = () => {
       // Send message with user data
       const response = await chatService.sendMessage(inputMessage, currentHistoryId, userData);
       
-      console.log('📨 Received response:', response);
+      console.log('📨 Received response from AI:', response);
       
       if (response.success) {
+        // Log successful response details
+        console.log('✅ Response successful, content length:', response.response.length);
+        console.log('🔄 Has productivity data:', response.hasProductivityData ? 'Yes' : 'No');
+        
+        if (response.historicalDataPoints) {
+          console.log('📈 Historical data points available:', response.historicalDataPoints);
+        }
+        
         // Update current history ID if this is a new conversation
         if (response.historyId && !currentHistoryId) {
           setCurrentHistoryId(response.historyId);
+          console.log('📝 Created new chat history with ID:', response.historyId);
           loadChatHistories(); // Refresh the chat history list
         }
         
@@ -202,6 +211,7 @@ const ChatAssistant: React.FC = () => {
         
         // Start typewriter effect
         setTimeout(() => {
+          console.log('⌨️ Starting typewriter effect for message:', aiMessageId);
           startTypewriterEffect(aiMessageId, response.response);
         }, 100);
         
@@ -223,6 +233,8 @@ const ChatAssistant: React.FC = () => {
         }
       } else {
         // Handle error response
+        console.error('❌ Error in AI response:', response.error || 'Unknown error');
+        
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           content: response.response || "Sorry, I'm having trouble connecting right now. Please try again.",
@@ -238,7 +250,7 @@ const ChatAssistant: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('❌ Failed to send message:', error);
       
       // Add error message to chat
       const errorMessage: Message = {
@@ -255,6 +267,7 @@ const ChatAssistant: React.FC = () => {
         variant: 'destructive',
       });
     } finally {
+      console.log('🏁 Message processing complete');
       setIsLoading(false);
     }
   };

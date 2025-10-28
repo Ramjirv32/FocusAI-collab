@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 5001; // Make sure this is 5001
 const activeUsers = new Map(); // userId -> {timestamp, email}
 
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://ramji:vikas2311@cluster0.ln4g5.mongodb.net/focuai?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect ('mongodb+srv://ramji:Ramji23112005@cluster0.ln4g5.mongodb.net/focuai?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 

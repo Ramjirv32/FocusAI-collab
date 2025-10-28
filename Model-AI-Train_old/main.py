@@ -579,8 +579,16 @@ def create_placeholder_model():
         import numpy as np
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.preprocessing import LabelEncoder
+        import os
         
         print("🔧 Creating placeholder model files...")
+        
+        # Remove existing model files if they exist to avoid compatibility issues
+        model_files = ['focus_model.pkl', 'app_name_encoder.pkl', 'tab_name_encoder.pkl', 'label_encoder.pkl']
+        for file in model_files:
+            if os.path.exists(file):
+                os.remove(file)
+                print(f"🗑️ Removed existing {file}")
         
         # Create simple app name encoder
         app_name_encoder = LabelEncoder()
@@ -601,7 +609,7 @@ def create_placeholder_model():
         label_encoder.fit(labels)
         joblib.dump(label_encoder, 'label_encoder.pkl')
         
-        # Create simple random forest model
+        # Create simple random forest model with current sklearn version
         X_dummy = np.array([[0, 0, 100], [0, 0, 200], [1, 1, 300], [1, 1, 400]])
         y_dummy = np.array([0, 0, 1, 1])  # 0: Distracted, 1: Focused
         
@@ -609,7 +617,7 @@ def create_placeholder_model():
         model.fit(X_dummy, y_dummy)
         joblib.dump(model, 'focus_model.pkl')
         
-        print("✅ All model files created successfully!")
+        print("✅ All model files created successfully with current sklearn version!")
         return True
     except Exception as e:
         print(f"❌ Error creating placeholder models: {e}")
@@ -776,6 +784,42 @@ async def lifespan(app: FastAPI):
                 print("✅ Placeholder models loaded successfully")
             except Exception as e:
                 print(f"❌ Failed to load placeholder models: {e}")
+                model = None
+        else:
+            model = None
+    except ValueError as e:
+        if "node array from the pickle has an incompatible dtype" in str(e):
+            print(f"❌ Sklearn version incompatibility detected: {e}")
+            print("🔄 Recreating models with current sklearn version...")
+            
+            if create_placeholder_model():
+                try:
+                    model = joblib.load('focus_model.pkl')
+                    app_name_encoder = joblib.load('app_name_encoder.pkl')
+                    tab_name_encoder = joblib.load('tab_name_encoder.pkl')
+                    label_encoder = joblib.load('label_encoder.pkl')
+                    print("✅ Recreated models loaded successfully")
+                except Exception as e:
+                    print(f"❌ Failed to load recreated models: {e}")
+                    model = None
+            else:
+                model = None
+        else:
+            print(f"❌ Model loading error: {e}")
+            model = None
+    except Exception as e:
+        print(f"❌ Unexpected model loading error: {e}")
+        print("🔄 Attempting to create fresh models...")
+        
+        if create_placeholder_model():
+            try:
+                model = joblib.load('focus_model.pkl')
+                app_name_encoder = joblib.load('app_name_encoder.pkl')
+                tab_name_encoder = joblib.load('tab_name_encoder.pkl')
+                label_encoder = joblib.load('label_encoder.pkl')
+                print("✅ Fresh models loaded successfully")
+            except Exception as e:
+                print(f"❌ Failed to load fresh models: {e}")
                 model = None
         else:
             model = None
