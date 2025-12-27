@@ -1,9 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Expose protected methods that allow the React app to use
-// the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
-  getTabs: () => ipcRenderer.invoke('get-tabs')
+  getConfig: () => ipcRenderer.invoke('get-config'),
+  saveConfig: (config) => ipcRenderer.invoke('save-config', config),
+  testGroqConnection: (apiKey) => ipcRenderer.invoke('test-groq-connection', apiKey),
+  openSettings: () => ipcRenderer.invoke('open-settings'),
+  getConfigPath: () => ipcRenderer.invoke('get-config-path')
 });
-
-console.log('Preload script executed, API methods exposed');

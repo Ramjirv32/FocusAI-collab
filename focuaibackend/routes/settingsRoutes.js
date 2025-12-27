@@ -1,295 +1,165 @@
 const express = require('express');
 const router = express.Router();
-const UserProfile = require('../models/UserProfile');
-const Gamification = require('../models/Gamification');
-const User = require('../models/User');
+const fs = require('fs').promises;
+const path = require('path');
+const os = require('os');
+
+const CONFIG_PATH = path.join(os.homedir(), '.focusia', 'config.json');
+
+// Middleware to check authentication
 const auth = require('../middleware/auth');
 
-// Get user settings
-router.get('/settings', auth, async (req, res) => {
+// Get current Groq API key
+router.get('/groq-api-key', auth, async (req, res) => {
   try {
-    const profile = await UserProfile.findOne({ userId: req.user._id });
-    const gamification = await Gamification.findOne({ userId: req.user._id });
-    
-    const settings = {
-      notifications: {
-        focusReminders: profile?.preferences?.focusReminders || true,
-        productivityAlerts: profile?.preferences?.productivityAlerts || true,
-        weeklyReports: profile?.preferences?.weeklyReports || false,
-        achievements: profile?.preferences?.achievementNotifications || true,
-        dailyReminders: profile?.preferences?.dailyReminders || true,
-        email: profile?.preferences?.emailNotifications || true
-      },
-      tracking: {
-        autoTrack: profile?.preferences?.autoTrack !== false, // Default to true
-        trackPrivateTabs: profile?.preferences?.trackPrivateTabs || false,
-        syncInterval: profile?.preferences?.syncInterval || 30,
-        minSessionTime: profile?.preferences?.minSessionTime || 5
-      },
-      display: {
-        theme: profile?.preferences?.theme || 'system',
-        compactMode: profile?.preferences?.compactMode || false,
-        showExtensionStatus: profile?.preferences?.showExtensionStatus !== false, // Default to true
-        animationsEnabled: profile?.preferences?.animationsEnabled !== false // Default to true
-      },
-      privacy: {
-        dataRetention: profile?.preferences?.dataRetention || 90,
-        anonymizeData: profile?.preferences?.anonymizeData || false,
-        shareAnalytics: profile?.preferences?.shareAnalytics || false,
-        profileVisibility: profile?.preferences?.isPublic ? 'public' : 'private',
-        showInLeaderboard: profile?.preferences?.showInLeaderboard !== false, // Default to true
-        showProfilePhoto: profile?.preferences?.showProfilePhoto !== false, // Default to true
-        showLocation: profile?.preferences?.showLocation !== false, // Default to true
-        showJobTitle: profile?.preferences?.showJobTitle !== false // Default to true
-      },
-      gamification: {
-        dailyGoals: gamification?.dailyGoals || {
-          focusTimeTarget: 240,
-          focusScoreTarget: 75,
-          sessionsTarget: 4
-        }
-      }
-    };
+    // Try to read from config file
+    try {
+      const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+      const config = JSON.parse(configData);
 
-    console.log(`Sending complete settings for user ${req.user.email}:`, settings);
-    res.json(settings);
+      res.json({
+        apiKey: config.GROQ_API_KEY || process.env.GROQ_API_KEY || ''
+      });
+    } catch (error) {
+      // If config file doesn't exist, return from env
+      res.json({
+        apiKey: process.env.GROQ_API_KEY || ''
+      });
+    }
   } catch (error) {
-    console.error('Error fetching settings:', error);
-    res.status(500).json({ error: 'Failed to fetch settings' });
+    console.error('Error fetching API key:', error);
+    res.status(500).json({ error: 'Failed to fetch API key' });
   }
 });
 
-// Update user settings
-router.put('/settings', auth, async (req, res) => {
+// Test Groq API key
+router.post('/test-groq-api-key', auth, async (req, res) => {
   try {
-    const { notifications, tracking, display, privacy, gamification } = req.body;
+    const { apiKey } = req.body;
 
-    console.log(`Updating settings for user ${req.user.email}:`, req.body);
+    if (!apiKey) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
 
-    // Update profile preferences
-    let userProfile = await UserProfile.findOne({ userId: req.user._id });
-    
-    if (!userProfile) {
-      userProfile = new UserProfile({
-        userId: req.user._id,
-        email: req.user.email,
-        displayName: req.user.name || req.user.email.split('@')[0],
-        preferences: {}
+    // Test the API key by making a simple request to Groq
+    const Groq = require('groq-sdk');
+    const groq = new Groq({ apiKey });
+
+    try {
+      // Make a minimal test request
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: 'user', content: 'test' }],
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 5
       });
-    }
 
-    // Ensure preferences object exists
-    if (!userProfile.preferences) {
-      userProfile.preferences = {};
-    }
-
-    // Update notifications settings
-    if (notifications) {
-      userProfile.preferences.focusReminders = notifications.focusReminders;
-      userProfile.preferences.productivityAlerts = notifications.productivityAlerts;
-      userProfile.preferences.weeklyReports = notifications.weeklyReports;
-      userProfile.preferences.achievementNotifications = notifications.achievements;
-      userProfile.preferences.dailyReminders = notifications.dailyReminders;
-      userProfile.preferences.emailNotifications = notifications.email;
-    }
-
-    // Update tracking settings
-    if (tracking) {
-      userProfile.preferences.autoTrack = tracking.autoTrack;
-      userProfile.preferences.trackPrivateTabs = tracking.trackPrivateTabs;
-      userProfile.preferences.syncInterval = tracking.syncInterval;
-      userProfile.preferences.minSessionTime = tracking.minSessionTime;
-    }
-
-    // Update display settings
-    if (display) {
-      userProfile.preferences.theme = display.theme;
-      userProfile.preferences.compactMode = display.compactMode;
-      userProfile.preferences.showExtensionStatus = display.showExtensionStatus;
-      userProfile.preferences.animationsEnabled = display.animationsEnabled;
-    }
-
-    // Update privacy settings
-    if (privacy) {
-      userProfile.preferences.dataRetention = privacy.dataRetention;
-      userProfile.preferences.anonymizeData = privacy.anonymizeData;
-      userProfile.preferences.shareAnalytics = privacy.shareAnalytics;
-      userProfile.preferences.isPublic = privacy.profileVisibility === 'public';
-      userProfile.preferences.showInLeaderboard = privacy.showInLeaderboard;
-      userProfile.preferences.showProfilePhoto = privacy.showProfilePhoto;
-      userProfile.preferences.showLocation = privacy.showLocation;
-      userProfile.preferences.showJobTitle = privacy.showJobTitle;
-    }
-
-    await userProfile.save();
-
-    // Update gamification settings
-    if (gamification?.dailyGoals) {
-      let userGamification = await Gamification.findOne({ userId: req.user._id });
-      
-      if (!userGamification) {
-        userGamification = new Gamification({
-          userId: req.user._id,
-          email: req.user.email
+      if (chatCompletion && chatCompletion.choices) {
+        res.json({
+          success: true,
+          message: 'API key is valid and working'
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: 'Invalid API key response'
         });
       }
-
-      userGamification.dailyGoals = { ...userGamification.dailyGoals, ...gamification.dailyGoals };
-      await userGamification.save();
-    }
-
-    res.json({ message: 'Settings updated successfully' });
-  } catch (error) {
-    console.error('Error updating settings:', error);
-    res.status(500).json({ error: 'Failed to update settings' });
-  }
-});
-
-// Reset user data
-router.post('/reset-data', auth, async (req, res) => {
-  try {
-    const { type } = req.body; // 'gamification', 'profile', 'all'
-
-    if (type === 'gamification' || type === 'all') {
-      await Gamification.findOneAndDelete({ userId: req.user._id });
-    }
-
-    if (type === 'profile' || type === 'all') {
-      await UserProfile.findOneAndDelete({ userId: req.user._id });
-    }
-
-    res.json({ message: `${type} data reset successfully` });
-  } catch (error) {
-    console.error('Error resetting data:', error);
-    res.status(500).json({ error: 'Failed to reset data' });
-  }
-});
-
-// Export user data
-router.get('/export-data', auth, async (req, res) => {
-  try {
-    const profile = await UserProfile.findOne({ userId: req.user._id });
-    const gamification = await Gamification.findOne({ userId: req.user._id });
-    const user = await User.findById(req.user._id).select('-password');
-
-    const exportData = {
-      user,
-      profile,
-      gamification,
-      exportDate: new Date().toISOString()
-    };
-
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', 'attachment; filename="focusai-data-export.json"');
-    res.json(exportData);
-  } catch (error) {
-    console.error('Error exporting data:', error);
-    res.status(500).json({ error: 'Failed to export data' });
-  }
-});
-
-// Delete account
-router.delete('/account', auth, async (req, res) => {
-  try {
-    const { confirmPassword } = req.body;
-
-    // Verify password
-    const user = await User.findById(req.user._id);
-    const isMatch = await user.comparePassword(confirmPassword);
-    
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid password' });
-    }
-
-    // Delete all user data
-    await Promise.all([
-      User.findByIdAndDelete(req.user._id),
-      UserProfile.findOneAndDelete({ userId: req.user._id }),
-      Gamification.findOneAndDelete({ userId: req.user._id })
-    ]);
-
-    res.json({ message: 'Account deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting account:', error);
-    res.status(500).json({ error: 'Failed to delete account' });
-  }
-});
-
-// Update daily goals
-router.put('/daily-goals', auth, async (req, res) => {
-  try {
-    const { focusTimeTarget, focusScoreTarget, sessionsTarget } = req.body;
-
-    let gamification = await Gamification.findOne({ userId: req.user._id });
-    
-    if (!gamification) {
-      gamification = new Gamification({
-        userId: req.user._id,
-        email: req.user.email
+    } catch (apiError) {
+      console.error('Groq API test error:', apiError);
+      res.status(400).json({
+        success: false,
+        error: apiError.message || 'API key test failed'
       });
     }
+  } catch (error) {
+    console.error('Error testing API key:', error);
+    res.status(500).json({ error: 'Failed to test API key' });
+  }
+});
 
-    if (focusTimeTarget !== undefined) gamification.dailyGoals.focusTimeTarget = focusTimeTarget;
-    if (focusScoreTarget !== undefined) gamification.dailyGoals.focusScoreTarget = focusScoreTarget;
-    if (sessionsTarget !== undefined) gamification.dailyGoals.sessionsTarget = sessionsTarget;
+// Update Groq API key
+router.put('/groq-api-key', auth, async (req, res) => {
+  try {
+    const { apiKey } = req.body;
 
-    await gamification.save();
+    if (!apiKey) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
 
-    res.json({ 
-      message: 'Daily goals updated successfully',
-      dailyGoals: gamification.dailyGoals
+    // Ensure config directory exists
+    const configDir = path.dirname(CONFIG_PATH);
+    try {
+      await fs.access(configDir);
+    } catch {
+      await fs.mkdir(configDir, { recursive: true });
+    }
+
+    // Read existing config or create new one
+    let config = {};
+    try {
+      const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+      config = JSON.parse(configData);
+    } catch (error) {
+      // Config file doesn't exist, will create new one
+    }
+
+    // Update API key
+    config.GROQ_API_KEY = apiKey;
+
+    // Write config file
+    await fs.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
+
+    // Update environment variable for current process
+    process.env.GROQ_API_KEY = apiKey;
+
+    // Update .env files
+    const envFiles = [
+      path.join(__dirname, '../.env'),
+      path.join(__dirname, '../../Frontend/.env'),
+      path.join(__dirname, '../../ai/.env')
+    ];
+
+    for (const envFile of envFiles) {
+      try {
+        let envContent = '';
+        try {
+          envContent = await fs.readFile(envFile, 'utf8');
+        } catch {
+          // File doesn't exist, will create new one
+        }
+
+        // Update or add GROQ_API_KEY
+        const lines = envContent.split('\n');
+        let found = false;
+
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith('GROQ_API_KEY=') || lines[i].startsWith('VITE_GROQ_API_KEY=')) {
+            if (lines[i].startsWith('GROQ_API_KEY=')) {
+              lines[i] = `GROQ_API_KEY=${apiKey}`;
+              found = true;
+            } else if (lines[i].startsWith('VITE_GROQ_API_KEY=')) {
+              lines[i] = `VITE_GROQ_API_KEY=${apiKey}`;
+            }
+          }
+        }
+
+        if (!found) {
+          lines.push(`GROQ_API_KEY=${apiKey}`);
+        }
+
+        await fs.writeFile(envFile, lines.join('\n'), 'utf8');
+      } catch (error) {
+        console.warn(`Warning: Could not update ${envFile}:`, error.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'API key updated successfully'
     });
   } catch (error) {
-    console.error('Error updating daily goals:', error);
-    res.status(500).json({ error: 'Failed to update daily goals' });
-  }
-});
-
-// Get notification preferences
-router.get('/notifications', auth, async (req, res) => {
-  try {
-    const profile = await UserProfile.findOne({ userId: req.user._id });
-    
-    const notifications = {
-      email: profile?.preferences?.emailNotifications || true,
-      achievements: profile?.preferences?.achievementNotifications || true,
-      challenges: true,
-      leaderboard: true,
-      dailyReminders: true,
-      weeklyReports: true
-    };
-
-    res.json(notifications);
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
-    res.status(500).json({ error: 'Failed to fetch notification preferences' });
-  }
-});
-
-// Update notification preferences
-router.put('/notifications', auth, async (req, res) => {
-  try {
-    const { email, achievements, challenges, leaderboard, dailyReminders, weeklyReports } = req.body;
-
-    let profile = await UserProfile.findOne({ userId: req.user._id });
-    
-    if (!profile) {
-      profile = new UserProfile({
-        userId: req.user._id,
-        email: req.user.email,
-        displayName: req.user.name || req.user.email.split('@')[0]
-      });
-    }
-
-    if (email !== undefined) profile.preferences.emailNotifications = email;
-    if (achievements !== undefined) profile.preferences.achievementNotifications = achievements;
-
-    await profile.save();
-
-    res.json({ message: 'Notification preferences updated successfully' });
-  } catch (error) {
-    console.error('Error updating notifications:', error);
-    res.status(500).json({ error: 'Failed to update notification preferences' });
+    console.error('Error updating API key:', error);
+    res.status(500).json({ error: 'Failed to update API key' });
   }
 });
 

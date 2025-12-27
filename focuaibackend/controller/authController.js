@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const AppUsage = require('../models/AppUsage');
 const TabUsage = require('../models/TabUsage');
@@ -8,10 +8,10 @@ const Gamification = require('../models/Gamification');
 
 const generateToken = (user) => {
   return jwt.sign(
-    { 
+    {
       userId: user._id,
-      email: user.email 
-    }, 
+      email: user.email
+    },
     process.env.JWT_SECRET || 'your-secret-key',
     { expiresIn: '7d' }
   );
@@ -20,7 +20,7 @@ const generateToken = (user) => {
 const ensureUserHasInitialData = async (userId, email) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
-    
+
     // Check if user has app usage data
     const appUsageCount = await AppUsage.countDocuments({ userId, email });
     if (appUsageCount === 0) {
@@ -32,7 +32,7 @@ const ensureUserHasInitialData = async (userId, email) => {
         { appName: 'Terminal', duration: 600 },
         { appName: 'Discord', duration: 300 }
       ];
-      
+
       for (const app of sampleApps) {
         await new AppUsage({
           userId,
@@ -44,12 +44,12 @@ const ensureUserHasInitialData = async (userId, email) => {
         }).save();
       }
     }
-    
+
     // Check if user has tab usage data
     const tabCount = await TabUsage.countDocuments({ userId, email });
     if (tabCount === 0) {
       console.log(`Creating initial tab data for user ${email} (${userId})`);
-      
+
       const sampleTabs = [
         { url: 'https://github.com', title: 'GitHub', duration: 900 },
         { url: 'https://stackoverflow.com', title: 'Stack Overflow', duration: 600 },
@@ -57,7 +57,7 @@ const ensureUserHasInitialData = async (userId, email) => {
         { url: 'https://react.dev', title: 'React Documentation', duration: 720 },
         { url: 'https://tailwindcss.com', title: 'Tailwind CSS', duration: 380 }
       ];
-      
+
       for (const tab of sampleTabs) {
         const tabUsage = new TabUsage({
           userId,
@@ -102,7 +102,7 @@ const authController = {
   async register(req, res) {
     try {
       const { email, password, name } = req.body;
-      
+
       // Validation
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
@@ -115,15 +115,15 @@ const authController = {
 
       const user = new User({ email, password, name });
       await user.save();
-      
+
       const token = generateToken(user);
-      
+
       // Create initial data for new user
       await ensureUserHasInitialData(user._id, user.email);
-      
-      res.status(201).json({ 
+
+      res.status(201).json({
         user: { id: user._id, email: user.email, name: user.name },
-        token 
+        token
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -135,7 +135,7 @@ const authController = {
   async login(req, res) {
     try {
       const { email, password } = req.body;
-      
+
       // Validation
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
@@ -150,19 +150,19 @@ const authController = {
       if (!isMatch) {
         return res.status(400).json({ error: 'Invalid email or password' });
       }
-      
+
       const token = generateToken(user);
-      
+
       // Check if user wants sample data
       const shouldCreateSample = req.body.includeSampleData === true;
       const appCount = await AppUsage.countDocuments({ userId: user._id });
       const tabCount = await TabUsage.countDocuments({ userId: user._id });
-      
+
       if (shouldCreateSample && appCount === 0 && tabCount === 0) {
         await ensureUserHasInitialData(user._id, user.email);
       }
-      
-      res.json({ 
+
+      res.json({
         user: { id: user._id, email: user.email, name: user.name },
         token,
         hasSampleData: shouldCreateSample && (appCount === 0 && tabCount === 0)
@@ -176,13 +176,13 @@ const authController = {
   // Get current user
   async getCurrentUser(req, res) {
     try {
-      res.json({ 
-        user: { 
-          id: req.user._id, 
-          email: req.user.email, 
+      res.json({
+        user: {
+          id: req.user._id,
+          email: req.user.email,
           name: req.user.name,
-          token: req.token 
-        } 
+          token: req.token
+        }
       });
     } catch (error) {
       console.error('Get user error:', error);

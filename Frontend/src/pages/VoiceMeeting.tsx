@@ -21,43 +21,41 @@ export default function MeetingPage() {
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [dataError, setDataError] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   const recognitionRef = useRef(null);
   const videoRef = useRef(null);
   const messagesEndRef = useRef(null);
   const localStreamRef = useRef(null);
   const isRecognitionActive = useRef(false);
 
-  // Replace with your actual API key or remove if using backend proxy
-  const AI_API_KEY = "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";
-  
-  // API URL constants
-  const API_BASE_URL = 'http://localhost:5001';
-  
+  // Get API key and base URL from environment variables
+  const AI_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+
   // Initialize speech recognition
   useEffect(() => {
     const initializeSpeechRecognition = () => {
       if ('webkitSpeechRecognition' in window) {
         const SpeechRecognition = window.webkitSpeechRecognition;
         recognitionRef.current = new SpeechRecognition();
-        
+
         // Configure recognition settings
         recognitionRef.current.continuous = true;
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = 'en-US';
         recognitionRef.current.maxAlternatives = 1;
-        
+
         setSpeechSupported(true);
-        
+
         recognitionRef.current.onstart = () => {
           console.log("Speech recognition started");
           isRecognitionActive.current = true;
         };
-        
+
         recognitionRef.current.onresult = (event) => {
           let interimTranscript = '';
           let finalTranscript = '';
-          
+
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
@@ -66,10 +64,10 @@ export default function MeetingPage() {
               interimTranscript += transcript;
             }
           }
-          
+
           // Update interim transcript for live display
           setTranscript(interimTranscript);
-          
+
           // Process final transcript
           if (finalTranscript.trim()) {
             console.log("Final transcript:", finalTranscript);
@@ -77,11 +75,11 @@ export default function MeetingPage() {
             handleUserMessage(finalTranscript.trim());
           }
         };
-        
+
         recognitionRef.current.onerror = (event) => {
           console.error("Speech recognition error:", event.error);
           isRecognitionActive.current = false;
-          
+
           if (event.error === 'not-allowed') {
             alert("Microphone access denied. Please allow microphone access and try again.");
             setIsListening(false);
@@ -104,11 +102,11 @@ export default function MeetingPage() {
             setIsListening(false);
           }
         };
-        
+
         recognitionRef.current.onend = () => {
           console.log("Speech recognition ended");
           isRecognitionActive.current = false;
-          
+
           // Restart if we should still be listening
           if (isListening && isMicrophoneEnabled) {
             setTimeout(() => {
@@ -116,7 +114,7 @@ export default function MeetingPage() {
             }, 100);
           }
         };
-        
+
       } else if ('SpeechRecognition' in window) {
         // Fallback for other browsers
         const SpeechRecognition = window.SpeechRecognition;
@@ -130,7 +128,7 @@ export default function MeetingPage() {
     };
 
     initializeSpeechRecognition();
-    
+
     return () => {
       if (recognitionRef.current && isRecognitionActive.current) {
         try {
@@ -144,24 +142,24 @@ export default function MeetingPage() {
       }
     };
   }, []);
-  
+
   // Fetch productivity data
   const fetchProductivityData = async () => {
     setIsLoadingData(true);
     setDataError(null);
-    
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error("Authentication token not found");
       }
-      
+
       const response = await axios.get(`${API_BASE_URL}/ch`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      
+
       console.log("Productivity data fetched:", response.data);
       setProductivityData(response.data);
     } catch (error) {
@@ -171,19 +169,19 @@ export default function MeetingPage() {
       setIsLoadingData(false);
     }
   };
-  
+
   // Helper function to start recognition safely
   const startRecognition = () => {
     if (!recognitionRef.current || !speechSupported || !isMicrophoneEnabled) {
       console.log("Cannot start recognition: missing requirements");
       return false;
     }
-    
+
     if (isRecognitionActive.current) {
       console.log("Recognition already active");
       return true;
     }
-    
+
     try {
       recognitionRef.current.start();
       return true;
@@ -196,7 +194,7 @@ export default function MeetingPage() {
       return false;
     }
   };
-  
+
   // Helper function to stop recognition safely
   const stopRecognition = () => {
     if (recognitionRef.current && isRecognitionActive.current) {
@@ -208,13 +206,13 @@ export default function MeetingPage() {
     }
     isRecognitionActive.current = false;
   };
-  
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
-  
+
   useEffect(() => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = () => {
@@ -222,39 +220,39 @@ export default function MeetingPage() {
       };
     }
   }, []);
-  
+
   const startMeeting = async () => {
     try {
       // Fetch productivity data when meeting starts
       await fetchProductivityData();
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
-        audio: true 
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
       });
-      
+
       localStreamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-      
+
       setMeetingStarted(true);
-      
+
       let welcomeMessage = 'Hello! I\'m your FocusAI assistant. I can help you understand your productivity data and provide insights on improving your focus.';
-      
+
       if (productivityData && productivityData.length > 0) {
         const latestData = productivityData[productivityData.length - 1];
         welcomeMessage += ` I see that your current focus score is ${Math.round(latestData.focusScore)}%. How can I help you today?`;
       }
-      
+
       setMessages([{
         sender: 'ai',
         text: welcomeMessage,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
-      
+
       speakText(welcomeMessage);
-      
+
       // Auto-start listening after a delay
       setTimeout(() => {
         if (speechSupported) {
@@ -266,18 +264,18 @@ export default function MeetingPage() {
       alert("Unable to start meeting. Please check your camera and microphone permissions.");
     }
   };
-  
+
   const toggleListening = () => {
     if (!speechSupported) {
       alert("Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.");
       return;
     }
-    
+
     if (!isMicrophoneEnabled) {
       alert("Please enable your microphone first.");
       return;
     }
-    
+
     if (isListening) {
       console.log("Stopping speech recognition");
       stopRecognition();
@@ -293,31 +291,31 @@ export default function MeetingPage() {
       }
     }
   };
-  
+
   // Helper function to analyze productivity data for AI responses
   const analyzeProductivityData = () => {
     if (!productivityData || productivityData.length === 0) {
       return null;
     }
-    
+
     // Get the most recent data
     const latestData = productivityData[productivityData.length - 1];
     console.log("Latest productivity data:", latestData);
-    
+
     // Handle different possible data formats
     const focusScore = Math.round(latestData.focusScore || 0);
-    
+
     // Check if these fields exist, use sensible defaults if not
     const productiveTime = (latestData.totalProductiveTime || 0) / 3600;
     const distractionTime = (latestData.totalNonProductiveTime || 0) / 3600;
-    
+
     // Be flexible with property names
     const mostUsedApp = latestData.mostUsedApp || latestData.maxUsedApp || "Unknown";
     const mostVisitedTab = latestData.mostVisitedTab || latestData.maxVisitedTab || "Unknown";
-    
+
     // Get data from 7 days ago if available (for trend analysis)
     const weekAgoData = productivityData.length > 7 ? productivityData[productivityData.length - 8] : null;
-    
+
     // Calculate trends if we have historical data
     let focusTrend = null;
     if (weekAgoData && weekAgoData.focusScore !== undefined) {
@@ -327,13 +325,13 @@ export default function MeetingPage() {
         percentage: Math.abs(scoreDifference)
       };
     }
-    
+
     return {
       focusScore,
       productiveTime: productiveTime.toFixed(1),
       distractionTime: distractionTime.toFixed(1),
       topProductiveApp: mostUsedApp,
-      mostDistractionApp: latestData.distractionApps ? 
+      mostDistractionApp: latestData.distractionApps ?
         getTopDistractionApp(latestData.distractionApps) : "Social media",
       focusTrend,
       totalApps: getTotalApps(latestData),
@@ -341,11 +339,11 @@ export default function MeetingPage() {
       mostUsedApp
     };
   };
-  
+
   // Helper to get top distraction app from different possible data formats
   const getTopDistractionApp = (distractionApps) => {
     if (!distractionApps) return "Unknown";
-    
+
     try {
       // If it's a Map or map-like object with entries method
       if (distractionApps.entries && typeof distractionApps.entries === 'function') {
@@ -370,75 +368,75 @@ export default function MeetingPage() {
     } catch (error) {
       console.error("Error parsing distraction apps:", error);
     }
-    
+
     return "Social media"; // Default fallback
   };
-  
+
   // Helper to get total app count from different possible data formats
   const getTotalApps = (data) => {
     let count = 0;
-    
+
     // Try different property names and formats
     if (data.productiveContent && typeof data.productiveContent.size === 'number') {
       count += data.productiveContent.size;
     } else if (data.productiveApps && Array.isArray(data.productiveApps)) {
       count += data.productiveApps.length;
     }
-    
+
     if (data.nonProductiveContent && typeof data.nonProductiveContent.size === 'number') {
       count += data.nonProductiveContent.size;
     } else if (data.distractionApps && Array.isArray(data.distractionApps)) {
       count += data.distractionApps.length;
     }
-    
+
     return count || 'Unknown';
   };
-  
+
   const handleUserMessage = async (text) => {
     if (!text || text.trim() === '') return;
-    
+
     console.log("Processing user message:", text);
-    
+
     const userMessage = {
       sender: 'user',
       text: text,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setTranscript("");
-    
+
     setIsAiResponding(true);
     try {
       // Analyze productivity data for context
       const productivityAnalysis = analyzeProductivityData();
-      
+
       // Get AI response with productivity context
       const aiResponse = await getAiResponse(text, productivityAnalysis);
-      
+
       const aiMessage = {
         sender: 'ai',
         text: aiResponse,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      
+
       setMessages(prev => [...prev, aiMessage]);
-      
+
       if (!isMuted) {
         speakText(aiResponse);
       }
     } catch (error) {
       console.error("Error getting AI response:", error);
-      
+
       const errorMessage = {
         sender: 'ai',
         text: "I'm sorry, I had trouble processing your request. Could you try again?",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isError: true
       };
-      
+
       setMessages(prev => [...prev, errorMessage]);
-      
+
       if (!isMuted) {
         speakText("I'm sorry, I had trouble processing your request. Could you try again?");
       }
@@ -451,14 +449,14 @@ export default function MeetingPage() {
 
   const getAiResponse = async (userInput, productivityAnalysis) => {
     console.log("Getting AI response for:", userInput);
-    
+
     try {
       // Get authentication token
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error("Authentication token not found");
       }
-      
+
       // Always fetch fresh productivity data from /ch endpoint for each request
       console.log("Fetching fresh productivity data from /ch endpoint");
       const dataResponse = await axios.get(`${API_BASE_URL}/ch`, {
@@ -466,25 +464,25 @@ export default function MeetingPage() {
           Authorization: `Bearer ${token}`
         }
       });
-      
+
       // Check if we got valid data
       if (!dataResponse.data || !Array.isArray(dataResponse.data) || dataResponse.data.length === 0) {
         throw new Error("Invalid or empty productivity data received from server");
       }
-      
+
       console.log("Fresh productivity data fetched:", dataResponse.data);
-      
+
       // Update the UI with the latest data
       setProductivityData(dataResponse.data);
-      
+
       // Send the raw data directly to Groq without processing
       console.log("Sending raw productivity data to Groq");
-      
+
       // Direct request to Groq API using API key
       const groqResponse = await axios.post(
         "https://api.groq.com/openai/v1/chat/completions",
         {
-          model: "llama3-70b-8192",
+          model: "llama-3.3-70b-versatile",
           messages: [
             {
               role: "system",
@@ -514,61 +512,59 @@ export default function MeetingPage() {
           }
         }
       );
-      
-      if (!groqResponse.data || 
-          !groqResponse.data.choices || 
-          !groqResponse.data.choices.length || 
-          !groqResponse.data.choices[0].message) {
+
+      if (!groqResponse.data ||
+        !groqResponse.data.choices ||
+        !groqResponse.data.choices.length ||
+        !groqResponse.data.choices[0].message) {
         throw new Error("Invalid response format from Groq API");
       }
-      
+
       const aiResponseContent = groqResponse.data.choices[0].message.content;
-      
+
       // Return the AI response
       return aiResponseContent;
     } catch (error) {
       console.error("Error in AI response generation:", error);
-      
+
       // Only use this as a last resort emergency fallback
       return "I'm having trouble accessing your productivity data right now. Could you try asking your question again in a moment?";
     }
   };
-  
+
   const generateLocalResponse = (userInput, productivityData) => {
     const input = userInput.toLowerCase();
-    
+
     // Check if user is asking about their productivity stats
     if (input.match(/\b(focus score|productivity|productive|focus|stats|statistics)\b/)) {
       if (!productivityData) {
         return "I don't have your productivity data available right now. Please check your connection or try again later.";
       }
-      
-      return `Your current focus score is ${productivityData.focusScore}%. ${
-        productivityData.focusTrend 
+
+      return `Your current focus score is ${productivityData.focusScore}%. ${productivityData.focusTrend
           ? `This is ${productivityData.focusTrend.percentage}% ${productivityData.focusTrend.direction} compared to last week. `
           : ''
-      }You've spent ${productivityData.productiveTime} hours on productive activities and ${productivityData.distractionTime} hours on distractions today. Your most productive application is ${productivityData.topProductiveApp}.`;
+        }You've spent ${productivityData.productiveTime} hours on productive activities and ${productivityData.distractionTime} hours on distractions today. Your most productive application is ${productivityData.topProductiveApp}.`;
     }
-    
+
     // Check if user is asking about distractions
     if (input.match(/\b(distract|distracting|distractions|wasting time|time wasters)\b/)) {
       if (!productivityData) {
         return "I don't have your distraction data available right now. Please check your connection or try again later.";
       }
-      
-      return `Your main source of distraction is ${productivityData.mostDistractionApp}. You've spent ${productivityData.distractionTime} hours on non-productive activities today. ${
-        parseFloat(productivityData.distractionTime) > 2 
+
+      return `Your main source of distraction is ${productivityData.mostDistractionApp}. You've spent ${productivityData.distractionTime} hours on non-productive activities today. ${parseFloat(productivityData.distractionTime) > 2
           ? "That's quite significant. Consider using focus mode or website blockers to minimize these distractions."
           : "You're doing well at managing distractions."
-      }`;
+        }`;
     }
-    
+
     // Check if user is asking for improvement tips
     if (input.match(/\b(improve|better|increase|enhance|tips|advice|suggestion|help me)\b/)) {
       if (!productivityData) {
         return "Here are some general productivity tips: break your work into 25-minute focused sessions, minimize distractions by turning off notifications, prioritize your most important tasks first, and take regular short breaks.";
       }
-      
+
       if (productivityData.focusScore < 50) {
         return `With a focus score of ${productivityData.focusScore}%, you have room for improvement. Try limiting time on ${productivityData.mostDistractionApp}, use the Pomodoro technique (25 minutes of focused work followed by 5-minute breaks), and consider blocking distracting websites during work hours.`;
       } else if (productivityData.focusScore < 75) {
@@ -577,16 +573,16 @@ export default function MeetingPage() {
         return `Great job maintaining a high focus score of ${productivityData.focusScore}%! To maintain this level, keep using ${productivityData.topProductiveApp} and continue your current workflow. Remember that regular breaks are still important for sustained productivity.`;
       }
     }
-    
+
     // Check if user is asking about most used apps
     if (input.match(/\b(app|application|program|software|using|use most|used most)\b/)) {
       if (!productivityData) {
         return "I don't have your application usage data available right now. Please check your connection or try again later.";
       }
-      
+
       return `Your most used application is ${productivityData.mostUsedApp}, and your most productive application is ${productivityData.topProductiveApp}. Your most visited website is ${productivityData.mostVisitedTab || "not recorded"}.`;
     }
-    
+
     // Default response
     if (productivityData) {
       return `I'm your FocusAI assistant. Your current focus score is ${productivityData.focusScore}%. You can ask me about your productivity stats, distractions, most used apps, or for tips to improve your focus. How can I help you today?`;
@@ -594,46 +590,46 @@ export default function MeetingPage() {
       return "I'm your FocusAI assistant. I can help analyze your productivity data and provide tips to improve your focus. However, I don't have access to your data right now. Would you like to know some general productivity tips?";
     }
   };
-  
+
   // Update the speakText function
 
   const speakText = (text) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      
+
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
-      
+
       const voices = window.speechSynthesis.getVoices();
-      
-      const preferredVoice = voices.find(voice => 
+
+      const preferredVoice = voices.find(voice =>
         voice.name.includes('Google') && voice.name.includes('Female') && voice.lang.includes('en-US')
-      ) || voices.find(voice => 
+      ) || voices.find(voice =>
         voice.name.includes('Google') && voice.lang.includes('en-US')
-      ) || voices.find(voice => 
+      ) || voices.find(voice =>
         voice.lang.includes('en-US')
       );
-      
+
       if (preferredVoice) {
         utterance.voice = preferredVoice;
       }
-      
+
       console.log("Speaking with voice:", utterance.voice?.name || "Default");
-      
+
       // Set playing state to true
       setIsPlaying(true);
-      
+
       // Pause recognition while speaking
       if (isListening && isRecognitionActive.current) {
         stopRecognition();
       }
-      
+
       utterance.onend = () => {
         // Set playing state to false
         setIsPlaying(false);
-        
+
         // Resume recognition after speaking
         if (isListening && isMicrophoneEnabled) {
           setTimeout(() => {
@@ -641,18 +637,18 @@ export default function MeetingPage() {
           }, 500);
         }
       };
-      
+
       window.speechSynthesis.speak(utterance);
     }
   };
-  
+
   const toggleMicrophone = () => {
     if (localStreamRef.current) {
       const audioTracks = localStreamRef.current.getAudioTracks();
       if (audioTracks.length > 0) {
         audioTracks[0].enabled = !isMicrophoneEnabled;
         setIsMicrophoneEnabled(!isMicrophoneEnabled);
-        
+
         // Stop listening if microphone is disabled
         if (isMicrophoneEnabled && isListening) {
           toggleListening();
@@ -660,7 +656,7 @@ export default function MeetingPage() {
       }
     }
   };
-  
+
   const toggleCamera = () => {
     if (localStreamRef.current) {
       const videoTracks = localStreamRef.current.getVideoTracks();
@@ -670,23 +666,23 @@ export default function MeetingPage() {
       }
     }
   };
-  
+
   const toggleMute = () => {
     setIsMuted(!isMuted);
-    
+
     if (!isMuted) {
       window.speechSynthesis.cancel();
     }
   };
-  
+
   const endMeeting = () => {
     stopRecognition();
     setIsListening(false);
-    
+
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
     }
-    
+
     window.speechSynthesis.cancel();
     setMeetingStarted(false);
     navigate('/');
@@ -697,7 +693,7 @@ export default function MeetingPage() {
     if (!productivityData || productivityData.length === 0) {
       return null;
     }
-    
+
     const latestData = productivityData[productivityData.length - 1];
     return {
       focusScore: Math.round(latestData.focusScore),
@@ -710,7 +706,7 @@ export default function MeetingPage() {
   };
 
   return (
-    <div style={{ 
+    <div style={{
       height: "100vh",
       display: "flex",
       flexDirection: "column",
@@ -728,10 +724,10 @@ export default function MeetingPage() {
         alignItems: "center"
       }}>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ 
-            width: "32px", 
-            height: "32px", 
-            backgroundColor: "#4a6cff", 
+          <div style={{
+            width: "32px",
+            height: "32px",
+            backgroundColor: "#4a6cff",
             borderRadius: "8px",
             display: "flex",
             justifyContent: "center",
@@ -756,7 +752,7 @@ export default function MeetingPage() {
 
       {!meetingStarted ? (
         /* Pre-meeting screen */
-        <div style={{ 
+        <div style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
@@ -778,19 +774,19 @@ export default function MeetingPage() {
           }}>
             👤
           </div>
-          
+
           <h2 style={{ fontSize: "24px", marginBottom: "8px" }}>Ready to discuss your productivity?</h2>
           <p style={{ fontSize: "16px", color: "#9aa0a6", marginBottom: "30px", textAlign: "center" }}>
             Your FocusAI assistant is ready to help you understand your productivity data
             and provide personalized insights.
           </p>
-          
+
           {isLoadingData && (
             <div style={{ marginBottom: "20px", textAlign: "center" }}>
               <p style={{ color: "#8ab4f8" }}>Loading your productivity data...</p>
             </div>
           )}
-          
+
           {dataError && (
             <div style={{
               backgroundColor: "#5c3836",
@@ -804,7 +800,7 @@ export default function MeetingPage() {
               </p>
             </div>
           )}
-          
+
           {!speechSupported && (
             <div style={{
               backgroundColor: "#5c3836",
@@ -814,12 +810,12 @@ export default function MeetingPage() {
               textAlign: "center"
             }}>
               <p style={{ margin: 0, fontSize: "14px", color: "#f28b82" }}>
-                Speech recognition is not supported in your browser. 
+                Speech recognition is not supported in your browser.
                 <br />Please use Chrome, Edge, or Safari for voice features.
               </p>
             </div>
           )}
-          
+
           <button
             onClick={startMeeting}
             disabled={isLoadingData}
@@ -840,21 +836,21 @@ export default function MeetingPage() {
         </div>
       ) : (
         /* Meeting in progress */
-        <div style={{ 
+        <div style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden"
         }}>
           {/* Meeting content area */}
-          <div style={{ 
+          <div style={{
             flex: 1,
             display: "flex",
             padding: "16px",
             overflow: "hidden"
           }}>
             {/* Main AI visualization container - replacing the video container */}
-            <div style={{ 
+            <div style={{
               flex: "1 1 70%",
               borderRadius: "8px",
               overflow: "hidden",
@@ -886,7 +882,7 @@ export default function MeetingPage() {
                   background: "radial-gradient(circle at center, #1a237e 0%, #0d1117 70%)",
                   opacity: 0.3
                 }}></div>
-                
+
                 {/* AI Animation/Image */}
                 <div style={{
                   width: "280px",
@@ -898,11 +894,11 @@ export default function MeetingPage() {
                   justifyContent: "center",
                   alignItems: "center",
                   borderRadius: "50%",
-                  background: isAiResponding || isPlaying ? 
-                    "linear-gradient(135deg, #4a6cff, #1a237e)" : 
+                  background: isAiResponding || isPlaying ?
+                    "linear-gradient(135deg, #4a6cff, #1a237e)" :
                     "linear-gradient(135deg, #3949ab, #1a237e)",
-                  boxShadow: isAiResponding || isPlaying ? 
-                    "0 0 40px rgba(74, 108, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.2)" : 
+                  boxShadow: isAiResponding || isPlaying ?
+                    "0 0 40px rgba(74, 108, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.2)" :
                     "0 0 20px rgba(74, 108, 255, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.1)",
                   animation: isAiResponding || isPlaying ? "pulse-glow 2s infinite alternate" : "none"
                 }}>
@@ -925,18 +921,18 @@ export default function MeetingPage() {
                       letterSpacing: "-1px",
                       zIndex: 2
                     }}>AI</span>
-                    
+
                     {/* Add subtitle */}
                     <span style={{
                       fontSize: "20px",
-                      fontWeight: "500", 
+                      fontWeight: "500",
                       color: "rgba(255, 255, 255, 0.8)",
                       marginTop: "5px",
                       textTransform: "uppercase",
                       letterSpacing: "3px",
                       zIndex: 2
                     }}>FOCUS</span>
-                    
+
                     {/* Animated ripple effect when speaking */}
                     {(isAiResponding || isPlaying) && (
                       <>
@@ -950,7 +946,7 @@ export default function MeetingPage() {
                             animation: `ripple ${2 + i * 0.5}s infinite ease-out ${i * 0.5}s`
                           }}></div>
                         ))}
-                        
+
                         {/* Sound wave visualization when speaking */}
                         <div style={{
                           position: "absolute",
@@ -976,7 +972,7 @@ export default function MeetingPage() {
                         </div>
                       </>
                     )}
-                    
+
                     {/* Glowing circle in the middle */}
                     <div style={{
                       position: "absolute",
@@ -988,7 +984,7 @@ export default function MeetingPage() {
                     }}></div>
                   </div>
                 </div>
-                
+
                 {/* AI Status Text */}
                 <div style={{
                   zIndex: 1,
@@ -1002,7 +998,7 @@ export default function MeetingPage() {
                   }}>
                     FocusAI Assistant
                   </h2>
-                  
+
                   <div style={{
                     backgroundColor: isAiResponding ? "rgba(74, 108, 255, 0.3)" : "rgba(255, 255, 255, 0.1)",
                     padding: "10px 20px",
@@ -1059,7 +1055,7 @@ export default function MeetingPage() {
                     )}
                   </div>
                 </div>
-                
+
                 {/* Transcript Display */}
                 {transcript && (
                   <div style={{
@@ -1086,7 +1082,7 @@ export default function MeetingPage() {
                     </p>
                   </div>
                 )}
-                
+
                 {/* Animated Circles */}
                 <div style={{
                   position: "absolute",
@@ -1112,9 +1108,9 @@ export default function MeetingPage() {
                 </div>
               </div>
             </div>
-            
+
             {/* AI Assistant Visualization */}
-            <div style={{ 
+            <div style={{
               flex: "1 1 30%",
               display: "flex",
               flexDirection: "column",
@@ -1194,15 +1190,15 @@ export default function MeetingPage() {
                   }}>AI</span>
                 )}
               </div>
-              
-              <h3 style={{ 
-                fontSize: "20px", 
+
+              <h3 style={{
+                fontSize: "20px",
                 marginBottom: "10px",
                 textAlign: "center"
               }}>
                 FocusAI Assistant
               </h3>
-              
+
               <div style={{
                 backgroundColor: isAiResponding ? "#4a6cff33" : "#3c4043",
                 padding: "10px 16px",
@@ -1246,7 +1242,7 @@ export default function MeetingPage() {
                   </>
                 )}
               </div>
-              
+
               {transcript && (
                 <div style={{
                   backgroundColor: "rgba(74, 108, 255, 0.15)",
@@ -1261,7 +1257,7 @@ export default function MeetingPage() {
                   </p>
                 </div>
               )}
-              
+
               {/* Quick Action Buttons */}
               <div style={{
                 width: "100%",
@@ -1270,15 +1266,15 @@ export default function MeetingPage() {
                 gap: "10px",
                 marginTop: "auto"
               }}>
-                <h4 style={{ 
-                  fontSize: "14px", 
-                  color: "#9aa0a6", 
+                <h4 style={{
+                  fontSize: "14px",
+                  color: "#9aa0a6",
                   margin: "0 0 5px 0",
                   textAlign: "center"
                 }}>
                   Quick Questions
                 </h4>
-                
+
                 <button
                   onClick={() => handleUserMessage("What's my focus score?")}
                   disabled={isAiResponding}
@@ -1300,7 +1296,7 @@ export default function MeetingPage() {
                   <span style={{ fontSize: "18px" }}>📊</span>
                   <span>What's my focus score?</span>
                 </button>
-                
+
                 <button
                   onClick={() => handleUserMessage("How can I improve my productivity?")}
                   disabled={isAiResponding}
@@ -1322,7 +1318,7 @@ export default function MeetingPage() {
                   <span style={{ fontSize: "18px" }}>💡</span>
                   <span>How can I improve my productivity?</span>
                 </button>
-                
+
                 <button
                   onClick={() => handleUserMessage("What are my main distractions?")}
                   disabled={isAiResponding}
@@ -1347,9 +1343,9 @@ export default function MeetingPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Meeting controls */}
-          <div style={{ 
+          <div style={{
             padding: "16px",
             backgroundColor: "#202124",
             borderTop: "1px solid #3c4043",
@@ -1376,7 +1372,7 @@ export default function MeetingPage() {
             >
               {isMicrophoneEnabled ? "🎙️" : "🚫"}
             </button>
-            
+
             <button
               onClick={toggleCamera}
               style={{
@@ -1396,7 +1392,7 @@ export default function MeetingPage() {
             >
               {isCameraEnabled ? "📹" : "🚫"}
             </button>
-            
+
             <button
               onClick={toggleListening}
               disabled={!speechSupported}
@@ -1418,7 +1414,7 @@ export default function MeetingPage() {
             >
               {isListening ? "👂" : "🔊"}
             </button>
-            
+
             <button
               onClick={toggleMute}
               style={{
@@ -1438,7 +1434,7 @@ export default function MeetingPage() {
             >
               {isMuted ? "🔇" : "🔊"}
             </button>
-            
+
             <button
               onClick={endMeeting}
               style={{

@@ -18,6 +18,11 @@ coverage/
 build/
 public/dist/
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 # Dependency locks
 package-lock.json
 yarn.lock

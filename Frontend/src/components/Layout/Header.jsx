@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Chrome, 
-  CheckCircle, 
-  XCircle, 
-  BellRing, 
+import {
+  Chrome,
+  CheckCircle,
+  XCircle,
+  BellRing,
   Menu,
   LifeBuoy,
   Activity,
@@ -15,6 +15,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import DiagnosticInfo from '@/components/DiagnosticInfo';
 import UserMenu from './UserMenu';
+import ApiKeyManager from '@/components/ApiKeyManager';
 import { useNavigate } from 'react-router-dom';
 
 const Header = ({ toggleSidebar, isMobile }) => {
@@ -34,12 +35,12 @@ const Header = ({ toggleSidebar, isMobile }) => {
       // Check if Chrome extension API is available
       if (typeof window !== 'undefined' && window.chrome && window.chrome.runtime) {
         const extensionId = 'jjjokkpobnafkfomfojdnhgndanjihpl'; // Your extension ID
-        
+
         // Try to send a message to the extension
         try {
           await new Promise((resolve, reject) => {
-            window.chrome.runtime.sendMessage(extensionId, 
-              { action: 'ping' }, 
+            window.chrome.runtime.sendMessage(extensionId,
+              { action: 'ping' },
               (response) => {
                 if (window.chrome.runtime.lastError) {
                   reject(window.chrome.runtime.lastError);
@@ -49,7 +50,7 @@ const Header = ({ toggleSidebar, isMobile }) => {
               }
             );
           });
-          
+
           setExtensionStatus({
             installed: true,
             connected: true
@@ -97,10 +98,10 @@ const Header = ({ toggleSidebar, isMobile }) => {
     <header className="bg-background z-10 border-b px-4 py-3 sticky top-0 flex items-center justify-between">
       <div className="flex items-center gap-3">
         {isMobile && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar} 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
             className="mr-2"
           >
             <Menu className="h-5 w-5" />
@@ -135,9 +136,9 @@ const Header = ({ toggleSidebar, isMobile }) => {
         {/* Voice Meeting Button */}
         <Dialog open={showVoiceMeetingDialog} onOpenChange={setShowVoiceMeetingDialog}>
           <DialogTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="relative text-blue-500 hover:text-blue-600 hover:bg-blue-50"
             >
               <Phone className="h-5 w-5" />
@@ -155,7 +156,7 @@ const Header = ({ toggleSidebar, isMobile }) => {
             </DialogHeader>
             <div className="p-4 bg-blue-50 rounded-md my-4">
               <p className="text-sm text-blue-700">
-                Your productivity data will be analyzed to provide personalized voice assistance. 
+                Your productivity data will be analyzed to provide personalized voice assistance.
                 You can ask questions about your focus score, productivity habits, and get tips to improve your workflow.
               </p>
             </div>
@@ -179,10 +180,10 @@ const Header = ({ toggleSidebar, isMobile }) => {
         </Dialog>
 
         {/* Quick Diagnostic Button */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="relative" 
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
           onClick={runQuickDiagnostic}
           disabled={isRunningDiagnostic}
         >
@@ -216,6 +217,9 @@ const Header = ({ toggleSidebar, isMobile }) => {
         <Button variant="ghost" size="icon">
           <BellRing className="h-5 w-5" />
         </Button>
+
+        {/* API Key Manager */}
+        <ApiKeyManager />
 
         {/* User Profile Menu */}
         <UserMenu />

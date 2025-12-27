@@ -5,23 +5,23 @@ const ChatHistory = require('../models/ChatHistory');
 const { getUserProductivityData } = require('./chatController');
 
 const groq = new Groq({
-  apiKey: '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'
+  apiKey: process.env.GROQ_API_KEY
 });
 
 // Process voice message from the meeting interface
 const processVoiceMessage = async (req, res) => {
   try {
     const { message, productivityData, userEmail } = req.body;
-    
+
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
-    
+
     // Format productivity data for better context
     let formattedData = "No productivity data available.";
     if (productivityData && Array.isArray(productivityData) && productivityData.length > 0) {
       const latestData = productivityData[productivityData.length - 1];
-      
+
       formattedData = `
 User: ${userEmail}
 Date: ${new Date(latestData.date).toLocaleDateString()}
@@ -31,7 +31,7 @@ Distraction Time: ${((latestData.totalNonProductiveTime || 0) / 3600).toFixed(1)
 Most Used App: ${latestData.mostUsedApp || "Unknown"}
 Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
 `;
-      
+
       // Add more detailed data if available
       if (latestData.productiveContent) {
         formattedData += "\nProductive Apps/Sites:\n";
@@ -51,7 +51,7 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
           formattedData += "- Data format not compatible\n";
         }
       }
-      
+
       if (latestData.nonProductiveContent || latestData.distractionApps) {
         formattedData += "\nDistraction Apps/Sites:\n";
         try {
@@ -72,7 +72,7 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
         }
       }
     }
-    
+
     // Create history entry
     let historyId = null;
     if (req.user) {
@@ -83,11 +83,11 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
           content: message
         }]
       });
-      
+
       await newHistory.save();
       historyId = newHistory._id;
     }
-    
+
     // Prepare system prompt
     const systemPrompt = `You are FocusAI, a productivity assistant that helps users understand their productivity data and 
     improve their focus and work habits. You have access to the user's productivity data.
@@ -100,7 +100,7 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
     
     Provide personalized insights and advice based on this data. If you're asked something not 
     related to productivity, politely steer the conversation back to productivity topics.`;
-    
+
     // Call Groq API
     const completion = await groq.chat.completions.create({
       messages: [
@@ -113,13 +113,13 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
           content: message
         }
       ],
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.7,
       max_tokens: 1024
     });
-    
+
     const aiResponse = completion.choices[0].message.content;
-    
+
     // Save AI response to history if we have a history
     if (historyId) {
       await ChatHistory.findByIdAndUpdate(
@@ -127,18 +127,18 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
         { $push: { messages: { role: 'assistant', content: aiResponse } } }
       );
     }
-    
+
     return res.json({
       success: true,
       response: aiResponse,
       historyId
     });
-    
+
   } catch (error) {
     console.error('Error processing voice message:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process message', 
-      details: error.message 
+    return res.status(500).json({
+      error: 'Failed to process message',
+      details: error.message
     });
   }
 };

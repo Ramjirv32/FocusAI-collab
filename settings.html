@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focusia Settings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      font-family: monospace;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 6px;
+    }
+
+    .hint a {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .hint a:hover {
+      text-decoration: underline;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    button {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-primary:disabled,
+    .btn-secondary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .config-path {
+      margin-top: 20px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #666;
+      word-break: break-all;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ Focusia Settings</h1>
+    <p class="subtitle">Configure your Groq API key for AI features</p>
+
+    <form id="settingsForm">
+      <div class="form-group">
+        <label for="groqApiKey">Groq API Key *</label>
+        <input 
+          type="password" 
+          id="groqApiKey" 
+          placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxx"
+          required
+        >
+        <div class="hint">
+          Get your API key from <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="apiBaseUrl">Backend URL (Optional)</label>
+        <input 
+          type="text" 
+          id="apiBaseUrl" 
+          placeholder="http://localhost:5001"
+          value="http://localhost:5001"
+        >
+        <div class="hint">Default: http://localhost:5001</div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn-secondary" id="testBtn">
+          🧪 Test Connection
+        </button>
+        <button type="submit" class="btn-primary" id="saveBtn">
+          💾 Save Configuration
+        </button>
+      </div>
+    </form>
+
+    <div id="status" class="status"></div>
+
+    <div class="config-path" id="configPath">
+      Loading config path...
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('settingsForm');
+    const groqApiKeyInput = document.getElementById('groqApiKey');
+    const apiBaseUrlInput = document.getElementById('apiBaseUrl');
+    const testBtn = document.getElementById('testBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const statusDiv = document.getElementById('status');
+    const configPathDiv = document.getElementById('configPath');
+
+    // Load existing config
+    async function loadConfig() {
+      try {
+        const config = await window.electronAPI.getConfig();
+        if (config.GROQ_API_KEY) {
+          groqApiKeyInput.value = config.GROQ_API_KEY;
+        }
+        if (config.API_BASE_URL) {
+          apiBaseUrlInput.value = config.API_BASE_URL;
+        }
+
+        const configPath = await window.electronAPI.getConfigPath();
+        configPathDiv.textContent = `Config file: ${configPath}`;
+      } catch (error) {
+        showStatus('Error loading config: ' + error.message, 'error');
+      }
+    }
+
+    // Show status message
+    function showStatus(message, type = 'info') {
+      statusDiv.textContent = message;
+      statusDiv.className = `status ${type}`;
+      statusDiv.style.display = 'block';
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    // Test Groq connection
+    testBtn.addEventListener('click', async () => {
+      const apiKey = groqApiKeyInput.value.trim();
+      
+      if (!apiKey) {
+        showStatus('Please enter a Groq API key', 'error');
+        return;
+      }
+
+      testBtn.disabled = true;
+      testBtn.innerHTML = '🧪 Testing<span class="loading"></span>';
+      
+      try {
+        const result = await window.electronAPI.testGroqConnection(apiKey);
+        
+        if (result.success) {
+          showStatus('✅ Connection successful! Your API key is valid.', 'success');
+        } else {
+          showStatus('❌ Connection failed: ' + result.message, 'error');
+        }
+      } catch (error) {
+        showStatus('❌ Test failed: ' + error.message, 'error');
+      } finally {
+        testBtn.disabled = false;
+        testBtn.innerHTML = '🧪 Test Connection';
+      }
+    });
+
+    // Save configuration
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const apiKey = groqApiKeyInput.value.trim();
+      const baseUrl = apiBaseUrlInput.value.trim() || 'http://localhost:5001';
+      
+      if (!apiKey) {
+        showStatus('Please enter a Groq API key', 'error');
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '💾 Saving<span class="loading"></span>';
+      
+      try {
+        const config = {
+          GROQ_API_KEY: apiKey,
+          API_BASE_URL: baseUrl,
+          MONGODB_URI: 'mongodb://localhost:27018/focusai'
+        };
+        
+        const result = await window.electronAPI.saveConfig(config);
+        
+        if (result.success) {
+          showStatus('✅ Configuration saved successfully! Please restart services.', 'success');
+        } else {
+          showStatus('❌ Failed to save: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showStatus('❌ Save failed: ' + error.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '💾 Save Configuration';
+      }
+    });
+
+    // Load config on startup
+    loadConfig();
+  </script>
+</body>
+</html>
