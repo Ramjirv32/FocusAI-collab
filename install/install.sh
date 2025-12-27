@@ -703,6 +703,24 @@ print_summary() {
     echo ""
     print_success "FocusAI will start automatically on system boot!"
     echo ""
+    
+    # Restart services to ensure everything is running with the latest configuration
+    print_info "Restarting services to apply all configurations..."
+    systemctl restart focusai-backend focusai-frontend focusai-ai
+    sleep 2
+    
+    # Verify services are running
+    if systemctl is-active --quiet focusai-backend && \
+       systemctl is-active --quiet focusai-frontend && \
+       systemctl is-active --quiet focusai-ai; then
+        print_success "All services are running!"
+    else
+        print_warning "Some services may not be running. Check status with:"
+        echo "  sudo systemctl status focusai-backend"
+        echo "  sudo systemctl status focusai-frontend"
+        echo "  sudo systemctl status focusai-ai"
+    fi
+    echo ""
 }
 
 # Main installation flow

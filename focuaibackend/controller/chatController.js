@@ -617,6 +617,23 @@ USER QUESTION: "${message}"`;
 
   } catch (error) {
     console.error('❌ Chat controller error:', error);
+
+    // Check if it's an invalid API key error
+    if (error.message && (
+      error.message.includes('Invalid API Key') ||
+      error.message.includes('invalid_api_key') ||
+      error.message.includes('401') ||
+      (error.error && error.error.code === 'invalid_api_key')
+    )) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid API Key',
+        message: 'Your Groq API key is not valid. Please update it in the API Key Manager (Key icon in header).',
+        response: "⚠️ Invalid API Key\n\nYour Groq API key is not valid or has expired. Please:\n\n1. Click the Key icon (🔑) in the header\n2. Enter a valid Groq API key\n3. Test the key to verify it works\n4. Save and restart the services\n\nGet a free API key at: https://console.groq.com/keys"
+      });
+    }
+
+    // Generic error response
     res.status(500).json({
       success: false,
       error: 'Failed to process message',

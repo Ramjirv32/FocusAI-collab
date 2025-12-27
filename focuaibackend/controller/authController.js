@@ -103,14 +103,30 @@ const authController = {
     try {
       const { email, password, name } = req.body;
 
-      // Validation
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required' });
+      // Detailed validation
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
       }
 
+      if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Please enter a valid email address' });
+      }
+
+      // Password length validation
+      if (password.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      }
+
+      // Check if user already exists
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res.status(400).json({ error: 'User already exists with this email' });
+        return res.status(400).json({ error: 'An account with this email already exists' });
       }
 
       const user = new User({ email, password, name });
@@ -127,7 +143,7 @@ const authController = {
       });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ error: 'Server error during registration' });
+      res.status(500).json({ error: 'Server error during registration. Please try again.' });
     }
   },
 
@@ -136,19 +152,25 @@ const authController = {
     try {
       const { email, password } = req.body;
 
-      // Validation
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required' });
+      // Detailed validation
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
       }
 
+      if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+      }
+
+      // Check if user exists
       const user = await User.findOne({ email });
       if (!user) {
-        return res.status(400).json({ error: 'Invalid email or password' });
+        return res.status(400).json({ error: 'No account found with this email address' });
       }
 
+      // Verify password
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
-        return res.status(400).json({ error: 'Invalid email or password' });
+        return res.status(400).json({ error: 'Incorrect password. Please try again.' });
       }
 
       const token = generateToken(user);
