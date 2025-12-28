@@ -283,14 +283,17 @@ app.get("/g", async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(404).json({ error: 'User not found. Please check your email or sign up.' });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Incorrect password. Please try again.' });
     }
 
     const token = generateToken(user);
@@ -303,6 +306,7 @@ app.post('/api/login', async (req, res) => {
       await ensureUserHasInitialData(user._id, user.email);
     }
 
+    console.log(`✅ Login successful for ${email}`);
     res.json({
       user: { id: user._id, email: user.email, name: user.name },
       token,
@@ -734,46 +738,7 @@ app.get('/raw-usage', auth, async (req, res) => {
   }
 });
 
-app.post('/reset-data', auth, async (req, res) => {
-  try {
-    console.log(`Resetting data for user ${req.user.email} (${req.user._id})`);
-
-    const deletedAppUsage = await AppUsage.deleteMany({
-      userId: req.user._id,
-      email: req.user.email
-    });
-
-    const deletedTabUsage = await TabUsage.deleteMany({
-      userId: req.user._id,
-      email: req.user.email
-    });
-
-    const beforeLength = currentSessionData.length;
-    const newSessionData = currentSessionData.filter(
-      session => session.userId !== req.user._id.toString()
-    );
-    currentSessionData.length = 0;
-    currentSessionData.push(...newSessionData);
-
-    console.log(`Reset completed for user ${req.user.email}:
-      - Deleted ${deletedAppUsage.deletedCount} app usage records
-      - Deleted ${deletedTabUsage.deletedCount} tab usage records
-      - Removed ${beforeLength - currentSessionData.length} session entries`);
-
-    res.status(200).json({
-      success: true,
-      message: 'Data reset successful',
-      deletedCounts: {
-        appUsage: deletedAppUsage.deletedCount,
-        tabUsage: deletedTabUsage.deletedCount,
-        sessions: beforeLength - currentSessionData.length
-      }
-    });
-  } catch (error) {
-    console.error('Error resetting data:', error);
-    res.status(500).json({ error: 'Failed to reset data' });
-  }
-});
+// Redundant reset-data removed. Use /api/settings/reset-data instead.
 
 app.post('/api/heartbeat', auth, (req, res) => {
   activeUsers.set(req.user._id.toString(), {
@@ -1171,30 +1136,43 @@ async function getUserRankInLeaderboard(userId, timeFrame = 'weekly') {
 
 // Helper function to classify apps as productive or non-productive
 const classifyApp = (appName) => {
+  const appLower = appName.toLowerCase();
+
+  // Rule 1: Direct matches for our own apps or high-confidence productive keywords
+  if (appLower.includes('ai') || appLower.includes('antigravity') || appLower.includes('focus') || appLower.includes('focuai') || appLower.includes('cursor')) {
+    return 'productive';
+  }
+
+  // Rule 2: Development and productivity tools
   const productiveApps = [
-    'code', 'vscode', 'terminal', 'gnome-terminal', 'mysql', 'postman',
-    'slack', 'eclipse', 'intellij', 'pycharm', 'vim', 'emacs', 'git',
-    'docker', 'mongodb compass', 'figma', 'notion', 'jira', 'confluence'
+    'code', 'vscode', 'visual studio', 'terminal', 'gnome-terminal', 'powershell', 'cmd',
+    'iterm', 'konsole', 'xterm', 'mysql', 'postman', 'slack', 'eclipse', 'intellij',
+    'pycharm', 'vim', 'emacs', 'git', 'docker', 'mongodb compass', 'figma', 'notion',
+    'jira', 'confluence', 'trello', 'asana', 'linear', 'windsurf', 'sublime', 'android studio',
+    'xcode', 'wezterm', 'alacritty', 'zeal', 'dbeaver', 'insomnia'
   ];
 
+  // Rule 3: Known distractions
   const nonProductiveApps = [
     'netflix', 'spotify', 'youtube', 'twitter', 'instagram', 'facebook',
     'tiktok', 'reddit', 'gaming', 'steam', 'discord', 'whatsapp',
-    'telegram', 'snapchat', 'twitch'
+    'telegram', 'snapchat', 'twitch', 'hulu', 'disney+', 'prime video'
   ];
-
-  const appLower = appName.toLowerCase();
 
   if (productiveApps.some(app => appLower.includes(app))) {
     return 'productive';
   } else if (nonProductiveApps.some(app => appLower.includes(app))) {
     return 'non-productive';
-  } else if (appLower.includes('browser') || appLower.includes('chrome') || appLower.includes('firefox')) {
-    // Browser apps need more context, default to neutral/productive for work browsing
+  }
+
+  // Rule 4: Browsers - generally productive as they are tools, though specific sites might not be
+  // The site-specific logic should handle the distraction part if it's a browser tab
+  const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi'];
+  if (browsers.some(b => appLower.includes(b))) {
     return 'productive';
   }
 
-  return 'neutral'; // Default to neutral for unknown apps
+  return 'neutral';
 };
 
 // Create or update productivity summary

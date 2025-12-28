@@ -9,6 +9,19 @@ const CONFIG_PATH = path.join(os.homedir(), '.focusia', 'config.json');
 // Middleware to check authentication
 const auth = require('../middleware/auth');
 
+// Models
+const ProductivitySummary = require('../models/ProductivitySummary');
+const AppUsage = require('../models/AppUsage');
+const TabUsage = require('../models/TabUsage');
+const ChatHistory = require('../models/ChatHistory');
+const Alert = require('../models/Alert');
+const Todo = require('../models/Todo');
+const Gamification = require('../models/Gamification');
+const UserProfile = require('../models/UserProfile');
+const Notification = require('../models/Notification');
+const FocusSession = require('../models/FocusSession');
+const FocusResult = require('../models/FocusResult');
+
 // Get current Groq API key
 router.get('/groq-api-key', auth, async (req, res) => {
   try {
@@ -226,6 +239,212 @@ router.put('/groq-api-key', auth, async (req, res) => {
   } catch (error) {
     console.error('Error updating API key:', error);
     res.status(500).json({ error: 'Failed to update API key' });
+  }
+});
+
+// Export productivity summaries as JSON
+router.get('/export-data', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    console.log(`Starting data export for user: ${userId}`);
+
+    // Fetch all productivity summaries for the user
+    const summaries = await ProductivitySummary.find({ userId: userId }).lean();
+
+    if (!summaries || summaries.length === 0) {
+      return res.status(200).json([]); // Return empty array if no data
+    }
+
+    // Set headers for file download
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=productivity-summaries-${new Date().toISOString().split('T')[0]}.json`);
+
+    res.json(summaries);
+  } catch (error) {
+    console.error('Error exporting data:', error);
+    res.status(500).json({ error: 'Failed to export data: ' + error.message });
+  }
+});
+
+// Purge all user activity data except user collection
+router.post('/reset-data', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const email = req.user.email;
+    const { type } = req.body;
+
+    console.log(`Purging all activity data for user: ${email} (${userId}), type: ${type}`);
+
+    // Irreversibly delete data from all activity-related collections
+    const results = await Promise.all([
+      AppUsage.deleteMany({ userId }),
+      TabUsage.deleteMany({ userId }),
+      ProductivitySummary.deleteMany({ userId }),
+      ChatHistory.deleteMany({ userId }),
+      Alert.deleteMany({ userId }),
+      Todo.deleteMany({ userId }),
+      Gamification.deleteMany({ userId }),
+      Notification.deleteMany({ userId }),
+      FocusSession.deleteMany({ userId }),
+      FocusResult.deleteMany({ userId })
+    ]);
+
+    // Reset UserProfile stats but keep the profile itself
+    await UserProfile.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          'stats.totalFocusTime': 0,
+          'stats.totalProductiveTime': 0,
+          'stats.averageFocusScore': 0,
+          'stats.currentStreak': 0,
+          'stats.longestStreak': 0,
+          'stats.totalSessions': 0,
+          'level.totalPoints': 0,
+          'level.currentLevel': 1,
+          'achievements': []
+        }
+      }
+    );
+
+    const totalDeleted = results.reduce((acc, curr) => acc + (curr.deletedCount || 0), 0);
+
+    console.log(`✅ Data purge complete for ${email}. Total records deleted: ${totalDeleted}`);
+
+    res.json({
+      success: true,
+      message: 'All activity data has been permanently deleted.',
+      deletedCount: totalDeleted
+    });
+  } catch (error) {
+    console.error('Error purging data:', error);
+    res.status(500).json({ error: 'Failed to purge data: ' + error.message });
+  }
+});
+
+// Export data endpoint
+router.get('/export-data', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Fetch all relevant data from collections
+    const [
+      productivitySummaries,
+      appUsage,
+      tabUsage,
+      focusSessions,
+      todos,
+      gamification,
+      userProfile,
+      notifications,
+      alerts
+    ] = await Promise.all([
+      ProductivitySummary.find({ userId }),
+      AppUsage.find({ userId }),
+      TabUsage.find({ userId }),
+      FocusSession.find({ userId }),
+      Todo.find({ userId }),
+      Gamification.findOne({ userId }),
+      UserProfile.findOne({ userId }),
+      Notification.find({ userId }),
+      Alert.find({ userId })
+    ]);
+
+    // Compile all data into a single JSON object
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      user: {
+        id: userId,
+        email: req.user.email,
+        name: req.user.name
+      },
+      data: {
+        productivitySummaries: productivitySummaries || [],
+        appUsage: appUsage || [],
+        tabUsage: tabUsage || [],
+        focusSessions: focusSessions || [],
+        todos: todos || [],
+        gamification: gamification || {},
+        userProfile: userProfile || {},
+        notifications: notifications || [],
+        alerts: alerts || []
+      },
+      statistics: {
+        totalProductivityRecords: productivitySummaries?.length || 0,
+        totalAppUsageRecords: appUsage?.length || 0,
+        totalTabUsageRecords: tabUsage?.length || 0,
+        totalFocusSessions: focusSessions?.length || 0,
+        totalTodos: todos?.length || 0,
+        totalNotifications: notifications?.length || 0,
+        totalAlerts: alerts?.length || 0
+      }
+    };
+
+    // Send as JSON with proper headers
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="focusai-export-${new Date().toISOString().split('T')[0]}.json"`);
+    res.send(JSON.stringify(exportData, null, 2));
+
+  } catch (error) {
+    console.error('Error exporting data:', error);
+    res.status(500).json({ error: 'Failed to export data: ' + error.message });
+  }
+});
+
+// Reset/Purge data endpoint
+router.post('/reset-data', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { type } = req.body;
+
+    if (type === 'usage') {
+      // Delete all usage-related data
+      const results = await Promise.all([
+        AppUsage.deleteMany({ userId }),
+        TabUsage.deleteMany({ userId }),
+        FocusSession.deleteMany({ userId })
+      ]);
+
+      const totalDeleted = results.reduce((acc, curr) => acc + (curr.deletedCount || 0), 0);
+      res.json({
+        success: true,
+        message: 'Usage data has been deleted.',
+        deletedCount: totalDeleted
+      });
+    } else if (type === 'productivity') {
+      // Delete productivity summaries
+      const result = await ProductivitySummary.deleteMany({ userId });
+      res.json({
+        success: true,
+        message: 'Productivity data has been deleted.',
+        deletedCount: result.deletedCount
+      });
+    } else if (type === 'all') {
+      // Delete everything (same as purge)
+      const results = await Promise.all([
+        AppUsage.deleteMany({ userId }),
+        TabUsage.deleteMany({ userId }),
+        ProductivitySummary.deleteMany({ userId }),
+        ChatHistory.deleteMany({ userId }),
+        Alert.deleteMany({ userId }),
+        Todo.deleteMany({ userId }),
+        Notification.deleteMany({ userId }),
+        FocusSession.deleteMany({ userId }),
+        FocusResult.deleteMany({ userId })
+      ]);
+
+      const totalDeleted = results.reduce((acc, curr) => acc + (curr.deletedCount || 0), 0);
+      res.json({
+        success: true,
+        message: 'All activity data has been deleted.',
+        deletedCount: totalDeleted
+      });
+    } else {
+      res.status(400).json({ error: 'Invalid reset type' });
+    }
+  } catch (error) {
+    console.error('Error resetting data:', error);
+    res.status(500).json({ error: 'Failed to reset data: ' + error.message });
   }
 });
 

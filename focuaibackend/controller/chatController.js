@@ -170,14 +170,36 @@ function getTopItemsFromObject(items, limit = 5) {
 
 // Helper functions - SAME AS usageController.js
 function classifyApp(appName) {
-  const productiveApps = ['VS Code', 'Visual Studio', 'IntelliJ', 'Eclipse', 'Sublime Text', 'Terminal', 'Command Prompt', 'PowerShell', 'Code', 'Gnome-terminal'];
-  const distractiveApps = ['Facebook', 'Instagram', 'TikTok', 'Reddit', 'YouTube', 'Netflix', 'Games', 'focusai-app', 'Windsurf', 'Windows Explorer'];
+  const appLower = appName.toLowerCase();
 
-  if (productiveApps.some(app => appName.toLowerCase().includes(app.toLowerCase()))) {
+  if (appLower.includes('ai') || appLower.includes('antigravity') || appLower.includes('focus') || appLower.includes('focuai') || appLower.includes('cursor')) {
     return 'productive';
-  } else if (distractiveApps.some(app => appName.toLowerCase().includes(app.toLowerCase()))) {
-    return 'distracting';
   }
+
+  const productiveApps = [
+    'code', 'vscode', 'visual studio', 'terminal', 'gnome-terminal', 'powershell', 'cmd',
+    'iterm', 'konsole', 'xterm', 'mysql', 'postman', 'slack', 'eclipse', 'intellij',
+    'pycharm', 'vim', 'emacs', 'git', 'docker', 'mongodb compass', 'figma', 'notion',
+    'jira', 'confluence', 'trello', 'asana', 'linear', 'windsurf', 'sublime', 'android studio',
+    'xcode', 'wezterm', 'alacritty', 'zeal', 'dbeaver', 'insomnia'
+  ];
+
+  const distractiveApps = [
+    'netflix', 'spotify', 'youtube', 'twitter', 'instagram', 'facebook',
+    'tiktok', 'reddit', 'gaming', 'steam', 'discord', 'whatsapp',
+    'telegram', 'snapchat', 'twitch', 'hulu', 'disney+', 'prime video'
+  ];
+
+  const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi'];
+
+  if (productiveApps.some(app => appLower.includes(app.toLowerCase()))) {
+    return 'productive';
+  } else if (distractiveApps.some(app => appLower.includes(app.toLowerCase()))) {
+    return 'distracting';
+  } else if (browsers.some(b => appLower.includes(b))) {
+    return 'productive';
+  }
+
   return 'neutral';
 }
 
@@ -343,179 +365,128 @@ const sendMessage = async (req, res) => {
       // Continue with whatever data we have
     }
 
-    let contextualPrompt = "";
-
-    if (productivityData) {
-      // Build contextual prompt with user's productivity data
-
-      // Extract common properties, handle different data structures
-      const focusScore = productivityData.focusScore || 0;
-      const totalProductiveTime = productivityData.totalProductiveTime || productivityData.productiveTime || 0;
-      const totalNonProductiveTime = productivityData.totalNonProductiveTime || productivityData.distractionTime || 0;
-      const overallTotalUsage = productivityData.overallTotalUsage || productivityData.totalAppUsage || 0;
-
-      const productiveHours = productivityData.productiveHours ||
-        (typeof totalProductiveTime === 'number' ?
-          (productivityData.isCalculated ?
-            Math.round((totalProductiveTime / 60) * 10) / 10 :
-            Math.round((totalProductiveTime / 60) * 10) / 10) :
-          0);
-
-      const distractionHours = productivityData.distractionHours ||
-        (typeof totalNonProductiveTime === 'number' ?
-          (productivityData.isCalculated ?
-            Math.round((totalNonProductiveTime / 60) * 10) / 10 :
-            Math.round((totalNonProductiveTime / 60) * 10) / 10) :
-          0);
-      const streak = productivityData.streak || await calculateStreak(userId) || 0;
-
-      // Handle different property names between frontend and backend data
-      const maxProductiveApp = productivityData.maxProductiveApp ||
-        (productivityData.topApps && productivityData.topApps.length > 0 ? productivityData.topApps[0].name : 'Not identified');
-
-      const mostUsedApp = productivityData.mostUsedApp || maxProductiveApp;
-
-      const mostVisitedTab = productivityData.mostVisitedTab ||
-        (productivityData.topSites && productivityData.topSites.length > 0 ? productivityData.topSites[0].name : 'Not identified');
-
-      // Get top apps from whatever structure is available
-      let topApps = [];
-      if (Array.isArray(productivityData.topApps)) {
-        topApps = productivityData.topApps;
-      } else if (productivityData.productiveContent) {
-        topApps = getTopItemsFromObject(productivityData.productiveContent, 3);
+    // 1. Manage Chat History (Find or Create)
+    let chatHistory;
+    try {
+      if (historyId && historyId.match(/^[0-9a-fA-F]{24}$/)) {
+        chatHistory = await ChatHistory.findOne({
+          _id: historyId,
+          userId: userId
+        });
       }
 
-      // Get top sites from whatever structure is available
-      let topSites = [];
-      if (Array.isArray(productivityData.topSites)) {
-        topSites = productivityData.topSites;
-      } else if (productivityData.tabContent) {
-        topSites = getTopItemsFromObject(productivityData.tabContent, 3);
+      if (!chatHistory) {
+        chatHistory = new ChatHistory({
+          userId: userId,
+          email: email,
+          title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
+          messages: []
+        });
       }
+    } catch (historyError) {
+      console.error('Error managing chat history:', historyError);
+      chatHistory = { messages: [] };
+    }
 
-      // Other properties with defaults
-      const uniqueApps = productivityData.uniqueApps || 0;
-      const uniqueSites = productivityData.uniqueSites || 0;
-      const sessionsCompleted = productivityData.sessionsCompleted || 0;
-      const level = productivityData.level || 1;
-      const totalPoints = productivityData.totalPoints || 0;
-      const date = productivityData.date || new Date().toISOString().slice(0, 10);
-      const isCalculated = productivityData.isCalculated || false;
+    // Build historical trends section if we have multiple data points
+    let historicalTrendsSection = "";
+    if (allProductivitySummaries && allProductivitySummaries.length > 1) {
+      const sortedSummaries = [...allProductivitySummaries].sort((a, b) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      const avgFocusScore = Math.round(
+        sortedSummaries.reduce((sum, s) => sum + (s.focusScore || 0), 0) / sortedSummaries.length
+      );
+      const recentSummaries = sortedSummaries.slice(-7);
+      const focusScoreTrend = recentSummaries.map(s => ({
+        date: s.date,
+        score: s.focusScore || 0
+      }));
 
-      const topProductiveApps = topApps.length > 0 ?
-        topApps.slice(0, 3).map(app => {
-          const hours = app.duration / 60;
-          if (hours < 1) {
-            return `${app.name} (${app.duration}min)`;
-          } else {
-            return `${app.name} (${Math.round(hours * 10) / 10}h)`;
-          }
-        }).join(', ') :
-        'No apps recorded';
-
-      const topWebsites = topSites.length > 0 ?
-        topSites.slice(0, 3).map(site => {
-          const hours = site.duration / 60;
-          if (hours < 1) {
-            return `${site.name} (${site.duration}min)`;
-          } else {
-            return `${site.name} (${Math.round(hours * 10) / 10}h)`;
-          }
-        }).join(', ') :
-        'No sites recorded';
-
-      // Generate historical trends section if we have multiple data points
-      let historicalTrendsSection = "";
-      if (allProductivitySummaries.length > 1) {
-        // Sort summaries by date
-        const sortedSummaries = [...allProductivitySummaries].sort((a, b) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-
-        // Calculate average focus score
-        const avgFocusScore = Math.round(
-          sortedSummaries.reduce((sum, s) => sum + (s.focusScore || 0), 0) / sortedSummaries.length
-        );
-
-        // Get focus score trend (last 7 days if available)
-        const recentSummaries = sortedSummaries.slice(-7);
-        const focusScoreTrend = recentSummaries.map(s => ({
-          date: s.date,
-          score: s.focusScore || 0
-        }));
-
-        historicalTrendsSection = `
+      historicalTrendsSection = `
 HISTORICAL TRENDS (${sortedSummaries.length} days of data):
 • Average Focus Score: ${avgFocusScore}%
 • Recent Focus Scores: ${focusScoreTrend.map(fs => `${fs.date}: ${fs.score}%`).join(', ')}
-• Progress: ${productivityData.focusScore > avgFocusScore ? `Improving (${productivityData.focusScore - avgFocusScore}% above average)` :
-            productivityData.focusScore < avgFocusScore ? `Declining (${avgFocusScore - productivityData.focusScore}% below average)` :
-              'Steady (matching average)'}
+• Progress: ${productivityData?.focusScore > avgFocusScore ? `Improving (${productivityData.focusScore - avgFocusScore}% above average)` :
+          productivityData?.focusScore < avgFocusScore ? `Declining (${avgFocusScore - productivityData.focusScore}% below average)` :
+            'Steady (matching average)'}
 `;
-      }
+    }
 
-      contextualPrompt = `
-You are FocusAI, an advanced productivity assistant. The user has REAL productivity data from ${productivityData.date || 'today'}.
+    // 2. Build Groq Messages with Context
+    let systemPrompt = "";
 
-IMPORTANT: Use these EXACT numbers from their productivity data:
+    if (productivityData) {
+      // Robustly extract metrics
+      const focusScore = productivityData.focusScore || 0;
+      const totalProdMinutes = productivityData.totalProductiveTime || productivityData.productiveTime || 0;
+      const totalDistMinutes = productivityData.totalNonProductiveTime || productivityData.distractionTime || 0;
 
-📊 REAL USER PRODUCTIVITY STATS:
-• Focus Score: ${productivityData.focusScore || 0}%
-• Total Productive Time: ${productivityData.productiveHours || 0} hours
-• Total Distraction Time: ${productivityData.distractionHours || 0} hours
-• Overall Screen Time: ${productivityData.overallTotalUsage ? Math.round(productivityData.overallTotalUsage / 60 * 10) / 10 : 0} hours
-• Most Productive App: ${productivityData.maxProductiveApp || 'Not identified'}
-• Most Used App Overall: ${productivityData.mostUsedApp || 'Not identified'}
-• Most Visited Website: ${productivityData.mostVisitedTab || 'Not identified'}
-• Current Streak: ${productivityData.streak || 0} days
+      const productiveHours = productivityData.productiveHours || Math.round((totalProdMinutes / 60) * 10) / 10;
+      const distractionHours = productivityData.distractionHours || Math.round((totalDistMinutes / 60) * 10) / 10;
+
+      const streak = productivityData.streak || await calculateStreak(userId) || 0;
+      const maxProductiveApp = productivityData.maxProductiveApp ||
+        (productivityData.topApps && productivityData.topApps.length > 0 ? productivityData.topApps[0].name : 'Not identified');
+      const mostVisitedTab = productivityData.mostVisitedTab ||
+        (productivityData.topSites && productivityData.topSites.length > 0 ? productivityData.topSites[0].name : 'Not identified');
+
+      systemPrompt = `You are FocusAI, an advanced productivity coach. You have access to the user's REAL productivity data for ${productivityData.date || 'today'}.
+
+📊 USER PRODUCTIVITY DATA:
+• Focus Score: ${focusScore}%
+• Productive Time: ${productiveHours} hours
+• Distraction Time: ${distractionHours} hours
+• Top Productive Tool: ${maxProductiveApp}
+• Top Website: ${mostVisitedTab}
+• Current Streak: ${streak} days
 ${historicalTrendsSection}
 
 RESPONSE RULES:
-1. ALWAYS mention their exact focus score of ${productivityData.focusScore || 0}%
-2. Reference their specific app usage times and patterns
-3. ONLY present time durations in HOURS - never minutes or seconds
-4. When referring to Total Productive Time, only say ${productivityData.productiveHours || 0} hours
-5. When referring to Total Distraction Time, only say ${productivityData.distractionHours || 0} hours
-6. For app usage times, use hours (e.g., 2.5 hours, not 150 minutes)
-7. Give personalized advice based on their actual usage data
-8. Use emojis to make it engaging
-9. Don't use markdown formatting or asterisks
-10. Be conversational and supportive
-11. NEVER convert hours back to minutes in your response
-12. Provide actionable insights based on their actual app usage patterns
-${allProductivitySummaries.length > 1 ? "13. Include insights about their progress over time based on historical data" : ""}
+1. ALWAYS use hours for time (e.g., 2.5 hours). NEVER use minutes.
+2. Be encouraging, actionable, and analytical.
+3. Reference their specific focus score of ${focusScore}% in your response.
+4. Don't use markdown formatting (no **asterisks**) because the UI doesn't support it.
+5. Provide a personalized tip based on their ${maxProductiveApp} usage.
+6. Use emojis to make it engaging 🚀⚡.
+7. Keep responses concise but insightful.
 
-USER QUESTION: "${message}"
-
-Respond with specific insights from their REAL productivity data, always using hours for time measurements. Make it personal and actionable!`;
+USER QUESTION: "${message}"`;
     } else {
-      console.log(`⚠️ NO PRODUCTIVITY DATA - Using general response`);
-      contextualPrompt = `
-You are FocusAI, a productivity assistant. This user doesn't have productivity tracking data available yet.
+      systemPrompt = `You are FocusAI, a productivity assistant. This user doesn't have productivity tracking data available yet.
 
-Provide helpful productivity advice and encourage them to:
-1. Start using the app tracking features in FocusAI
-2. Track their application usage throughout their work sessions
-3. Come back after a day of usage for personalized insights based on their real data
-
-Keep the response friendly, encouraging, and informative. Use emojis but no markdown formatting.
+Provide helpful productivity advice and encourage them to use FocusAI's tracking features. Keep the response friendly and encouraging. Use emojis but NO markdown formatting.
 
 USER QUESTION: "${message}"`;
     }
 
-    // Create chat completion
+    const groqMessages = [
+      {
+        role: "system",
+        content: systemPrompt
+      }
+    ];
+
+    // Add previous messages for context (last 10)
+    if (chatHistory.messages && chatHistory.messages.length > 0) {
+      const historyContext = chatHistory.messages.slice(-10).map(msg => ({
+        role: msg.isUser ? "user" : "assistant",
+        content: msg.content
+      }));
+      groqMessages.push(...historyContext);
+    }
+
+    // Add current user message
+    groqMessages.push({
+      role: "user",
+      content: message
+    });
+
+    console.log(`🤖 Sending request to Groq with ${groqMessages.length} total messages (Context: ${Math.max(0, groqMessages.length - 2)})`);
+
+    // 3. Create chat completion
     const chatCompletion = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: contextualPrompt
-        },
-        {
-          role: "user",
-          content: message
-        }
-      ],
+      messages: groqMessages,
       model: "llama-3.3-70b-versatile",
       temperature: 0.7,
       max_tokens: 800,
@@ -524,79 +495,47 @@ USER QUESTION: "${message}"`;
       stop: null
     });
 
-    const response = chatCompletion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+    const aiResponse = chatCompletion.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
 
     console.log(`✅ Generated ${productivityData ? 'PERSONALIZED' : 'GENERAL'} response`);
 
-    // Store the conversation in chat history
-    let chatHistory;
-
+    // 4. Update and Save Chat History
     try {
-      // Try to find existing history or create new one
-      if (historyId) {
-        try {
-          chatHistory = await ChatHistory.findOne({
-            _id: historyId,
-            userId: userId
-          });
-        } catch (findError) {
-          console.error('Error finding chat history:', findError);
-          // Continue with creating a new one
-        }
-      }
+      // Add user message to history
+      chatHistory.messages.push({
+        content: message,
+        isUser: true,
+        timestamp: new Date()
+      });
 
-      if (!chatHistory) {
-        // Create new chat history
-        try {
-          chatHistory = new ChatHistory({
-            userId: userId,
-            email: email,
-            title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
-            messages: []
-          });
-        } catch (createError) {
-          console.error('Error creating chat history:', createError);
-        }
-      }
+      // Add AI response to history
+      chatHistory.messages.push({
+        content: aiResponse,
+        isUser: false,
+        timestamp: new Date(),
+        productivityData: productivityData ? {
+          focusScore: productivityData.focusScore || 0,
+          productiveHours: productivityData.productiveHours || 0,
+          uniqueApps: productivityData.uniqueApps || 0,
+          streak: productivityData.streak || 0,
+          hasProductivityData: !!productivityData
+        } : null
+      });
 
-      if (chatHistory) {
-        // Add user message
-        chatHistory.messages.push({
-          content: message,
-          isUser: true,
-          timestamp: new Date()
-        });
-
-        // Add AI response with productivity data
-        chatHistory.messages.push({
-          content: response,
-          isUser: false,
-          timestamp: new Date(),
-          productivityData: productivityData ? {
-            focusScore: productivityData.focusScore || 0,
-            productiveHours: productivityData.productiveHours || 0,
-            uniqueApps: productivityData.uniqueApps || 0,
-            streak: productivityData.streak || 0,
-            hasProductivityData: !!productivityData
-          } : null
-        });
-
+      if (chatHistory.save) {
         await chatHistory.save();
-
-        console.log(`\n💾 === SAVED CHAT HISTORY ===`);
-        console.log(`History ID: ${chatHistory._id}`);
-        console.log(`Message count: ${chatHistory.messages.length}`);
+        console.log(`💾 Saved conversation to history ID: ${chatHistory._id}`);
       }
-    } catch (historyError) {
-      console.error('Error with chat history:', historyError);
+    } catch (saveError) {
+      console.error('Error saving chat history:', saveError);
     }
 
     console.log(`💬 === CHAT REQUEST END ===\n`);
 
-    // Return enhanced response with historical data points
+    // Return enhanced response
     res.json({
       success: true,
-      response: response,
+      response: aiResponse,
       historyId: chatHistory?._id || null,
       hasProductivityData: !!productivityData,
       focusScore: productivityData?.focusScore || 0,
@@ -609,9 +548,7 @@ USER QUESTION: "${message}"`;
         email: email,
         dataFound: !!productivityData,
         dataDate: productivityData?.date || 'No date',
-        focusScore: productivityData?.focusScore || 'No score',
-        isCalculated: productivityData?.isCalculated || false,
-        historicalDataAvailable: allProductivitySummaries.length > 0
+        isCalculated: productivityData?.isCalculated || false
       }
     });
 

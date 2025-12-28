@@ -12,6 +12,7 @@ const gamificationController = require('../controller/gamificationController');
  * @access  Private
  */
 router.get('/stats', auth, gamificationController.getStats);
+router.get('/data', auth, gamificationController.getGamificationData);
 
 /**
  * @route   GET /api/gamification/achievements
@@ -21,14 +22,14 @@ router.get('/stats', auth, gamificationController.getStats);
 router.get('/achievements', auth, async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Find the user's gamification data
     const gamificationData = await Gamification.findOne({ userId });
-    
+
     if (!gamificationData) {
       return res.json({ success: true, achievements: [] });
     }
-    
+
     // Map challenges to achievements format for frontend
     const achievements = gamificationData.challenges
       .filter(challenge => challenge.completed)
@@ -46,7 +47,7 @@ router.get('/achievements', auth, async (req, res) => {
         icon: challenge.icon || 'trophy',
         type: determineBadgeType(challenge.reward) // Helper function to determine badge type
       }));
-    
+
     // Add badges as achievements too
     const badgeAchievements = gamificationData.badges.map(badge => ({
       id: badge.badgeId,
@@ -62,7 +63,7 @@ router.get('/achievements', auth, async (req, res) => {
       icon: badge.icon || 'award',
       type: badge.rarity || 'bronze'
     }));
-    
+
     res.json({ success: true, achievements: [...achievements, ...badgeAchievements] });
   } catch (error) {
     console.error('Error fetching achievements:', error);
@@ -84,125 +85,46 @@ router.get('/challenges', auth, gamificationController.getChallenges);
  */
 router.get('/leaderboard', auth, async (req, res) => {
   try {
-    // Get top users based on focus score and productivity data
-    const topUsers = await ProductivitySummary.aggregate([
-      // Group by userId and calculate average focus score
+    // Get current user's statistics
+    const userSummary = await ProductivitySummary.aggregate([
+      { $match: { userId: req.user._id } },
       {
         $group: {
           _id: "$userId",
-          email: { $first: "$email" },
           averageFocusScore: { $avg: "$focusScore" },
           totalProductiveTime: { $sum: "$totalProductiveTime" },
           sessionsCount: { $sum: 1 }
         }
-      },
-      // Sort by average focus score in descending order
-      { $sort: { averageFocusScore: -1, totalProductiveTime: -1 } },
-      // Limit to top 10 users
-      { $limit: 10 }
-    ]);
-    
-    // Get gamification data for these users
-    const userIds = topUsers.map(user => user._id);
-    const gamificationData = await Gamification.find({ 
-      userId: { $in: userIds } 
-    }).lean();
-    
-    // Create a lookup map for gamification data
-    const gamificationMap = {};
-    gamificationData.forEach(data => {
-      gamificationMap[data.userId.toString()] = data;
-    });
-    
-    // Get user profiles for names and avatars
-    const userProfiles = await UserProfile.find({ 
-      userId: { $in: userIds } 
-    }).lean();
-    
-    // Create a lookup map for profile data
-    const profileMap = {};
-    userProfiles.forEach(profile => {
-      profileMap[profile.userId.toString()] = profile;
-    });
-    
-    // Format leaderboard with real data
-    const leaderboard = topUsers.map((user, index) => {
-      const gamification = gamificationMap[user._id.toString()] || {};
-      const profile = profileMap[user._id.toString()] || {};
-      
-      return {
-        id: user._id.toString(),
-        position: index + 1,
-        name: profile.displayName || user.email.split('@')[0],
-        avatar: profile.profilePhoto || `https://api.dicebear.com/6.x/avataaars/svg?seed=${user.email}`,
-        level: gamification.level?.current || 1,
-        points: gamification.points?.total || 0,
-        streak: gamification.streaks?.current || 0,
-        focusScore: Math.round(user.averageFocusScore || 0),
-        productiveTime: Math.round((user.totalProductiveTime || 0) / 60), // Convert to minutes
-        sessionsCount: user.sessionsCount || 0
-      };
-    });
-    
-    // Find current user's position in the leaderboard
-    const userId = req.user._id.toString();
-    const userIndex = leaderboard.findIndex(entry => entry.id === userId);
-    let userRank = userIndex + 1;
-    
-    // If user is not in top 10, find their actual rank
-    if (userIndex === -1) {
-      const userSummary = await ProductivitySummary.aggregate([
-        { $match: { userId: req.user._id } },
-        {
-          $group: {
-            _id: "$userId",
-            averageFocusScore: { $avg: "$focusScore" },
-            totalProductiveTime: { $sum: "$totalProductiveTime" }
-          }
-        }
-      ]);
-      
-      if (userSummary.length > 0) {
-        const averageFocusScore = userSummary[0].averageFocusScore || 0;
-        
-        // Count users with better focus scores
-        const betterUsers = await ProductivitySummary.aggregate([
-          {
-            $group: {
-              _id: "$userId",
-              averageFocusScore: { $avg: "$focusScore" }
-            }
-          },
-          { $match: { averageFocusScore: { $gt: averageFocusScore } } },
-          { $count: "count" }
-        ]);
-        
-        userRank = betterUsers.length > 0 ? betterUsers[0].count + 1 : 1;
-        
-        // Add current user to the leaderboard if not already present
-        const userGamification = await Gamification.findOne({ userId }).lean();
-        const userProfile = await UserProfile.findOne({ userId }).lean();
-        
-        // Add user to leaderboard with special flag
-        leaderboard.push({
-          id: userId,
-          position: userRank,
-          name: (userProfile?.displayName || req.user.email.split('@')[0]) + " (You)",
-          avatar: userProfile?.profilePhoto || `https://api.dicebear.com/6.x/avataaars/svg?seed=${req.user.email}`,
-          level: userGamification?.level?.current || 1,
-          points: userGamification?.points?.total || 0,
-          streak: userGamification?.streaks?.current || 0,
-          focusScore: Math.round(averageFocusScore),
-          productiveTime: Math.round((userSummary[0].totalProductiveTime || 0) / 60),
-          isCurrentUser: true
-        });
       }
-    }
-    
-    res.json({ 
-      success: true, 
+    ]);
+
+    const userId = req.user._id;
+    const userGamification = await Gamification.findOne({ userId }).lean();
+    const userProfile = await UserProfile.findOne({ userId }).lean();
+
+    const averageFocusScore = userSummary.length > 0 ? (userSummary[0].averageFocusScore || 0) : 0;
+    const totalProductiveTime = userSummary.length > 0 ? (userSummary[0].totalProductiveTime || 0) : 0;
+    const sessionsCount = userSummary.length > 0 ? (userSummary[0].sessionsCount || 0) : 0;
+
+    // Return only the current user in the leaderboard array
+    const leaderboard = [{
+      id: userId.toString(),
+      position: 1,
+      name: (userProfile?.displayName || req.user.email.split('@')[0]) + " (You)",
+      avatar: userProfile?.profilePhoto || `https://api.dicebear.com/6.x/avataaars/svg?seed=${req.user.email}`,
+      level: userGamification?.level?.current || 1,
+      points: userGamification?.points?.total || 0,
+      streak: userGamification?.streaks?.current || 0,
+      focusScore: Math.round(averageFocusScore),
+      productiveTime: Math.round(totalProductiveTime / 60),
+      sessionsCount: sessionsCount,
+      isCurrentUser: true
+    }];
+
+    res.json({
+      success: true,
       leaderboard,
-      userRank
+      userRank: 1
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
@@ -219,79 +141,87 @@ router.post('/challenge/complete', auth, async (req, res) => {
   try {
     const { challengeId } = req.body;
     const userId = req.user._id;
-    
+
     // Find user's gamification data
     let gamification = await Gamification.findOne({ userId });
-    
+
     if (!gamification) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'No gamification data found for user' 
+      return res.status(404).json({
+        success: false,
+        error: 'No gamification data found for user'
       });
     }
-    
+
     // Find the challenge
-    const challengeIndex = gamification.challenges.findIndex(c => 
+    const challengeIndex = gamification.challenges.findIndex(c =>
       c.challengeId === challengeId && !c.completed
     );
-    
+
     if (challengeIndex === -1) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Challenge not found or already completed' 
+      return res.status(404).json({
+        success: false,
+        error: 'Challenge not found or already completed'
       });
     }
-    
+
     // Complete the challenge
     gamification.challenges[challengeIndex].completed = true;
     gamification.challenges[challengeIndex].completedAt = new Date();
-    
+
     // Award points
     const pointsAwarded = gamification.challenges[challengeIndex].reward || 0;
     gamification.points.total += pointsAwarded;
     gamification.points.daily += pointsAwarded;
     gamification.points.weekly += pointsAwarded;
     gamification.points.monthly += pointsAwarded;
-    
-    // Check for level up (simple formula: level = 1 + sqrt(points/100))
+
+    // Simplified Leveling Flow: 1 level per challenge completion, total 5 levels
+    // Levels: 1 (Bronze), 2 (Silver), 3 (Gold), 4 (Platinum), 5 (Diamond)
     const prevLevel = gamification.level.current;
-    const newLevel = Math.floor(1 + Math.sqrt(gamification.points.total / 100));
-    const leveledUp = newLevel > prevLevel;
-    
-    if (leveledUp) {
-      gamification.level.current = newLevel;
-      
-      // Add a level-up badge if it's a significant level
-      if (newLevel % 5 === 0) {
-        gamification.badges.push({
-          badgeId: `level_${newLevel}`,
-          name: `Level ${newLevel} Achieved`,
-          description: `Reached level ${newLevel} in the gamification system`,
-          icon: 'Trophy',
-          rarity: newLevel <= 10 ? 'bronze' : newLevel <= 20 ? 'silver' : newLevel <= 30 ? 'gold' : 'platinum',
-          earnedDate: new Date(),
-          points: newLevel * 50
-        });
-      }
+    if (prevLevel < 5) {
+      gamification.level.current += 1;
+      const newLevel = gamification.level.current;
+
+      const levelNames = {
+        1: 'Bronze',
+        2: 'Silver',
+        3: 'Gold',
+        4: 'Platinum',
+        5: 'Diamond'
+      };
+
+      // Add a level-up badge
+      gamification.badges.push({
+        badgeId: `level_${newLevel}`,
+        name: `${levelNames[newLevel]} Level Achieved`,
+        description: `Congratulations! You have reached the ${levelNames[newLevel]} tier.`,
+        icon: 'Trophy',
+        rarity: levelNames[newLevel].toLowerCase(),
+        earnedDate: new Date(),
+        points: newLevel * 100
+      });
+
+      // Update nextLevelAt for UI progress bars (if used)
+      gamification.level.nextLevelAt = 1000 * newLevel;
     }
-    
+
     await gamification.save();
-    
+
     // Return the updated challenge information
     res.json({
       success: true,
       challenge: gamification.challenges[challengeIndex],
       pointsAwarded,
       newLevel: gamification.level.current,
-      leveledUp,
+      leveledUp: gamification.level.current > prevLevel,
       currentPoints: gamification.points.total
     });
-    
+
   } catch (error) {
     console.error('Error completing challenge:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to complete challenge' 
+    res.status(500).json({
+      success: false,
+      error: 'Failed to complete challenge'
     });
   }
 });
@@ -304,20 +234,20 @@ router.post('/challenge/complete', auth, async (req, res) => {
 router.get('/timeline', auth, async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Get user's gamification data
     const gamification = await Gamification.findOne({ userId });
     if (!gamification) {
       return res.json({ success: true, timeline: [] });
     }
-    
+
     // Get productivity summaries for timeline data
-    const summaries = await ProductivitySummary.find({ 
-      userId 
+    const summaries = await ProductivitySummary.find({
+      userId
     }).sort({ date: -1 }).limit(30).lean();
-    
+
     const timeline = [];
-    
+
     // Add badge achievements to timeline
     gamification.badges.forEach(badge => {
       timeline.push({
@@ -333,7 +263,7 @@ router.get('/timeline', auth, async (req, res) => {
         badgeType: badge.rarity
       });
     });
-    
+
     // Add completed challenges to timeline
     gamification.challenges.filter(c => c.completed).forEach(challenge => {
       timeline.push({
@@ -349,7 +279,7 @@ router.get('/timeline', auth, async (req, res) => {
         target: challenge.target
       });
     });
-    
+
     // Add significant focus score improvements
     let lastFocusScore = 0;
     summaries.forEach(summary => {
@@ -369,7 +299,7 @@ router.get('/timeline', auth, async (req, res) => {
       }
       lastFocusScore = summary.focusScore;
     });
-    
+
     // Add streak milestones
     if (gamification.streaks.current >= 3) {
       timeline.push({
@@ -383,10 +313,10 @@ router.get('/timeline', auth, async (req, res) => {
         streak: gamification.streaks.current
       });
     }
-    
+
     // Sort timeline by date (newest first)
     timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+
     res.json({
       success: true,
       timeline
@@ -413,17 +343,17 @@ function calculateProgressPercentage(currentPoints, currentLevel) {
   const currentLevelPoints = calculateNextLevelPoints(currentLevel - 1);
   const pointsNeeded = nextLevelPoints - currentLevelPoints;
   const pointsAchieved = Math.max(0, currentPoints - currentLevelPoints);
-  
+
   // Calculate percentage, ensuring it stays between 0-100
   const percentage = Math.min(100, Math.max(0, Math.floor((pointsAchieved / pointsNeeded) * 100)));
-  
+
   return percentage;
 }
 
 // Helper function to determine badge type based on reward points
 function determineBadgeType(points) {
   if (!points) return 'bronze';
-  
+
   if (points >= 1000) return 'legendary';
   if (points >= 750) return 'master';
   if (points >= 500) return 'diamond';
@@ -432,5 +362,8 @@ function determineBadgeType(points) {
   if (points >= 100) return 'silver';
   return 'bronze';
 }
+
+// Heatmap data for streak calendar
+router.get('/heatmap', auth, gamificationController.getHeatmapData);
 
 module.exports = router;

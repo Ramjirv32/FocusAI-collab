@@ -125,14 +125,14 @@ const gamificationController = {
   async getGamificationData(req, res) {
     try {
       let gamification = await Gamification.findOne({ userId: req.user._id });
-      
+
       if (!gamification) {
         // Create initial gamification data
         gamification = new Gamification({
           userId: req.user._id,
           email: req.user.email
         });
-        
+
         // Add initial challenges
         gamification.challenges = generateDailyChallenges();
         await gamification.save();
@@ -141,7 +141,7 @@ const gamificationController = {
       // Update daily challenges if needed
       const now = new Date();
       const lastReset = gamification.dailyReset || new Date(0);
-      
+
       if (now.toDateString() !== lastReset.toDateString()) {
         gamification.challenges = gamification.challenges.filter(c => c.category !== 'daily' || c.completed);
         gamification.challenges.push(...generateDailyChallenges());
@@ -161,7 +161,7 @@ const gamificationController = {
   async awardPoints(req, res) {
     try {
       const { usageData, sessionData } = req.body;
-      
+
       let gamification = await Gamification.findOne({ userId: req.user._id });
       if (!gamification) {
         gamification = new Gamification({
@@ -176,16 +176,16 @@ const gamificationController = {
       // Calculate points based on productivity
       if (usageData) {
         const { productiveHours = 0, focusScore = 0, distractionHours = 0 } = usageData;
-        
+
         // Base points for productive time (10 points per hour)
         const productivePoints = Math.floor(productiveHours * 10);
         pointsEarned += productivePoints;
-        
+
         // Bonus points for high focus score
         if (focusScore >= 90) pointsEarned += 50;
         else if (focusScore >= 80) pointsEarned += 30;
         else if (focusScore >= 70) pointsEarned += 15;
-        
+
         // Penalty for too much distraction (but never negative)
         const distractionPenalty = Math.min(pointsEarned * 0.1, distractionHours * 5);
         pointsEarned = Math.max(0, pointsEarned - distractionPenalty);
@@ -202,7 +202,7 @@ const gamificationController = {
       Object.keys(BADGES).forEach(badgeKey => {
         const badge = BADGES[badgeKey];
         const hasEarned = gamification.badges.some(b => b.badgeId === badgeKey);
-        
+
         if (!hasEarned && checkBadgeEligibility(badgeKey, gamification, usageData)) {
           gamification.badges.push({
             badgeId: badgeKey,
@@ -244,7 +244,7 @@ const gamificationController = {
   async claimReward(req, res) {
     try {
       const { challengeId } = req.body;
-      
+
       const gamification = await Gamification.findOne({ userId: req.user._id });
       if (!gamification) {
         return res.status(404).json({ error: 'Gamification data not found' });
@@ -300,7 +300,7 @@ const gamificationController = {
   async getLeaderboard(req, res) {
     try {
       const { limit = 10, timeFrame = 'total' } = req.query;
-      
+
       let sortField;
       switch (timeFrame) {
         case 'daily':
@@ -364,7 +364,7 @@ const gamificationController = {
   async getUserRank(req, res) {
     try {
       const { timeFrame = 'total' } = req.query;
-      
+
       const userGamification = await Gamification.findOne({ userId: req.user._id });
       if (!userGamification) {
         return res.json({ rank: null, total: 0 });
@@ -372,7 +372,7 @@ const gamificationController = {
 
       let compareField;
       let userValue;
-      
+
       switch (timeFrame) {
         case 'daily':
           compareField = 'points.daily';
@@ -403,16 +403,16 @@ const gamificationController = {
       res.status(500).json({ error: 'Failed to get user rank' });
     }
   },
-  
+
   // Get available challenges
   async getChallenges(req, res) {
     try {
       const Challenge = require('../models/Challenge');
       const email = req.user.email;
-      
+
       // Get all active challenges
       const challenges = await Challenge.find({ isActive: true });
-      
+
       // Format challenges for frontend
       const formattedChallenges = challenges.map(challenge => {
         // Check if user is already part of this challenge
@@ -420,7 +420,7 @@ const gamificationController = {
         const isJoined = !!userProgress;
         const isCompleted = userProgress?.completedAt ? true : false;
         const progress = userProgress?.completionPercentage || 0;
-        
+
         // Map difficulty to badge type for frontend
         const difficultyToBadgeType = {
           'bronze': 'bronze',
@@ -428,7 +428,7 @@ const gamificationController = {
           'gold': 'gold',
           'platinum': 'platinum'
         };
-        
+
         return {
           id: challenge._id.toString(),
           name: challenge.title,
@@ -445,37 +445,37 @@ const gamificationController = {
           isActive: isJoined && !isCompleted
         };
       });
-      
-      res.json({ 
-        success: true, 
-        challenges: formattedChallenges 
+
+      res.json({
+        success: true,
+        challenges: formattedChallenges
       });
     } catch (error) {
       console.error('Error fetching challenges:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to fetch challenges' 
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch challenges'
       });
     }
   },
-  
+
   // Join a challenge
   async joinChallenge(req, res) {
     try {
       const { challengeId } = req.params;
       const email = req.user.email;
       const userId = req.user._id;
-      
+
       const Challenge = require('../models/Challenge');
       const challenge = await Challenge.findById(challengeId);
-      
+
       if (!challenge) {
-        return res.status(404).json({ 
-          success: false, 
-          error: 'Challenge not found' 
+        return res.status(404).json({
+          success: false,
+          error: 'Challenge not found'
         });
       }
-      
+
       // Check if challenge is still active
       if (!challenge.isActive || (challenge.endDate && new Date(challenge.endDate) < new Date())) {
         return res.status(400).json({
@@ -483,17 +483,17 @@ const gamificationController = {
           error: 'This challenge is no longer active'
         });
       }
-      
+
       // Check if user is already part of this challenge
       const userProgressIndex = challenge.userProgress.findIndex(p => p.email === email);
-      
+
       if (userProgressIndex >= 0) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'You have already joined this challenge' 
+        return res.status(400).json({
+          success: false,
+          error: 'You have already joined this challenge'
         });
       }
-      
+
       // Add user to challenge with enhanced data
       challenge.userProgress.push({
         email: email,
@@ -504,12 +504,12 @@ const gamificationController = {
         joinedAt: new Date(),
         status: 'joined'
       });
-      
+
       // Increment users in progress count
       challenge.usersInProgress = (challenge.usersInProgress || 0) + 1;
-      
+
       await challenge.save();
-      
+
       // Also add challenge to user's gamification profile
       const gamification = await Gamification.findOne({ userId });
       if (gamification) {
@@ -517,7 +517,7 @@ const gamificationController = {
         const existingChallengeIndex = gamification.challenges.findIndex(
           c => c.challengeId === challengeId
         );
-        
+
         if (existingChallengeIndex === -1) {
           gamification.challenges.push({
             challengeId: challenge._id.toString(),
@@ -531,13 +531,13 @@ const gamificationController = {
             claimed: false,
             expiryDate: challenge.endDate
           });
-          
+
           await gamification.save();
         }
       }
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         message: 'Successfully joined the challenge',
         challenge: {
           id: challenge._id,
@@ -554,30 +554,30 @@ const gamificationController = {
       });
     } catch (error) {
       console.error('Error joining challenge:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to join challenge' 
+      res.status(500).json({
+        success: false,
+        error: 'Failed to join challenge'
       });
     }
   },
-  
+
   // Complete a challenge
   async completeChallenge(req, res) {
     try {
       const { challengeId } = req.body;
       const email = req.user.email;
       const userId = req.user._id;
-      
+
       const Challenge = require('../models/Challenge');
       const challenge = await Challenge.findById(challengeId);
-      
+
       if (!challenge) {
-        return res.status(404).json({ 
-          success: false, 
-          error: 'Challenge not found' 
+        return res.status(404).json({
+          success: false,
+          error: 'Challenge not found'
         });
       }
-      
+
       // Check if challenge is still active
       if (!challenge.isActive || (challenge.endDate && new Date(challenge.endDate) < new Date())) {
         return res.status(400).json({
@@ -585,63 +585,63 @@ const gamificationController = {
           error: 'This challenge has expired'
         });
       }
-      
+
       // Find user progress for this challenge
       const userProgressIndex = challenge.userProgress.findIndex(p => p.email === email);
-      
+
       if (userProgressIndex === -1) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'You have not joined this challenge' 
+        return res.status(400).json({
+          success: false,
+          error: 'You have not joined this challenge'
         });
       }
-      
+
       // Check if already completed
-      if (challenge.userProgress[userProgressIndex].status === 'completed' || 
-          challenge.userProgress[userProgressIndex].status === 'claimed') {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'You have already completed this challenge' 
+      if (challenge.userProgress[userProgressIndex].status === 'completed' ||
+        challenge.userProgress[userProgressIndex].status === 'claimed') {
+        return res.status(400).json({
+          success: false,
+          error: 'You have already completed this challenge'
         });
       }
-      
+
       // Mark as completed and award points
       challenge.userProgress[userProgressIndex].completionPercentage = 100;
       challenge.userProgress[userProgressIndex].currentValue = challenge.targetValue;
       challenge.userProgress[userProgressIndex].completedAt = new Date();
       challenge.userProgress[userProgressIndex].status = 'completed';
       challenge.userProgress[userProgressIndex].pointsEarned = challenge.points;
-      
+
       // Update challenge stats
       challenge.usersInProgress = Math.max(0, (challenge.usersInProgress || 1) - 1);
       challenge.usersCompleted = (challenge.usersCompleted || 0) + 1;
-      
+
       await challenge.save();
-      
+
       // Update user gamification stats
       const gamification = await Gamification.findOne({ userId });
-      
+
       if (gamification) {
         // Add points
         gamification.points.total += challenge.points;
         gamification.points.daily += challenge.points;
         gamification.points.weekly += challenge.points;
         gamification.points.monthly += challenge.points;
-        
+
         // Check for level up
         const oldLevel = gamification.level.current;
         const newLevel = calculateLevel(gamification.points.total);
         const leveledUp = newLevel > oldLevel;
-        
+
         if (leveledUp) {
           gamification.level.current = newLevel;
         }
-        
+
         // Find and update or add the challenge in user's challenges
         const userChallengeIndex = gamification.challenges.findIndex(
           c => c.challengeId === challengeId
         );
-        
+
         if (userChallengeIndex >= 0) {
           // Update existing challenge
           gamification.challenges[userChallengeIndex].progress = challenge.targetValue;
@@ -663,12 +663,12 @@ const gamificationController = {
             claimedDate: new Date()
           });
         }
-        
+
         await gamification.save();
-        
+
         // Also update user profile stats
         await updateUserProfileStats(userId, gamification);
-        
+
         res.json({
           success: true,
           challenge: {
@@ -683,16 +683,16 @@ const gamificationController = {
           totalPoints: gamification.points.total
         });
       } else {
-        res.status(404).json({ 
-          success: false, 
-          error: 'Gamification profile not found' 
+        res.status(404).json({
+          success: false,
+          error: 'Gamification profile not found'
         });
       }
     } catch (error) {
       console.error('Error completing challenge:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to complete challenge' 
+      res.status(500).json({
+        success: false,
+        error: 'Failed to complete challenge'
       });
     }
   },
@@ -702,10 +702,10 @@ const gamificationController = {
     try {
       const userId = req.user._id;
       const email = req.user.email;
-      
+
       // Find the user's gamification data
       let gamificationData = await Gamification.findOne({ userId });
-      
+
       // If no gamification data exists, create a new one
       if (!gamificationData) {
         gamificationData = new Gamification({
@@ -739,12 +739,27 @@ const gamificationController = {
         });
         await gamificationData.save();
       }
-      
+
+      // Update streak if not already done today
+      const today = new Date().toDateString();
+      const lastActive = gamificationData.streaks?.lastActiveDate
+        ? new Date(gamificationData.streaks.lastActiveDate).toDateString()
+        : null;
+
+      console.log(`[Streak Debug] Today: ${today}, Last Active: ${lastActive}, Current Streak Before: ${gamificationData.streaks?.current || 0}`);
+
+      if (lastActive !== today) {
+        // Streak hasn't been updated today, update it now
+        updateStreak(gamificationData);
+        console.log(`[Streak Debug] Streak Updated - New Value: ${gamificationData.streaks?.current || 0}`);
+        await gamificationData.save();
+      }
+
       // Calculate next level points
       const nextLevelPoints = Math.floor(100 * Math.pow(gamificationData.level.current + 1, 2));
       const currentLevelPoints = Math.floor(100 * Math.pow(gamificationData.level.current, 2));
       const pointsNeeded = nextLevelPoints - currentLevelPoints;
-      
+
       // Format response
       const stats = {
         level: gamificationData.level.current,
@@ -766,10 +781,33 @@ const gamificationController = {
         },
         badges: countBadgesByRarity(gamificationData.badges)
       };
-      
+
       res.json({ success: true, stats });
     } catch (error) {
       console.error('Error fetching gamification stats:', error);
+      res.status(500).json({ success: false, error: 'Server error' });
+    }
+  },
+
+  async getHeatmapData(req, res) {
+    try {
+      const userId = req.user._id;
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+      const summaries = await ProductivitySummary.find({
+        userId,
+        date: { $gte: sixMonthsAgo.toISOString().slice(0, 10) }
+      }).select('date focusScore').sort({ date: 1 });
+
+      const heatmap = summaries.map(s => ({
+        date: s.date,
+        score: s.focusScore || 0
+      }));
+
+      res.json({ success: true, heatmap });
+    } catch (error) {
+      console.error('Error fetching heatmap data:', error);
       res.status(500).json({ success: false, error: 'Server error' });
     }
   }
@@ -779,10 +817,10 @@ const gamificationController = {
 function generateDailyChallenges() {
   const challenges = [];
   const dailyTemplates = CHALLENGE_TEMPLATES.daily;
-  
+
   // Select 2-3 random daily challenges
   const selectedTemplates = dailyTemplates.sort(() => 0.5 - Math.random()).slice(0, 3);
-  
+
   selectedTemplates.forEach((template, index) => {
     challenges.push({
       challengeId: `daily_${Date.now()}_${index}`,
@@ -797,7 +835,7 @@ function generateDailyChallenges() {
       expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
     });
   });
-  
+
   return challenges;
 }
 
@@ -821,25 +859,39 @@ function checkBadgeEligibility(badgeKey, gamification, usageData) {
 }
 
 function updateStreak(gamification) {
-  const today = new Date().toDateString();
-  const lastActive = gamification.streaks.lastActiveDate 
-    ? new Date(gamification.streaks.lastActiveDate).toDateString()
-    : null;
+  const today = new Date();
+  const todayString = today.toDateString();
   
-  if (lastActive === today) {
-    // Already counted today
+  const lastActiveDate = gamification.streaks?.lastActiveDate 
+    ? new Date(gamification.streaks.lastActiveDate)
+    : null;
+  const lastActiveDateString = lastActiveDate ? lastActiveDate.toDateString() : null;
+
+  console.log(`[updateStreak] Today: ${todayString}, Last Active: ${lastActiveDateString}`);
+
+  if (lastActiveDateString === todayString) {
+    // Already counted today, don't increment
+    console.log('[updateStreak] Already counted today, returning');
     return;
   }
-  
-  if (lastActive === new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()) {
-    // Consecutive day
-    gamification.streaks.current += 1;
-    gamification.streaks.longest = Math.max(gamification.streaks.longest, gamification.streaks.current);
+
+  // Calculate yesterday's date
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayString = yesterday.toDateString();
+
+  if (lastActiveDateString === yesterdayString) {
+    // Consecutive day - increment streak
+    gamification.streaks.current = (gamification.streaks.current || 0) + 1;
+    gamification.streaks.longest = Math.max(gamification.streaks.longest || 0, gamification.streaks.current);
+    console.log(`[updateStreak] Consecutive day! Streak now: ${gamification.streaks.current}`);
   } else {
-    // Streak broken
+    // Streak broken or first time - start new streak at 1
     gamification.streaks.current = 1;
+    gamification.streaks.longest = Math.max(gamification.streaks.longest || 0, 1);
+    console.log(`[updateStreak] New or broken streak! Streak now: 1`);
   }
-  
+
   gamification.streaks.lastActiveDate = new Date();
 }
 
@@ -879,7 +931,7 @@ function countBadgesByRarity(badges) {
     master: 0,
     legendary: 0,
   };
-  
+
   badges.forEach(badge => {
     const rarity = badge.rarity?.toLowerCase() || 'bronze';
     if (counts.hasOwnProperty(rarity)) {
@@ -895,7 +947,7 @@ function countBadgesByRarity(badges) {
       }
     }
   });
-  
+
   return counts;
 }
 
@@ -913,7 +965,7 @@ function getChallengeIcon(category) {
     'monthly': 'Calendar',
     'general': 'Award'
   };
-  
+
   return categoryIcons[category] || 'Trophy';
 }
 
