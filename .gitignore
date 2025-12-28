@@ -125,3 +125,32 @@ mlruns/
 # Electron packaging
 # ==========================================
 /release-builds/
+
+# ==========================================
+# Python virtual environments and large binary artifacts
+# ==========================================
+ai/venv/
+**/venv/
+**/env/
+**/ENV/
+
+# Large archives and build outputs
+focus.zip
+*.zip
+
+# Large shared libraries and compiled binaries (examples)
+**/ai/venv/**/libxgboost.so
+**/ai/venv/**/libnccl.so*
+**/ai/**/site-packages/**/libxgboost.so
+**/ai/**/site-packages/**/libnccl.so*
+
+# Git LFS pointer files (if using LFS track certain patterns)
+*.lfs
+
+# mac/Linux swap and temp
+*.swp
+*.tmp
+
+# keep node and front-end build artifacts ignored (already partly present)
+dist/
+build/
