@@ -154,3 +154,9 @@ focus.zip
 # keep node and front-end build artifacts ignored (already partly present)
 dist/
 build/
+
+# ==========================================
+# Installation build artifacts
+# ==========================================
+install/build/
+*.deb
