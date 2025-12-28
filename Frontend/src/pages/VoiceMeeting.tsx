@@ -130,6 +130,7 @@ export default function MeetingPage() {
     initializeSpeechRecognition();
 
     return () => {
+      // Cleanup: stop everything
       if (recognitionRef.current && isRecognitionActive.current) {
         try {
           recognitionRef.current.stop();
@@ -139,6 +140,11 @@ export default function MeetingPage() {
       }
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+
+      // STOP AI FROM TALKING on unmount
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
       }
     };
   }, []);
@@ -542,8 +548,8 @@ export default function MeetingPage() {
       }
 
       return `Your current focus score is ${productivityData.focusScore}%. ${productivityData.focusTrend
-          ? `This is ${productivityData.focusTrend.percentage}% ${productivityData.focusTrend.direction} compared to last week. `
-          : ''
+        ? `This is ${productivityData.focusTrend.percentage}% ${productivityData.focusTrend.direction} compared to last week. `
+        : ''
         }You've spent ${productivityData.productiveTime} hours on productive activities and ${productivityData.distractionTime} hours on distractions today. Your most productive application is ${productivityData.topProductiveApp}.`;
     }
 
@@ -554,8 +560,8 @@ export default function MeetingPage() {
       }
 
       return `Your main source of distraction is ${productivityData.mostDistractionApp}. You've spent ${productivityData.distractionTime} hours on non-productive activities today. ${parseFloat(productivityData.distractionTime) > 2
-          ? "That's quite significant. Consider using focus mode or website blockers to minimize these distractions."
-          : "You're doing well at managing distractions."
+        ? "That's quite significant. Consider using focus mode or website blockers to minimize these distractions."
+        : "You're doing well at managing distractions."
         }`;
     }
 

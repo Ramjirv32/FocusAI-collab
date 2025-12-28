@@ -322,7 +322,7 @@ const Statistics = () => {
           <Card>
             <CardHeader>
               <CardTitle><Skeleton className="h-6 w-36" /></CardTitle>
-              <CardDescription><Skeleton className="h-4 w-64" /></CardDescription>
+              <CardDescription className="h-4 w-64 bg-muted animate-pulse rounded"></CardDescription>
             </CardHeader>
             <CardContent>
               <Skeleton className="h-64 w-full" />
@@ -535,8 +535,8 @@ const Statistics = () => {
               {statistics?.focusScore !== undefined && (
                 <Badge
                   className={`text-lg ${statistics.focusScore >= 70 ? 'bg-green-100 text-green-800' :
-                      statistics.focusScore >= 50 ? 'bg-amber-100 text-amber-800' :
-                        'bg-red-100 text-red-800'
+                    statistics.focusScore >= 50 ? 'bg-amber-100 text-amber-800' :
+                      'bg-red-100 text-red-800'
                     }`}
                 >
                   {statistics.focusScore}%
@@ -633,9 +633,9 @@ const Statistics = () => {
               <div>
                 <h4 className="font-medium text-sm mb-2">Focus Score Rating</h4>
                 <div className={`p-4 rounded-md mb-4 ${statistics?.focusScore >= 80 ? 'bg-green-50 border border-green-100' :
-                    statistics?.focusScore >= 60 ? 'bg-blue-50 border border-blue-100' :
-                      statistics?.focusScore >= 40 ? 'bg-amber-50 border border-amber-100' :
-                        'bg-red-50 border border-red-100'
+                  statistics?.focusScore >= 60 ? 'bg-blue-50 border border-blue-100' :
+                    statistics?.focusScore >= 40 ? 'bg-amber-50 border border-amber-100' :
+                      'bg-red-50 border border-red-100'
                   }`}>
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">{
@@ -645,9 +645,9 @@ const Statistics = () => {
                             'Needs Improvement'
                     }</h5>
                     <span className={`text-lg font-bold ${statistics?.focusScore >= 80 ? 'text-green-700' :
-                        statistics?.focusScore >= 60 ? 'text-blue-700' :
-                          statistics?.focusScore >= 40 ? 'text-amber-700' :
-                            'text-red-700'
+                      statistics?.focusScore >= 60 ? 'text-blue-700' :
+                        statistics?.focusScore >= 40 ? 'text-amber-700' :
+                          'text-red-700'
                       }`}>{statistics?.focusScore || 0}%</span>
                   </div>
 

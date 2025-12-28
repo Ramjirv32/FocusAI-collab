@@ -11,17 +11,23 @@ def load_config_to_env():
                 config = json.load(f)
             
             
+            # Load AI Configuration
+            if 'AI_PROVIDER' in config:
+                os.environ['AI_PROVIDER'] = config['AI_PROVIDER']
+            
             if 'GROQ_API_KEY' in config and config['GROQ_API_KEY']:
                 os.environ['GROQ_API_KEY'] = config['GROQ_API_KEY']
-                print(f"✅ Loaded GROQ_API_KEY from {CONFIG_PATH}")
-            else:
-                print("⚠️  No GROQ_API_KEY found in config.json")
             
+            if 'OLLAMA_MODEL' in config:
+                os.environ['OLLAMA_MODEL'] = config['OLLAMA_MODEL']
+            
+            if 'OLLAMA_URL' in config:
+                os.environ['OLLAMA_URL'] = config['OLLAMA_URL']
             
             if 'API_BASE_URL' in config:
                 os.environ['BACKEND_URL'] = config['API_BASE_URL']
-                print(f"✅ Loaded BACKEND_URL from config")
             
+            print(f"✅ AI Config loaded: {os.environ.get('AI_PROVIDER', 'groq')} mode")
             return True
         else:
             print(f"⚠️  Config file not found at: {CONFIG_PATH}")

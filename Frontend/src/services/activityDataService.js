@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Configure API endpoints
-const AI_API_URL = 'http://localhost:8000'; // Python AI server
-const MODEL_API_URL = 'http://localhost:8001'; // Model AI Train server
+// Configure API endpoints - FIXED TO CORRECT PORTS
+const AI_API_URL = 'http://localhost:8000'; // Python AI server (DO NOT CHANGE)
+const MODEL_API_URL = 'http://localhost:8000'; // Model AI Train server (DO NOT CHANGE)
 const BACKEND_API_URL = 'http://localhost:5001'; // Your app backend
 
 /**
@@ -42,28 +42,28 @@ const getUserId = () => {
         return user._id || user.id;
       }
     }
-    
+
     // If not found, try from JWT token
     const token = localStorage.getItem('token');
     if (token) {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
-      
+
       const payload = JSON.parse(jsonPayload);
       if (payload && (payload.userId || payload.sub)) {
         return payload.userId || payload.sub;
       }
     }
-    
+
     // Hard-coded test user ID if all else fails - only for development
     // Remove in production!
     if (process.env.NODE_ENV === 'development') {
       return '6885b9202e0e815cf52a94a7';
     }
-    
+
     logError('User ID not found in localStorage or token');
     return null;
   } catch (error) {
@@ -72,8 +72,8 @@ const getUserId = () => {
   }
 };
 
-// Keep track of which server is working
-let activeModelServerUrl = null;
+// Keep track of which server is working - ALWAYS RESET TO ENSURE PORT 8000
+let activeModelServerUrl = AI_API_URL; // Force to use correct port 8000
 
 /**
  * Test connection to the Focus AI backend
@@ -95,7 +95,7 @@ export const testAiServerConnection = async () => {
         logDebug('Cached server no longer responding, trying alternatives');
       }
     }
-    
+
     // Try the main AI_API_URL first
     try {
       const response = await axios.get(`${AI_API_URL}/`);
@@ -149,14 +149,14 @@ export const fetchAppUsageData = async (date = null) => {
     const headers = getAuthHeader();
     const userId = getUserId();
     const formattedDate = date || new Date().toISOString().split('T')[0];
-    
+
     logDebug(`Fetching app usage data for user ${userId} on ${formattedDate}`);
-    
-    const response = await axios.get(`${BACKEND_API_URL}/focus-data`, { 
+
+    const response = await axios.get(`${BACKEND_API_URL}/focus-data`, {
       headers,
       params: { date: formattedDate }
     });
-    
+
     logDebug(`Found ${response.data?.appUsage?.length || 0} app usage records`);
     return response.data;
   } catch (error) {
@@ -174,32 +174,32 @@ export const syncFocusData = async (date = null) => {
     if (!userId) {
       throw new Error('User ID not found. Please log in again.');
     }
-    
+
     logDebug(`Starting focus data sync for user ${userId}`);
-    
+
     // First test the connection
     const connectionTest = await testAiServerConnection();
     if (!connectionTest.status) {
       throw new Error(`Cannot connect to AI server: ${connectionTest.message}`);
     }
-    
+
     const headers = getAuthHeader();
     const formattedDate = date || new Date().toISOString().split('T')[0];
-    
+
     // 1. Get the app usage data from backend
     logDebug('Fetching app usage data from backend...');
-    const appResponse = await axios.get(`${BACKEND_API_URL}/focus-data`, { 
+    const appResponse = await axios.get(`${BACKEND_API_URL}/focus-data`, {
       headers,
       params: { date: formattedDate }
     });
-    
+
     // 2. Get the tab data from backend
     logDebug('Fetching tab data from backend...');
-    const tabResponse = await axios.get(`${BACKEND_API_URL}/tabs`, { 
+    const tabResponse = await axios.get(`${BACKEND_API_URL}/tabs`, {
       headers,
       params: { date: formattedDate }
     });
-    
+
     // 3. Prepare data for the AI model
     const combinedData = {
       userId: userId,
@@ -208,9 +208,9 @@ export const syncFocusData = async (date = null) => {
       tabUsage: tabResponse.data || [],
       currentSession: appResponse.data?.currentSession || []
     };
-    
+
     logDebug(`Sending ${combinedData.appUsage.length} app records and ${combinedData.tabUsage.length} tab records for AI analysis`);
-    
+
     // 4. Send to AI server for processing
     const serverUrl = activeModelServerUrl || MODEL_API_URL;
     const response = await axios.post(
@@ -218,12 +218,12 @@ export const syncFocusData = async (date = null) => {
       combinedData,
       { headers }
     );
-    
+
     logDebug('Focus data sync successful:', response.data);
-    
+
     // 5. Get the updated quick stats
     const statsResponse = await getQuickStats(formattedDate);
-    
+
     return statsResponse;
   } catch (error) {
     logError('Error syncing focus data:', error);
@@ -240,24 +240,24 @@ export const getQuickStats = async (date = null) => {
     if (!userId) {
       throw new Error('User ID not found. Please log in again.');
     }
-    
+
     const headers = getAuthHeader();
     const formattedDate = date || new Date().toISOString().split('T')[0];
-    
+
     logDebug(`Fetching quick stats for user ${userId} on ${formattedDate}`);
-    
+
     // Make the API call
     const serverUrl = activeModelServerUrl || MODEL_API_URL;
     const response = await axios.get(
       `${serverUrl}/user/${userId}/quick-stats`,
-      { 
+      {
         headers,
         params: { date: formattedDate }
       }
     );
-    
+
     logDebug('Quick stats fetched successfully:', response.data);
-    
+
     return {
       ...response.data,
       date: formattedDate,
@@ -265,7 +265,7 @@ export const getQuickStats = async (date = null) => {
     };
   } catch (error) {
     logError('Error getting quick stats:', error);
-    
+
     // Return a default object so UI doesn't crash
     return {
       user_id: getUserId(),
@@ -290,23 +290,23 @@ export const getFocusAnalysis = async (date = null) => {
     if (!userId) {
       throw new Error('User ID not found. Please log in again.');
     }
-    
+
     const headers = getAuthHeader();
     const formattedDate = date || new Date().toISOString().split('T')[0];
-    
+
     logDebug(`Fetching detailed focus analysis for user ${userId} on ${formattedDate}`);
-    
+
     const serverUrl = activeModelServerUrl || MODEL_API_URL;
     const response = await axios.get(
-      `${serverUrl}/user/${userId}/focus-analysis`,
-      { 
+      `${serverUrl}/user/${userId}/productivity-analysis`,
+      {
         headers,
         params: { date: formattedDate }
       }
     );
-    
+
     logDebug('Focus analysis fetched successfully:', response.data);
-    
+
     return {
       ...response.data,
       date: formattedDate,
@@ -314,7 +314,7 @@ export const getFocusAnalysis = async (date = null) => {
     };
   } catch (error) {
     logError('Error getting focus analysis:', error);
-    
+
     // Return a default object so UI doesn't crash
     return {
       user_id: getUserId(),
@@ -338,15 +338,15 @@ export const getConsolidatedFocusData = async (date = null) => {
     if (!userId) {
       throw new Error('User ID not found. Please log in again.');
     }
-    
+
     logDebug(`Fetching consolidated focus data for user ${userId}`);
-    
+
     const formattedDate = date || new Date().toISOString().split('T')[0];
-    
+
     // Run these requests in parallel for better performance
     const [appData, tabData, quickStats, focusAnalysis] = await Promise.all([
       fetchAppUsageData(formattedDate),
-      axios.get(`${BACKEND_API_URL}/tabs`, { 
+      axios.get(`${BACKEND_API_URL}/tabs`, {
         headers: getAuthHeader(),
         params: { date: formattedDate }
       }).then(res => res.data).catch(err => {
@@ -356,20 +356,20 @@ export const getConsolidatedFocusData = async (date = null) => {
       getQuickStats(formattedDate),
       getFocusAnalysis(formattedDate)
     ]);
-    
+
     // Check if we need to sync data with AI server
     // This happens if we have app/tab data but no analysis results
     const needsSync = (
-      (appData?.appUsage?.length > 0 || tabData?.length > 0) && 
+      (appData?.appUsage?.length > 0 || tabData?.length > 0) &&
       (!quickStats?.quick_stats?.productivity_score || quickStats.quick_stats.productivity_score === 0)
     );
-    
+
     let syncedData = null;
     if (needsSync) {
       logDebug('Data needs syncing with AI server, triggering sync...');
       syncedData = await syncFocusData(formattedDate);
     }
-    
+
     const consolidatedData = {
       userId,
       date: formattedDate,
@@ -379,14 +379,14 @@ export const getConsolidatedFocusData = async (date = null) => {
       focusAnalysis: focusAnalysis,
       lastUpdated: new Date().toISOString()
     };
-    
+
     logDebug('Consolidated focus data ready', {
       appRecords: consolidatedData.appUsage.length,
       tabRecords: consolidatedData.tabUsage.length,
       hasQuickStats: !!consolidatedData.quickStats,
       hasFocusAnalysis: !!consolidatedData.focusAnalysis
     });
-    
+
     return consolidatedData;
   } catch (error) {
     logError('Error getting consolidated focus data:', error);

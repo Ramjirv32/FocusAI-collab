@@ -727,7 +727,7 @@ const gamificationController = {
           streaks: {
             current: 0,
             longest: 0,
-            lastActiveDate: new Date()
+            lastActiveDate: null
           },
           statistics: {
             totalFocusTime: 0,
@@ -748,8 +748,8 @@ const gamificationController = {
 
       console.log(`[Streak Debug] Today: ${today}, Last Active: ${lastActive}, Current Streak Before: ${gamificationData.streaks?.current || 0}`);
 
-      if (lastActive !== today) {
-        // Streak hasn't been updated today, update it now
+      if (lastActive !== today || (gamificationData.streaks?.current === 0)) {
+        // Streak hasn't been updated today or is still 0, update it now
         updateStreak(gamificationData);
         console.log(`[Streak Debug] Streak Updated - New Value: ${gamificationData.streaks?.current || 0}`);
         await gamificationData.save();
@@ -786,6 +786,120 @@ const gamificationController = {
     } catch (error) {
       console.error('Error fetching gamification stats:', error);
       res.status(500).json({ success: false, error: 'Server error' });
+    }
+  },
+
+
+  // Claim streak badge
+  async claimStreakBadge(req, res) {
+    try {
+      const { streakDays } = req.body;
+      const userId = req.user._id;
+
+      // Validate streak milestone
+      const validMilestones = [7, 30, 50, 100, 150, 200, 250, 365];
+      if (!validMilestones.includes(streakDays)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid streak milestone'
+        });
+      }
+
+      const gamification = await Gamification.findOne({ userId });
+      if (!gamification) {
+        return res.status(404).json({
+          success: false,
+          error: 'Gamification data not found'
+        });
+      }
+
+      // Check if user has reached this streak
+      if (gamification.streaks.current < streakDays) {
+        return res.status(400).json({
+          success: false,
+          error: `You need ${streakDays} consecutive days to claim this badge`
+        });
+      }
+
+      // Check if badge already claimed
+      const badgeId = `streak_${streakDays}`;
+      const alreadyClaimed = gamification.badges.some(b => b.badgeId === badgeId);
+      if (alreadyClaimed) {
+        return res.status(400).json({
+          success: false,
+          error: 'Badge already claimed'
+        });
+      }
+
+      // Calculate average focus score for the streak period
+      const streakStartDate = new Date();
+      streakStartDate.setDate(streakStartDate.getDate() - streakDays);
+
+      const summaries = await ProductivitySummary.find({
+        userId,
+        date: { $gte: streakStartDate.toISOString().slice(0, 10) }
+      }).select('focusScore');
+
+      const avgFocusScore = summaries.length > 0
+        ? Math.round(summaries.reduce((sum, s) => sum + (s.focusScore || 0), 0) / summaries.length)
+        : 0;
+
+      // Determine badge rarity based on streak length
+      let rarity = 'bronze';
+      let points = 100;
+      if (streakDays >= 365) { rarity = 'legendary'; points = 1000; }
+      else if (streakDays >= 200) { rarity = 'diamond'; points = 750; }
+      else if (streakDays >= 100) { rarity = 'platinum'; points = 500; }
+      else if (streakDays >= 50) { rarity = 'gold'; points = 300; }
+      else if (streakDays >= 30) { rarity = 'silver'; points = 200; }
+
+      const badgeNames = {
+        7: '1 Week Streak',
+        30: '1 Month Streak',
+        50: '50 Days Streak',
+        100: '100 Days Streak',
+        150: '150 Days Streak',
+        200: '200 Days Streak',
+        250: '250 Days Streak',
+        365: '365 Days Streak'
+      };
+
+      // Add badge to user's collection
+      const newBadge = {
+        badgeId,
+        name: badgeNames[streakDays],
+        description: `${streakDays} consecutive days of focus`,
+        icon: 'Flame',
+        rarity,
+        category: 'streak',
+        earnedDate: new Date(),
+        points,
+        focusScore: avgFocusScore
+      };
+
+      gamification.badges.push(newBadge);
+
+      // Award points
+      gamification.points.total += points;
+      gamification.points.daily += points;
+      gamification.points.weekly += points;
+      gamification.points.monthly += points;
+
+      await gamification.save();
+
+      res.json({
+        success: true,
+        badge: newBadge,
+        pointsAwarded: points,
+        totalPoints: gamification.points.total
+      });
+
+    } catch (error) {
+      console.error('Error claiming streak badge:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to claim badge'
+      });
     }
   },
 
@@ -861,16 +975,16 @@ function checkBadgeEligibility(badgeKey, gamification, usageData) {
 function updateStreak(gamification) {
   const today = new Date();
   const todayString = today.toDateString();
-  
-  const lastActiveDate = gamification.streaks?.lastActiveDate 
+
+  const lastActiveDate = gamification.streaks?.lastActiveDate
     ? new Date(gamification.streaks.lastActiveDate)
     : null;
   const lastActiveDateString = lastActiveDate ? lastActiveDate.toDateString() : null;
 
   console.log(`[updateStreak] Today: ${todayString}, Last Active: ${lastActiveDateString}`);
 
-  if (lastActiveDateString === todayString) {
-    // Already counted today, don't increment
+  if (lastActiveDateString === todayString && (gamification.streaks.current > 0)) {
+    // Already counted today and streak is active, don't increment
     console.log('[updateStreak] Already counted today, returning');
     return;
   }

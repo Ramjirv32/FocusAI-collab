@@ -13,6 +13,7 @@ const gamificationController = require('../controller/gamificationController');
  */
 router.get('/stats', auth, gamificationController.getStats);
 router.get('/data', auth, gamificationController.getGamificationData);
+router.post('/streak/claim', auth, gamificationController.claimStreakBadge);
 
 /**
  * @route   GET /api/gamification/achievements

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, TrendingUp, Clock, Target, Zap, Plus, Trash2, History, ArrowLeft } from 'lucide-react';
+import { Send, Bot, User, Loader2, TrendingUp, Clock, Target, Zap, Plus, Trash2, History, ArrowLeft, Square } from 'lucide-react';
 import { chatService } from '../services/chatService';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import { useToast } from '@/components/ui/use-toast';
@@ -50,6 +50,7 @@ const ChatAssistant: React.FC = () => {
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typewriterIntervals = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -86,7 +87,7 @@ const ChatAssistant: React.FC = () => {
   const formatMinutesToHoursAndMinutes = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${mins}m`;
     } else {
@@ -98,37 +99,37 @@ const ChatAssistant: React.FC = () => {
   const startTypewriterEffect = (messageId: string, fullContent: string) => {
     let currentIndex = 0;
     const typingSpeed = 15; // Milliseconds per character (faster speed)
-    
+
     const typewriterInterval = setInterval(() => {
       currentIndex++;
       const displayedText = fullContent.substring(0, currentIndex);
-      
-      setMessages(prevMessages => 
-        prevMessages.map(msg => 
-          msg.id === messageId 
+
+      setMessages(prevMessages =>
+        prevMessages.map(msg =>
+          msg.id === messageId
             ? { ...msg, displayedContent: displayedText, isTyping: currentIndex < fullContent.length }
             : msg
         )
       );
-      
+
       // Auto scroll during typing
       scrollToBottom();
-      
+
       if (currentIndex >= fullContent.length) {
         clearInterval(typewriterInterval);
         typewriterIntervals.current.delete(messageId);
-        
+
         // Mark typing as complete
-        setMessages(prevMessages => 
-          prevMessages.map(msg => 
-            msg.id === messageId 
+        setMessages(prevMessages =>
+          prevMessages.map(msg =>
+            msg.id === messageId
               ? { ...msg, isTyping: false, displayedContent: fullContent }
               : msg
           )
         );
       }
     }, typingSpeed);
-    
+
     typewriterIntervals.current.set(messageId, typewriterInterval);
   };
 
@@ -136,8 +137,36 @@ const ChatAssistant: React.FC = () => {
   useEffect(() => {
     return () => {
       typewriterIntervals.current.forEach(interval => clearInterval(interval));
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
+
+  const stopResponse = () => {
+    console.log('🛑 Stopping AI response...');
+
+    // 1. Abort network request if pending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
+    // 2. Stop all typewriter effects
+    typewriterIntervals.current.forEach(interval => clearInterval(interval));
+    typewriterIntervals.current.clear();
+
+    // 3. Mark all messages as not typing
+    setMessages(prev => prev.map(msg => ({ ...msg, isTyping: false })));
+
+    // 4. Force stop loading state
+    setIsLoading(false);
+
+    toast({
+      title: 'Response stopped',
+      description: 'AI generation was interrupted.',
+    });
+  };
+
+  const isAnyMessageTyping = messages.some(msg => msg.isTyping);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -155,7 +184,7 @@ const ChatAssistant: React.FC = () => {
 
     try {
       console.log('🚀 Sending message to chat service:', inputMessage);
-      
+
       // Fetch fresh productivity data to send with the message
       let userData = null;
       try {
@@ -169,28 +198,34 @@ const ChatAssistant: React.FC = () => {
         console.error('Could not fetch user productivity data:', dataError);
         // Continue without user data
       }
-      
-      // Send message with user data
-      const response = await chatService.sendMessage(inputMessage, currentHistoryId, userData);
-      
+
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
+
+      // Send message with user data and signal
+      const response = await chatService.sendMessage(inputMessage, currentHistoryId, userData, abortControllerRef.current.signal);
+
+      // Clear controller after success
+      abortControllerRef.current = null;
+
       console.log('📨 Received response from AI:', response);
-      
+
       if (response.success) {
         // Log successful response details
         console.log('✅ Response successful, content length:', response.response.length);
         console.log('🔄 Has productivity data:', response.hasProductivityData ? 'Yes' : 'No');
-        
+
         if (response.historicalDataPoints) {
           console.log('📈 Historical data points available:', response.historicalDataPoints);
         }
-        
+
         // Update current history ID if this is a new conversation
         if (response.historyId && !currentHistoryId) {
           setCurrentHistoryId(response.historyId);
           console.log('📝 Created new chat history with ID:', response.historyId);
           loadChatHistories(); // Refresh the chat history list
         }
-        
+
         const aiMessageId = (Date.now() + 1).toString();
         const aiMessage: Message = {
           id: aiMessageId,
@@ -208,13 +243,13 @@ const ChatAssistant: React.FC = () => {
 
         // Add the message immediately with empty displayed content
         setMessages(prev => [...prev, aiMessage]);
-        
+
         // Start typewriter effect
         setTimeout(() => {
           console.log('⌨️ Starting typewriter effect for message:', aiMessageId);
           startTypewriterEffect(aiMessageId, response.response);
         }, 100);
-        
+
         // Update productivity stats if available
         if (response.hasProductivityData) {
           console.log('📊 Updating productivity stats:', {
@@ -223,7 +258,7 @@ const ChatAssistant: React.FC = () => {
             uniqueApps: response.uniqueApps,
             streak: response.streak
           });
-          
+
           setUserProductivityStats({
             focusScore: response.focusScore,
             productiveHours: response.productiveHours,
@@ -234,7 +269,7 @@ const ChatAssistant: React.FC = () => {
       } else {
         // Handle error response
         console.error('❌ Error in AI response:', response.error || 'Unknown error');
-        
+
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           content: response.response || "Sorry, I'm having trouble connecting right now. Please try again.",
@@ -242,7 +277,7 @@ const ChatAssistant: React.FC = () => {
           timestamp: new Date()
         };
         setMessages(prev => [...prev, errorMessage]);
-        
+
         toast({
           title: 'Error',
           description: response.error || 'Failed to get response',
@@ -250,8 +285,12 @@ const ChatAssistant: React.FC = () => {
         });
       }
     } catch (error) {
+      if (error.name === 'AbortError' || error.message === 'canceled') {
+        console.log('🚫 API request was aborted by user');
+        return; // Don't show error if user cancelled
+      }
       console.error('❌ Failed to send message:', error);
-      
+
       // Add error message to chat
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -260,7 +299,7 @@ const ChatAssistant: React.FC = () => {
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
-      
+
       toast({
         title: 'Connection error',
         description: error.message || 'Failed to send message',
@@ -288,7 +327,7 @@ const ChatAssistant: React.FC = () => {
     try {
       // Create a new chat history
       await chatService.createChatHistory();
-      
+
       // Reset current state
       setMessages([{
         id: '1',
@@ -297,7 +336,7 @@ const ChatAssistant: React.FC = () => {
         timestamp: new Date()
       }]);
       setCurrentHistoryId(null);
-      
+
       // Refresh chat histories
       await loadChatHistories();
     } catch (error) {
@@ -313,14 +352,14 @@ const ChatAssistant: React.FC = () => {
   // Update the loadChatHistory function
   const loadChatHistory = async (historyId: string) => {
     if (loadingHistoryId) return;
-    
+
     try {
       setLoadingHistoryId(historyId);
       const history = await chatService.getChatHistoryById(historyId);
-      
+
       if (history && history.messages && history.messages.length > 0) {
         console.log('📜 Loading chat history with messages:', history.messages);
-        
+
         // Format the messages for display
         const formattedMessages: Message[] = history.messages.map((msg: any) => ({
           id: msg._id || Date.now().toString() + Math.random().toString(),
@@ -334,15 +373,15 @@ const ChatAssistant: React.FC = () => {
           streak: msg.productivityData?.streak,
           isTyping: false
         }));
-        
+
         setMessages(formattedMessages);
         setCurrentHistoryId(historyId);
-        
+
         // Set productivity stats if available in the last AI message
         const lastAiMessage = [...history.messages]
           .reverse()
           .find((msg: any) => !msg.isUser && msg.productivityData?.hasProductivityData);
-          
+
         if (lastAiMessage && lastAiMessage.productivityData) {
           console.log('📊 Setting productivity stats from history:', lastAiMessage.productivityData);
           setUserProductivityStats({
@@ -355,12 +394,12 @@ const ChatAssistant: React.FC = () => {
           // Reset productivity stats if none available
           setUserProductivityStats(null);
         }
-        
+
         // If on mobile, close sidebar after selection
         if (window.innerWidth < 768) {
           setShowSidebar(false);
         }
-        
+
         // Notify user
         toast({
           title: 'Chat history loaded',
@@ -389,7 +428,7 @@ const ChatAssistant: React.FC = () => {
   const deleteChatHistory = async (historyId: string) => {
     try {
       await chatService.deleteChatHistory(historyId);
-      
+
       // If we deleted the current history, reset state
       if (historyId === currentHistoryId) {
         setMessages([{
@@ -400,10 +439,10 @@ const ChatAssistant: React.FC = () => {
         }]);
         setCurrentHistoryId(null);
       }
-      
+
       // Refresh the histories list
       await loadChatHistories();
-      
+
       toast({
         title: 'Success',
         description: 'Chat history deleted',
@@ -422,10 +461,9 @@ const ChatAssistant: React.FC = () => {
     <DashboardLayout>
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Chat History Sidebar */}
-        <div 
-          className={`bg-gray-50 border-r border-gray-200 transition-all duration-300 overflow-hidden ${
-            showSidebar ? 'w-72' : 'w-0'
-          } md:relative fixed left-0 top-0 h-full z-20`}
+        <div
+          className={`bg-gray-50 border-r border-gray-200 transition-all duration-300 overflow-hidden ${showSidebar ? 'w-72' : 'w-0'
+            } md:relative fixed left-0 top-0 h-full z-20`}
         >
           <div className="flex flex-col h-full">
             <div className="p-4 border-b border-gray-200">
@@ -440,7 +478,7 @@ const ChatAssistant: React.FC = () => {
                 <span>New Chat</span>
               </Button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-2">
               {isLoadingHistories ? (
                 <div className="flex items-center justify-center h-20">
@@ -453,11 +491,10 @@ const ChatAssistant: React.FC = () => {
               ) : (
                 <div className="space-y-1">
                   {chatHistories.map((history) => (
-                    <div 
+                    <div
                       key={history.id}
-                      className={`p-2 rounded-md hover:bg-gray-100 cursor-pointer flex justify-between items-start group ${
-                        currentHistoryId === history.id ? 'bg-blue-50 border border-blue-100' : ''
-                      }`}
+                      className={`p-2 rounded-md hover:bg-gray-100 cursor-pointer flex justify-between items-start group ${currentHistoryId === history.id ? 'bg-blue-50 border border-blue-100' : ''
+                        }`}
                       onClick={() => loadChatHistory(history.id)}
                     >
                       <div className="flex-1 min-w-0">
@@ -466,11 +503,11 @@ const ChatAssistant: React.FC = () => {
                           {formatDistanceToNow(new Date(history.updatedAt), { addSuffix: true })}
                         </p>
                       </div>
-                      
+
                       {loadingHistoryId === history.id ? (
                         <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
                       ) : (
-                        <button 
+                        <button
                           className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -495,16 +532,16 @@ const ChatAssistant: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {/* Mobile sidebar toggle */}
-                <button 
+                <button
                   className="md:hidden p-1.5 rounded hover:bg-gray-100"
                   onClick={() => setShowSidebar(!showSidebar)}
                 >
-                  {showSidebar ? 
-                    <ArrowLeft className="h-5 w-5" /> : 
+                  {showSidebar ?
+                    <ArrowLeft className="h-5 w-5" /> :
                     <History className="h-5 w-5" />
                   }
                 </button>
-                
+
                 <div className="flex items-center gap-2">
                   <Bot className="w-7 h-7 text-blue-600" />
                   <div>
@@ -513,7 +550,7 @@ const ChatAssistant: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* New Chat Button */}
               <Button
                 variant="ghost"
@@ -525,7 +562,7 @@ const ChatAssistant: React.FC = () => {
                 <span>New</span>
               </Button>
             </div>
-            
+
             {/* Productivity Stats Indicator */}
             {userProductivityStats && (
               <div className="mt-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-lg shadow-sm">
@@ -561,21 +598,19 @@ const ChatAssistant: React.FC = () => {
                 className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`flex items-start space-x-2 max-w-2xl ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    message.isUser 
-                      ? 'bg-blue-600 text-white' 
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.isUser
+                      ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-600'
-                  }`}>
+                    }`}>
                     {message.isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                   </div>
-                  <div className={`rounded-lg p-3 shadow-sm ${
-                    message.isUser 
-                      ? 'bg-blue-600 text-white' 
+                  <div className={`rounded-lg p-3 shadow-sm ${message.isUser
+                      ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-900 border border-gray-100'
-                  }`}>
+                    }`}>
                     <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.isUser 
-                        ? message.content 
+                      {message.isUser
+                        ? message.content
                         : (message.displayedContent !== undefined ? message.displayedContent : message.content)
                       }
                       {/* Blinking cursor for typing effect */}
@@ -598,7 +633,7 @@ const ChatAssistant: React.FC = () => {
                 </div>
               </div>
             ))}
-            
+
             {isLoading && (
               <div className="flex justify-start">
                 <div className="flex items-center space-x-2">
@@ -612,7 +647,7 @@ const ChatAssistant: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -632,40 +667,41 @@ const ChatAssistant: React.FC = () => {
                 />
               </div>
               <button
-                onClick={sendMessage}
-                disabled={!inputMessage.trim() || isLoading}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200 shadow-sm"
+                onClick={(isLoading || isAnyMessageTyping) ? stopResponse : sendMessage}
+                disabled={(!inputMessage.trim() && !isLoading && !isAnyMessageTyping)}
+                className={`${(isLoading || isAnyMessageTyping) ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200 shadow-sm`}
                 style={{ minHeight: '44px', minWidth: '44px' }}
+                title={(isLoading || isAnyMessageTyping) ? "Stop Response" : "Send Message"}
               >
-                <Send className="w-4 h-4" />
+                {(isLoading || isAnyMessageTyping) ? <Square className="w-4 h-4" /> : <Send className="w-4 h-4" />}
               </button>
             </div>
-            
+
             {/* Quick Questions */}
             <div className="max-w-4xl mx-auto mt-3">
               <div className="flex flex-wrap gap-2 justify-center">
-                <button 
+                <button
                   onClick={() => handleQuickQuestion("What's my focus score today?")}
                   className="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-700 border border-blue-200"
                   disabled={isLoading}
                 >
                   📊 What's my focus score?
                 </button>
-                <button 
+                <button
                   onClick={() => handleQuickQuestion("Which apps do I use most?")}
                   className="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-700 border border-blue-200"
                   disabled={isLoading}
                 >
                   🎯 Which apps do I use most?
                 </button>
-                <button 
+                <button
                   onClick={() => handleQuickQuestion("How can I improve my productivity?")}
                   className="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-700 border border-blue-200"
                   disabled={isLoading}
                 >
                   ⚡ How can I improve?
                 </button>
-                <button 
+                <button
                   onClick={() => handleQuickQuestion("What are my distraction patterns?")}
                   className="text-xs px-3 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full text-blue-700 border border-blue-200"
                   disabled={isLoading}

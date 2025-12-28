@@ -11,7 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import DiagnosticInfo from '@/components/DiagnosticInfo';
 import UserMenu from './UserMenu';
-import ApiKeyManager from '@/components/ApiKeyManager';
+import AIModelManager from '@/components/AIModelManager';
 import { useNavigate } from 'react-router-dom';
 
 const Header = ({ toggleSidebar, isMobile }) => {
@@ -138,16 +138,16 @@ const Header = ({ toggleSidebar, isMobile }) => {
           </Dialog>
 
           {/* Notifications */}
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => navigate('/notifications')}
           >
             <BellRing className="h-5 w-5" />
           </Button>
 
-          {/* API Key Manager */}
-          <ApiKeyManager />
+          {/* AI Model Settings */}
+          <AIModelManager />
 
           {/* User Profile Menu */}
           <UserMenu />

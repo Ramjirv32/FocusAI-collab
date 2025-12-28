@@ -21,12 +21,11 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
 }) => {
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
-    date.setFullYear(date.getFullYear() - 1);
-    return date;
+    return new Date(date.getFullYear(), 0, 1);
   });
 
   const getDayOfWeek = (date: Date) => date.getDay();
-  
+
   const getWeekNumber = (date: Date) => {
     const firstDay = new Date(date.getFullYear(), 0, 1);
     const pastDaysOfYear = (date.getTime() - firstDay.getTime()) / 86400000;
@@ -142,9 +141,8 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
               {weeks.map((week, weekIndex) => (
                 <div
                   key={`month-${weekIndex}`}
-                  className={`text-[10px] text-muted-foreground ${
-                    monthStarts[weekIndex] !== undefined ? 'w-12' : 'w-4'
-                  }`}
+                  className={`text-[10px] text-muted-foreground ${monthStarts[weekIndex] !== undefined ? 'w-12' : 'w-4'
+                    }`}
                 >
                   {monthStarts[weekIndex] !== undefined
                     ? monthLabels[monthStarts[weekIndex]]
@@ -182,7 +180,7 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
                         const dateStr = date.toISOString().slice(0, 10);
                         const today = new Date().toISOString().slice(0, 10);
                         const isToday = dateStr === today;
-                        
+
                         // Format tooltip as "Dec 28" instead of full date
                         const monthName = date.toLocaleString('en-US', { month: 'short' });
                         const day = date.getDate();
@@ -191,9 +189,8 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
                         return (
                           <div
                             key={dateStr}
-                            className={`h-4 w-4 rounded-sm transition-all duration-200 cursor-help hover:ring-2 hover:ring-emerald-500 hover:scale-125 ${colorClass} ${
-                              isToday ? 'ring-2 ring-yellow-400 dark:ring-yellow-300 shadow-md' : ''
-                            }`}
+                            className={`h-4 w-4 rounded-sm transition-all duration-200 cursor-help hover:ring-2 hover:ring-emerald-500 hover:scale-125 ${colorClass} ${isToday ? 'ring-2 ring-yellow-400 dark:ring-yellow-300 shadow-md' : ''
+                              }`}
                             title={tooltipText}
                           />
                         );

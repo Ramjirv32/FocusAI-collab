@@ -865,14 +865,21 @@ const Gamification = () => {
         )}
 
         {/* LeetCode-Style Heatmap Component */}
-        <LeetCodeStyleHeatmap 
+        <LeetCodeStyleHeatmap
           data={heatmapData}
           title="Focus Activity Heatmap"
           description="Your 1-year contribution graph - Track your daily focus streaks"
         />
 
         {/* Streak Achievements Component */}
-        <StreakAchievements currentStreak={stats?.streak.current || 0} />
+        <StreakAchievements
+          currentStreak={stats?.streak.current || 0}
+          claimedBadges={achievements
+            .filter(a => a.category === 'streak')
+            .map(a => a.id)
+          }
+          onBadgeClaimed={fetchGamificationData}
+        />
       </div>
     </DashboardLayout>
   );

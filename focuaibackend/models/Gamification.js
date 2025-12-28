@@ -22,7 +22,7 @@ const GamificationSchema = new mongoose.Schema({
   streaks: {
     current: { type: Number, default: 0 },
     longest: { type: Number, default: 0 },
-    lastActiveDate: { type: Date, default: Date.now }
+    lastActiveDate: { type: Date, default: null }
   },
   badges: [
     {
@@ -37,7 +37,8 @@ const GamificationSchema = new mongoose.Schema({
         default: false
       },
       earnedDate: Date,
-      points: Number
+      points: Number,
+      focusScore: Number
     }
   ],
   challenges: [

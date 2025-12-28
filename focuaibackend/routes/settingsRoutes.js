@@ -23,6 +23,165 @@ const FocusSession = require('../models/FocusSession');
 const FocusResult = require('../models/FocusResult');
 
 // Get current Groq API key
+// Get current AI configuration
+router.get('/ai-config', auth, async (req, res) => {
+  try {
+    let config = {};
+    try {
+      const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+      config = JSON.parse(configData);
+    } catch (error) {
+      // Fallback to environment variables
+    }
+
+    res.json({
+      provider: config.AI_PROVIDER || process.env.AI_PROVIDER || 'groq',
+      groqKey: config.GROQ_API_KEY || process.env.GROQ_API_KEY || '',
+      ollamaModel: config.OLLAMA_MODEL || process.env.OLLAMA_MODEL || 'llama3:latest',
+      ollamaUrl: config.OLLAMA_URL || process.env.OLLAMA_URL || 'http://localhost:11434'
+    });
+  } catch (error) {
+    console.error('Error fetching AI config:', error);
+    res.status(500).json({ error: 'Failed to fetch AI configuration' });
+  }
+});
+
+// Update AI configuration
+router.put('/ai-config', auth, async (req, res) => {
+  try {
+    const { provider, groqKey, ollamaModel, ollamaUrl } = req.body;
+
+    // Ensure config directory exists
+    const configDir = path.dirname(CONFIG_PATH);
+    try {
+      await fs.access(configDir);
+    } catch {
+      await fs.mkdir(configDir, { recursive: true });
+    }
+
+    // Read existing config or create new one
+    let config = {};
+    try {
+      const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+      config = JSON.parse(configData);
+    } catch (error) { }
+
+    // Update fields if provided
+    if (provider) config.AI_PROVIDER = provider;
+    if (groqKey) {
+      config.GROQ_API_KEY = groqKey;
+      process.env.GROQ_API_KEY = groqKey;
+    }
+    if (ollamaModel) config.OLLAMA_MODEL = ollamaModel;
+    if (ollamaUrl) config.OLLAMA_URL = ollamaUrl;
+
+    // Write config file
+    await fs.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
+
+    // Update .env files
+    const envFiles = [
+      path.join(__dirname, '../.env'),
+      path.join(__dirname, '../../Frontend/.env'),
+      path.join(__dirname, '../../ai/.env')
+    ];
+
+    const updates = {
+      AI_PROVIDER: config.AI_PROVIDER,
+      GROQ_API_KEY: config.GROQ_API_KEY,
+      OLLAMA_MODEL: config.OLLAMA_MODEL,
+      OLLAMA_URL: config.OLLAMA_URL
+    };
+
+    for (const envFile of envFiles) {
+      try {
+        let envContent = '';
+        try {
+          envContent = await fs.readFile(envFile, 'utf8');
+        } catch { }
+
+        const lines = envContent.split('\n');
+
+        for (const [key, value] of Object.entries(updates)) {
+          if (!value) continue;
+
+          let found = false;
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith(`${key}=`)) {
+              lines[i] = `${key}=${value}`;
+              found = true;
+              break;
+            }
+            if (envFile.includes('Frontend') && lines[i].startsWith(`VITE_${key}=`)) {
+              lines[i] = `VITE_${key}=${value}`;
+            }
+          }
+          if (!found) {
+            lines.push(`${key}=${value}`);
+            if (envFile.includes('Frontend')) {
+              lines.push(`VITE_${key}=${value}`);
+            }
+          }
+        }
+
+        await fs.writeFile(envFile, lines.join('\n'), 'utf8');
+      } catch (error) {
+        console.warn(`Warning: Could not update ${envFile}:`, error.message);
+      }
+    }
+
+    // Attempt automatic restart based on platform
+    const { exec } = require('child_process');
+    const util = require('util');
+    const execPromise = util.promisify(exec);
+    const platform = os.platform();
+    let autoRestarted = false;
+    let message = 'AI configuration updated!';
+
+    if (platform === 'win32') {
+      try {
+        await execPromise('taskkill /F /IM node.exe /T').catch(() => { });
+        await execPromise('taskkill /F /IM python.exe /T').catch(() => { });
+
+        const backendPath = path.join(__dirname, '..');
+        const aiPath = path.join(__dirname, '../../ai');
+
+        exec(`cd "${backendPath}" && start /B node server.js`, (err) => {
+          if (err) console.error('Restart failed:', err);
+        });
+
+        autoRestarted = true;
+        message += ' Services restarting automatically.';
+      } catch (e) {
+        message += ' Please restart services manually.';
+      }
+    } else {
+      message += ' Please restart services manually to apply changes.';
+    }
+
+    res.json({
+      success: true,
+      message,
+      autoRestarted
+    });
+
+  } catch (error) {
+    console.error('Error updating AI config:', error);
+    res.status(500).json({ error: 'Failed to update AI configuration' });
+  }
+});
+
+// List available Ollama models
+router.get('/ollama-models', auth, async (req, res) => {
+  try {
+    const aiProvider = require('../utils/aiProvider');
+    const models = await aiProvider.getAvailableOllamaModels();
+    res.json({ success: true, models });
+  } catch (error) {
+    console.error('Error listing Ollama models:', error);
+    res.status(500).json({ error: 'Failed to fetch Ollama models' });
+  }
+});
+
 router.get('/groq-api-key', auth, async (req, res) => {
   try {
     // Try to read from config file

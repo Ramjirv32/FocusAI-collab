@@ -252,35 +252,169 @@ def predict_with_xgboost(app_name, tab_name, duration):
         return predict_with_rules(app_name, tab_name, duration)
 
 def predict_with_rules(app_name, tab_name, duration):
-    productive_apps = ["Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", 
-                      "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs", "Git", "Docker", "Cursor",
-                      "GitHub", "GitLab", "Notion", "Asana", "Jira", "Trello", "Antigravity", "FocusAI", 
-                      "focuai", "visual studio", "windsurf", "sublime", "android studio", "xcode"]
-    distraction_apps = ["Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", 
-                       "TikTok", "Reddit", "Gaming", "Steam", "Twitch", "hulu", "disney", "prime video"]
+    productive_apps = [
+        "Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", 
+        "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs", "Git", "Docker", "Cursor",
+        "GitHub", "GitLab", "Notion", "Asana", "Jira", "Trello", "Antigravity", "FocusAI", 
+        "focuai", "visual studio", "windsurf", "sublime", "android studio", "xcode",
+        "chatgpt", "openai", "claude", "gemini", "copilot", "perplexity", "cohere",
+        "huggingface", "midjourney", "leonardo", "runwayml", "synthesia",
+        "Zoom", "Teams", "Discord", "Skype", "Telegram", "Signal", "Confluence",
+        "Linear", "Monday", "Basecamp", "ClickUp", "Todoist", "Evernote",
+        "OneNote", "GoogleDrive", "Dropbox", "OneDrive", "Box",
+        "googledocs", "google docs", "google sheets", "google forms", "google slides",
+        "docs", "documentation", "stackoverflow", "devdocs", "mdn", "w3schools",
+        "educative", "coursera", "udemy", "pluralsight", "datacamp", "kaggle",
+        "medium", "dev.to", "hashnode", "reddit", "quora",
+        "figma", "sketch", "adobe", "photoshop", "illustrator", "xd", "procreate",
+        "blender", "davinci", "premiere", "affinity", "canva", "webflow",
+        "mongodb", "postgresql", "mysql", "redis", "firebase", "dynamodb",
+        "elasticsearch", "grafana", "datadog", "sentry", "newrelic",
+        "jenkins", "gitlab", "github", "bitbucket", "azure", "aws", "gcp",
+        "gmail", "outlook", "slack", "teams", "discord", "zoom", "miro", "figma",
+        "excalidraw", "lucidchart", "draw.io", "whimsical",
+        "sheets", "excel", "word", "powerpoint", "keynote", "pages", "numbers",
+        "obsidian", "roam", "notion", "logseq", "foam", "dendron",
+        "jira", "confluence", "trello", "monday", "asana", "linear", "height",
+        "vercel", "netlify", "heroku", "railway", "fly", "render",
+        "insomnia", "thunderclient", "restclient", "paw", "httpie",
+        "swagger", "openapi", "storybook", "chromatic",
+        "jest", "pytest", "unittest", "rspec", "mocha", "jasmine",
+        "cypress", "selenium", "puppeteer", "playwright",
+        "lint", "prettier", "eslint", "black", "flake8", "mypy",
+        "kubernetes", "kubectl", "k8s", "docker-compose", "podman", "helm",
+        "terraform", "ansible", "vagrant", "cloudformation", "bicep",
+        "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy", "scipy",
+        "jupyter", "jupyterlab", "anaconda", "conda", "pipenv", "poetry",
+        "pytorch", "keras", "fastapi", "flask", "django", "spring", "springboot",
+        "node", "npm", "yarn", "pnpm", "webpack", "vite", "parcel", "gulp",
+        "react", "vue", "angular", "svelte", "nextjs", "nuxt", "remix", "astro",
+        "graphql", "rest", "api", "postman", "insomnia", "swagger", "apidog",
+        "git", "svn", "mercurial", "perforce", "fossil", "darcs",
+        "jenkins", "gitlab-ci", "github-actions", "circleci", "travis", "appveyor",
+        "docker", "podman", "containerd", "rke", "aks", "eks", "gke",
+        "prometheus", "grafana", "elk", "splunk", "datadog", "newrelic",
+        "nginx", "apache", "tomcat", "iis", "caddy", "traefik",
+        "mysql", "postgres", "mongodb", "cassandra", "dynamodb", "cosmosdb",
+        "redis", "memcached", "elasticsearch", "opensearch", "solr",
+        "kafka", "rabbitmq", "activemq", "zeromq", "nats", "mqtt",
+        "aws", "azure", "gcp", "ibm-cloud", "alibaba", "heroku", "vercel",
+        "s3", "gs-bucket", "blob-storage", "cloudfiles", "wasabi",
+        "lambda", "functions", "cloud-run", "app-engine", "container-instances",
+        "rds", "cloud-sql", "aurora", "cosmos", "dynamodb", "bigtable",
+        "sns", "sqs", "pubsub", "eventbridge", "servicebusqueue", "topics",
+        "vscode", "intellij", "pycharm", "webstorm", "clion", "rider",
+        "vim", "neovim", "emacs", "nano", "gedit", "kate", "geany",
+        "tmux", "screen", "zsh", "bash", "fish", "powershell",
+        "htop", "top", "ps", "systemd", "supervisor", "pm2",
+        "curl", "wget", "aria2", "transmission", "qbittorrent",
+        "ffmpeg", "imagemagick", "ghostscript", "gifsicle", "optipng",
+        "ssl", "openssl", "certbot", "letsencrypt", "vault", "consul",
+        "linkedin", "slack", "ms-teams", "webex", "hangouts", "jitsi",
+        "miro", "mural", "FigJam", "Excalidraw", "Lucidchart", "draw.io",
+        "calendly", "clockify", "toggl", "everhour", "hubstaff", "rescuetime",
+        "asana", "monday.com", "clickup", "smartsheet", "plan", "workona",
+        "roam", "obsidian", "logseq", "dendron", "foam", "foam", "wiki",
+        "slack", "discord", "mattermost", "rocket", "zulip", "twist",
+        "stripe", "paypal", "square", "authorize", "adyen", "braintree",
+        "github", "gitlab", "gitea", "gitbucket", "gogs", "bitbucket",
+        "sentry", "rollbar", "bugsnag", "crashlytics", "appcenter",
+        "datadog", "newrelic", "elastic-apm", "dynatrace", "appdynamics",
+        "chatgpt", "bard", "claude", "gpt4", "palm", "copilot", "perplexity"
+    ]
     
+    distraction_apps = [
+        "Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", 
+        "TikTok", "Reddit", "Gaming", "Steam", "Twitch", "hulu", "disney", "prime video",
+        "snapchat", "pinterest", "tumblr", "9gag", "imgur", "4chan",
+        "liveleak", "pornhub", "xhamster", "onlyfans",
+        "roblox", "fortnite", "valorant", "csgo", "dota", "lol", "minecraft",
+        "twitch", "kick", "rumble", "dailymotion", "vimeo"
+    ]
     
+    productive_domains = [
+        "github", "gitlab", "stackoverflow", "docs", "documentation",
+        "chatgpt", "openai.com", "claude", "gemini", "copilot",
+        "perplexity", "cohere", "huggingface", "kaggle",
+        "coursera", "udemy", "pluralsight", "datacamp", "educative",
+        "mdn", "w3schools", "devdocs", "duckduckgo", "google",
+        "figma", "adobe", "jira", "confluence", "linear",
+        "github", "gitlab", "bitbucket", "azure", "aws", "gcp",
+        "vercel", "netlify", "heroku", "railway", "fly", "render",
+        "npm", "pypi", "maven", "cargo", "nuget", "rubygems",
+        "medium", "dev.to", "hashnode", "substack", "newsletter",
+        "notion", "obsidian", "roam", "logseq", "evernote",
+        "sheets", "excel", "airtable", "retool", "bubble",
+        "docs.google.com", "sheets.google.com", "forms.google.com", "slides.google.com",
+        "google", "googledocs", "googlesheets", "googleforms", "googleslides",
+        "notion", "confluence", "miro", "excalidraw", "lucidchart",
+        "stripe", "paypal", "square", "shopify", "woocommerce",
+        "analytics", "google-analytics", "mixpanel", "amplitude",
+        "slack", "teams", "discord", "zoom", "skype", "jitsi",
+        "gmail", "outlook", "thunderbird", "mail",
+        "kubernetes", "k8s", "docker", "helm", "terraform",
+        "aws", "azure", "gcp", "heroku", "vercel", "netlify",
+        "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy",
+        "jupyter", "anaconda", "conda", "pipenv", "poetry",
+        "node", "npm", "yarn", "pnpm", "webpack", "vite",
+        "react", "vue", "angular", "svelte", "nextjs", "nuxt",
+        "graphql", "rest", "api", "swagger", "openapi",
+        "git", "svn", "mercurial", "fossil",
+        "jenkins", "gitlab-ci", "github-actions", "circleci",
+        "prometheus", "grafana", "elk", "splunk", "datadog",
+        "nginx", "apache", "tomcat", "iis", "caddy",
+        "mysql", "postgres", "mongodb", "cassandra", "dynamodb",
+        "redis", "memcached", "elasticsearch", "opensearch",
+        "kafka", "rabbitmq", "activemq", "zeromq", "nats",
+        "s3", "bucket", "blob", "cloudfiles", "wasabi",
+        "lambda", "functions", "cloud-run", "container",
+        "rds", "cloud-sql", "aurora", "cosmos", "bigtable",
+        "sns", "sqs", "pubsub", "eventbridge", "servicebusqueue",
+        "vscode", "intellij", "pycharm", "webstorm", "clion",
+        "vim", "emacs", "nano", "gedit", "kate",
+        "tmux", "screen", "zsh", "bash", "fish",
+        "htop", "top", "systemd", "supervisor", "pm2",
+        "curl", "wget", "aria2", "transmission",
+        "ffmpeg", "imagemagick", "ghostscript",
+        "ssl", "openssl", "certbot", "letsencrypt", "vault",
+        "linkedin", "slack", "teams", "webex", "jitsi",
+        "miro", "mural", "figjam", "excalidraw", "lucidchart",
+        "calendly", "clockify", "toggl", "everhour", "hubstaff",
+        "asana", "monday", "clickup", "smartsheet",
+        "roam", "obsidian", "logseq", "dendron", "foam",
+        "mattermost", "rocket", "zulip", "twist",
+        "paypal", "square", "authorize", "adyen", "braintree",
+        "gitea", "gitbucket", "gogs",
+        "sentry", "rollbar", "bugsnag", "crashlytics",
+        "newrelic", "elastic", "dynatrace", "appdynamics"
+    ]
+    
+    # Check if it's in productive apps list (app name matching)
     if any(prod_app.lower() in app_name.lower() for prod_app in productive_apps):
-        return {'label': 'Productive', 'confidence': 0.85}
+        return {'label': 'Productive', 'confidence': 0.90}
     elif any(dist_app.lower() in app_name.lower() for dist_app in distraction_apps):
-        return {'label': 'Non-Productive', 'confidence': 0.80}
+        return {'label': 'Non-Productive', 'confidence': 0.85}
     
+    # Browser-based classification (tab/domain matching)
     browsers = ["browser", "chrome", "firefox", "chromium", "brave", "edge", "safari", "opera"]
     if any(b in app_name.lower() for b in browsers):
         
-        if any(social in tab_name.lower() for social in ["youtube", "facebook", "twitter", "instagram", "tiktok"]):
-            return {'label': 'Non-Productive', 'confidence': 0.75}
-        elif any(prod in tab_name.lower() for prod in ["github", "stackoverflow", "docs", "documentation"]):
+        # Check productive domains FIRST
+        if any(prod_domain in tab_name.lower() for prod_domain in productive_domains):
+            return {'label': 'Productive', 'confidence': 0.88}
+        
+        # Then check distraction domains
+        if any(social in tab_name.lower() for social in ["youtube", "facebook", "twitter", "instagram", "tiktok", "reddit", "netflix", "twitch", "gaming", "steam", "pornhub", "xhamster"]):
+            return {'label': 'Non-Productive', 'confidence': 0.85}
+        
+        # Neutral/unknown domains
+        return {'label': 'Productive', 'confidence': 0.70}
+    else:
+        # Unknown app - classify by duration (long usage = likely productive for developers/corporate)
+        if duration > 300:
             return {'label': 'Productive', 'confidence': 0.75}
         else:
-            return {'label': 'Productive', 'confidence': 0.65}  
-    else:
-        
-        
-        if duration > 300:
-            return {'label': 'Productive', 'confidence': 0.60}
-        else:
-            return {'label': 'Non-Productive', 'confidence': 0.60}
+            return {'label': 'Productive', 'confidence': 0.65}  # Default to productive for short unknown apps
 
 def process_real_data(app_data):
     try:
@@ -473,11 +607,143 @@ def process_legacy_data(app_data):
             print("⚠️ No app data provided for processing")
             return activities
         
+        productive_apps = [
+            "Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", 
+            "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs", "Git", "Docker", "Cursor",
+            "GitHub", "GitLab", "Notion", "Asana", "Jira", "Trello", "Antigravity", "FocusAI", 
+            "focuai", "visual studio", "windsurf", "sublime", "android studio", "xcode",
+            "chatgpt", "openai", "claude", "gemini", "copilot", "perplexity", "cohere",
+            "huggingface", "midjourney", "leonardo", "runwayml", "synthesia",
+            "Zoom", "Teams", "Discord", "Skype", "Telegram", "Signal", "Confluence",
+            "Linear", "Monday", "Basecamp", "ClickUp", "Todoist", "Evernote",
+            "OneNote", "GoogleDrive", "Dropbox", "OneDrive", "Box",
+            "googledocs", "google docs", "google sheets", "google forms", "google slides",
+            "docs", "documentation", "stackoverflow", "devdocs", "mdn", "w3schools",
+            "educative", "coursera", "udemy", "pluralsight", "datacamp", "kaggle",
+            "medium", "dev.to", "hashnode", "reddit", "quora",
+            "figma", "sketch", "adobe", "photoshop", "illustrator", "xd", "procreate",
+            "blender", "davinci", "premiere", "affinity", "canva", "webflow",
+            "mongodb", "postgresql", "mysql", "redis", "firebase", "dynamodb",
+            "elasticsearch", "grafana", "datadog", "sentry", "newrelic",
+            "jenkins", "gitlab", "github", "bitbucket", "azure", "aws", "gcp",
+            "gmail", "outlook", "slack", "teams", "discord", "zoom", "miro", "figma",
+            "excalidraw", "lucidchart", "draw.io", "whimsical",
+            "sheets", "excel", "word", "powerpoint", "keynote", "pages", "numbers",
+            "obsidian", "roam", "notion", "logseq", "foam", "dendron",
+            "jira", "confluence", "trello", "monday", "asana", "linear", "height",
+            "vercel", "netlify", "heroku", "railway", "fly", "render",
+            "insomnia", "thunderclient", "restclient", "paw", "httpie",
+            "swagger", "openapi", "storybook", "chromatic",
+            "jest", "pytest", "unittest", "rspec", "mocha", "jasmine",
+            "cypress", "selenium", "puppeteer", "playwright",
+            "lint", "prettier", "eslint", "black", "flake8", "mypy",
+            "kubernetes", "kubectl", "k8s", "docker-compose", "podman", "helm",
+            "terraform", "ansible", "vagrant", "cloudformation", "bicep",
+            "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy", "scipy",
+            "jupyter", "jupyterlab", "anaconda", "conda", "pipenv", "poetry",
+            "pytorch", "keras", "fastapi", "flask", "django", "spring", "springboot",
+            "node", "npm", "yarn", "pnpm", "webpack", "vite", "parcel", "gulp",
+            "react", "vue", "angular", "svelte", "nextjs", "nuxt", "remix", "astro",
+            "graphql", "rest", "api", "postman", "insomnia", "swagger", "apidog",
+            "git", "svn", "mercurial", "perforce", "fossil", "darcs",
+            "jenkins", "gitlab-ci", "github-actions", "circleci", "travis", "appveyor",
+            "docker", "podman", "containerd", "rke", "aks", "eks", "gke",
+            "prometheus", "grafana", "elk", "splunk", "datadog", "newrelic",
+            "nginx", "apache", "tomcat", "iis", "caddy", "traefik",
+            "mysql", "postgres", "mongodb", "cassandra", "dynamodb", "cosmosdb",
+            "redis", "memcached", "elasticsearch", "opensearch", "solr",
+            "kafka", "rabbitmq", "activemq", "zeromq", "nats", "mqtt",
+            "aws", "azure", "gcp", "ibm-cloud", "alibaba", "heroku", "vercel",
+            "s3", "gs-bucket", "blob-storage", "cloudfiles", "wasabi",
+            "lambda", "functions", "cloud-run", "app-engine", "container-instances",
+            "rds", "cloud-sql", "aurora", "cosmos", "dynamodb", "bigtable",
+            "sns", "sqs", "pubsub", "eventbridge", "servicebusqueue", "topics",
+            "vscode", "intellij", "pycharm", "webstorm", "clion", "rider",
+            "vim", "neovim", "emacs", "nano", "gedit", "kate", "geany",
+            "tmux", "screen", "zsh", "bash", "fish", "powershell",
+            "htop", "top", "ps", "systemd", "supervisor", "pm2",
+            "curl", "wget", "aria2", "transmission", "qbittorrent",
+            "ffmpeg", "imagemagick", "ghostscript", "gifsicle", "optipng",
+            "ssl", "openssl", "certbot", "letsencrypt", "vault", "consul",
+            "linkedin", "slack", "ms-teams", "webex", "hangouts", "jitsi",
+            "miro", "mural", "FigJam", "Excalidraw", "Lucidchart", "draw.io",
+            "calendly", "clockify", "toggl", "everhour", "hubstaff", "rescuetime",
+            "asana", "monday.com", "clickup", "smartsheet", "plan", "workona",
+            "roam", "obsidian", "logseq", "dendron", "foam", "foam", "wiki",
+            "slack", "discord", "mattermost", "rocket", "zulip", "twist",
+            "stripe", "paypal", "square", "authorize", "adyen", "braintree",
+            "github", "gitlab", "gitea", "gitbucket", "gogs", "bitbucket",
+            "sentry", "rollbar", "bugsnag", "crashlytics", "appcenter",
+            "datadog", "newrelic", "elastic-apm", "dynatrace", "appdynamics",
+            "chatgpt", "bard", "claude", "gpt4", "palm", "copilot", "perplexity"
+        ]
         
-        productive_apps = ["Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs"]
-        distraction_apps = ["Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", "TikTok", "Reddit", "Gaming"]
+        distraction_apps = [
+            "Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", 
+            "TikTok", "Reddit", "Gaming", "Steam", "Twitch", "hulu", "disney", "prime video",
+            "snapchat", "pinterest", "tumblr", "9gag", "imgur", "4chan",
+            "liveleak", "pornhub", "xhamster", "onlyfans",
+            "roblox", "fortnite", "valorant", "csgo", "dota", "lol", "minecraft"
+        ]
         
-        print(f"🔄 Processing {len(app_data)} app records...")
+        productive_domains = [
+            "github", "gitlab", "stackoverflow", "docs", "documentation",
+            "chatgpt", "openai.com", "claude", "gemini", "copilot",
+            "perplexity", "cohere", "huggingface", "kaggle",
+            "coursera", "udemy", "pluralsight", "datacamp", "educative",
+            "mdn", "w3schools", "devdocs", "duckduckgo", "google",
+            "figma", "adobe", "jira", "confluence", "linear",
+            "github", "gitlab", "bitbucket", "azure", "aws", "gcp",
+            "vercel", "netlify", "heroku", "railway", "fly", "render",
+            "npm", "pypi", "maven", "cargo", "nuget", "rubygems",
+            "medium", "dev.to", "hashnode", "substack", "newsletter",
+            "notion", "obsidian", "roam", "logseq", "evernote",
+            "sheets", "excel", "airtable", "retool", "bubble",
+            "docs.google.com", "sheets.google.com", "forms.google.com", "slides.google.com",
+            "google", "googledocs", "googlesheets", "googleforms", "googleslides",
+            "notion", "confluence", "miro", "excalidraw", "lucidchart",
+            "stripe", "paypal", "square", "shopify", "woocommerce",
+            "analytics", "google-analytics", "mixpanel", "amplitude",
+            "slack", "teams", "discord", "zoom", "skype", "jitsi",
+            "gmail", "outlook", "thunderbird", "mail",
+            "kubernetes", "k8s", "docker", "helm", "terraform",
+            "aws", "azure", "gcp", "heroku", "vercel", "netlify",
+            "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy",
+            "jupyter", "anaconda", "conda", "pipenv", "poetry",
+            "node", "npm", "yarn", "pnpm", "webpack", "vite",
+            "react", "vue", "angular", "svelte", "nextjs", "nuxt",
+            "graphql", "rest", "api", "swagger", "openapi",
+            "git", "svn", "mercurial", "fossil",
+            "jenkins", "gitlab-ci", "github-actions", "circleci",
+            "prometheus", "grafana", "elk", "splunk", "datadog",
+            "nginx", "apache", "tomcat", "iis", "caddy",
+            "mysql", "postgres", "mongodb", "cassandra", "dynamodb",
+            "redis", "memcached", "elasticsearch", "opensearch",
+            "kafka", "rabbitmq", "activemq", "zeromq", "nats",
+            "s3", "bucket", "blob", "cloudfiles", "wasabi",
+            "lambda", "functions", "cloud-run", "container",
+            "rds", "cloud-sql", "aurora", "cosmos", "bigtable",
+            "sns", "sqs", "pubsub", "eventbridge", "servicebusqueue",
+            "vscode", "intellij", "pycharm", "webstorm", "clion",
+            "vim", "emacs", "nano", "gedit", "kate",
+            "tmux", "screen", "zsh", "bash", "fish",
+            "htop", "top", "systemd", "supervisor", "pm2",
+            "curl", "wget", "aria2", "transmission",
+            "ffmpeg", "imagemagick", "ghostscript",
+            "ssl", "openssl", "certbot", "letsencrypt", "vault",
+            "linkedin", "slack", "teams", "webex", "jitsi",
+            "miro", "mural", "figjam", "excalidraw", "lucidchart",
+            "calendly", "clockify", "toggl", "everhour", "hubstaff",
+            "asana", "monday", "clickup", "smartsheet",
+            "roam", "obsidian", "logseq", "dendron", "foam",
+            "mattermost", "rocket", "zulip", "twist",
+            "paypal", "square", "authorize", "adyen", "braintree",
+            "gitea", "gitbucket", "gogs",
+            "sentry", "rollbar", "bugsnag", "crashlytics",
+            "newrelic", "elastic", "dynatrace", "appdynamics"
+        ]
+        
+        print(f"🔄 Processing {len(app_data)} app records with improved classification...")
         
         for app in app_data:
             if not isinstance(app, dict):
@@ -489,26 +755,28 @@ def process_legacy_data(app_data):
             if not app_name or duration <= 0:
                 continue
             
-            
+            # Check productive apps first
             if any(prod_app.lower() in app_name.lower() for prod_app in productive_apps):
                 predicted_label = "Focused"
-                confidence = 0.85
+                confidence = 0.90
             elif any(dist_app.lower() in app_name.lower() for dist_app in distraction_apps):
                 predicted_label = "Distracted"
-                confidence = 0.80
+                confidence = 0.85
             elif "browser" in app_name.lower() or "chrome" in app_name.lower() or "firefox" in app_name.lower():
-                
-                if any(social in app_name.lower() for social in ["youtube", "facebook", "twitter", "instagram"]):
+                # Browser - check domains
+                if any(prod_domain in app_name.lower() for prod_domain in productive_domains):
+                    predicted_label = "Focused"
+                    confidence = 0.88
+                elif any(social in app_name.lower() for social in ["youtube", "facebook", "twitter", "instagram", "tiktok", "reddit", "netflix", "twitch", "gaming"]):
                     predicted_label = "Distracted"
-                    confidence = 0.75
+                    confidence = 0.85
                 else:
                     predicted_label = "Focused"  
-                    confidence = 0.65
+                    confidence = 0.70
             else:
-                
-                
-                predicted_label = "Focused" if duration > 300 else "Distracted"
-                confidence = 0.60
+                # Unknown app - default to productive for developers/corporate
+                predicted_label = "Focused" if duration > 300 else "Focused"
+                confidence = 0.75
                 
             activity = FocusActivity(
                 app_name=app_name,
@@ -887,11 +1155,13 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
         print(f"🚀 Starting analyze and store for user {user_id} (email: {email}) on {current_date}")
         
         
-        user_data = await fetch_real_mongodb_data(user_id=user_id, email=email, date=current_date)
+        user_data_list = await fetch_real_mongodb_data(user_id=user_id, email=email, date=current_date)
         
-        if not user_data or (not user_data.get("appUsage") and not user_data.get("tabUsage")):
+        if not user_data_list or len(user_data_list) == 0:
             raise HTTPException(status_code=404, detail=f"No app or tab usage data found for user {user_id} on {current_date}")
         
+        # Convert list to the format expected by process_user_data
+        user_data = {"appUsage": user_data_list}
         
         processed_metrics = process_user_data(user_data)
         
@@ -1137,22 +1407,46 @@ async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
         backend_data = await fetch_user_data_from_backend(user_id, date)
         
         
-        user_data = [item for item in REAL_MONGODB_DATA if item["userId"] == user_id]
+        # 1. First, try to use data already stored in REAL_MONGODB_DATA for this user and date
+        user_data = [item for item in REAL_MONGODB_DATA 
+                     if item["userId"] == user_id and item.get("date") == date]
         
-        
-        if backend_data and isinstance(backend_data, dict):
-            app_usage = backend_data.get("appUsage", {})
-            if isinstance(app_usage, dict):
-                for app_name, duration in app_usage.items():
-                    if duration > 0:
-                        user_data.append({
-                            "userId": user_id,
-                            "email": "user@example.com",
-                            "date": date,
-                            "appName": app_name,
-                            "duration": duration,
-                            "lastUpdated": datetime.now().isoformat()
-                        })
+        # 2. Only if we have no local data, or if specifically requested, fetch from backend
+        if not user_data:
+            print(f"ℹ️ No local data for {user_id} on {date}, fetching from backend...")
+            backend_data = await fetch_user_data_from_backend(user_id, date)
+            
+            if backend_data and isinstance(backend_data, dict):
+                # Process appUsage from backend
+                app_usage = backend_data.get("appUsage", {})
+                if isinstance(app_usage, dict):
+                    for app_name, duration in app_usage.items():
+                        if duration > 0:
+                            user_data.append({
+                                "userId": user_id,
+                                "email": "user@example.com",
+                                "date": date,
+                                "appName": app_name,
+                                "duration": duration,
+                                "lastUpdated": datetime.now().isoformat()
+                            })
+                
+                # Also process tabUsage from backend if available
+                tab_usage = backend_data.get("tabs", backend_data.get("tabUsage", []))
+                if isinstance(tab_usage, list):
+                    for tab in tab_usage:
+                        if isinstance(tab, dict):
+                            domain = tab.get("domain") or tab.get("title") or "Browser"
+                            duration = tab.get("duration", 0)
+                            if duration > 0:
+                                user_data.append({
+                                    "userId": user_id,
+                                    "email": tab.get("email", "user@example.com"),
+                                    "date": date,
+                                    "appName": f"Browser - {domain}",
+                                    "duration": int(duration),
+                                    "lastUpdated": tab.get("lastUpdated", datetime.now().isoformat())
+                                })
         
         if not user_data:
             return {
@@ -1258,15 +1552,15 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
             print(f"🔍 First app usage item: {app_usage[0] if app_usage else 'None'}")
         
         
-        formatted_app_data = []
+        # Use a dictionary to deduplicate by app name
+        # If an app appears in both appUsage and currentSession, appUsage is usually more reliable
+        deduplicated_apps = {}
         
-        
-        
+        # 1. Process app_usage (aggregated data)
         if isinstance(app_usage, dict):
-            
             for app_name, duration in app_usage.items():
                 if app_name and duration > 0:
-                    formatted_app = {
+                    deduplicated_apps[app_name] = {
                         "userId": user_id,
                         "email": data.get("email", "user@example.com"),
                         "date": date,
@@ -1274,16 +1568,13 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
                         "duration": int(duration),
                         "lastUpdated": datetime.now().isoformat()
                     }
-                    formatted_app_data.append(formatted_app)
         elif isinstance(app_usage, list):
-            
             for app in app_usage:
                 if isinstance(app, dict):
                     app_name = app.get("appName") or app.get("app") or app.get("name", "Unknown")
                     duration = app.get("duration", 0)
-                    
                     if app_name and duration > 0:
-                        formatted_app = {
+                        deduplicated_apps[app_name] = {
                             "userId": user_id,
                             "email": app.get("email", "user@example.com"),
                             "date": date,
@@ -1291,24 +1582,48 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
                             "duration": int(duration),
                             "lastUpdated": app.get("lastUpdated", datetime.now().isoformat())
                         }
-                        formatted_app_data.append(formatted_app)
         
-        
+        # 2. Process current_session (non-aggregated yet)
+        # ONLY add if not already in deduplicated_apps, OR add to existing duration if it's truly separate
+        # In this architecture, appUsage is the source of truth for historical, 
+        # current_session is for the very last few seconds.
         for session in current_session:
             if isinstance(session, dict):
                 app_name = session.get("appName") or session.get("app") or session.get("name", "Unknown")
                 duration = session.get("duration", 0)
-                
                 if app_name and duration > 0:
-                    formatted_app = {
+                    if app_name in deduplicated_apps:
+                        # If it's already there, we might be double counting if we add.
+                        # However, sometimes backend separates them. 
+                        # For now, let's take the MAX to be safe, or just trust the aggregated one.
+                        deduplicated_apps[app_name]["duration"] = max(deduplicated_apps[app_name]["duration"], int(duration))
+                    else:
+                        deduplicated_apps[app_name] = {
+                            "userId": user_id,
+                            "email": session.get("email", "user@example.com"),
+                            "date": date,
+                            "appName": app_name,
+                            "duration": int(duration),
+                            "lastUpdated": session.get("lastUpdated", datetime.now().isoformat())
+                        }
+
+        # 3. Process tab_usage - THIS WAS PREVIOUSLY MISSING
+        tab_entries = []
+        for tab in tab_usage:
+            if isinstance(tab, dict):
+                domain = tab.get("domain") or tab.get("title") or "Browser"
+                duration = tab.get("duration", 0)
+                if domain and duration > 0:
+                    tab_entries.append({
                         "userId": user_id,
-                        "email": session.get("email", "user@example.com"),
+                        "email": tab.get("email", "user@example.com"),
                         "date": date,
-                        "appName": app_name,
+                        "appName": f"Browser - {domain}",
                         "duration": int(duration),
-                        "lastUpdated": session.get("lastUpdated", datetime.now().isoformat())
-                    }
-                    formatted_app_data.append(formatted_app)
+                        "lastUpdated": tab.get("lastUpdated", datetime.now().isoformat())
+                    })
+        
+        formatted_app_data = list(deduplicated_apps.values()) + tab_entries
         
         
         if formatted_app_data:
@@ -1556,10 +1871,48 @@ async def update_user_productivity_summary(user_id: str, data: Dict[str, Any]):
         print(f"❌ Error updating productivity summary: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update productivity summary: {str(e)}")
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+from ai_provider import ai_provider
+
+@app.post("/user/{user_id}/ai-insights")
+async def get_user_ai_insights(user_id: str, email: Optional[str] = None, date: Optional[str] = None):
+    try:
+        current_date = date or datetime.now().strftime("%Y-%m-%d")
+        
+        # Get productivity summary from backend
+        summary = await get_user_productivity_summary(user_id, email, current_date)
+        
+        if not summary or summary.overall_total_usage == 0:
+            return {"insights": "No activity data found yet to provide insights. Try focusing for a bit and check back!"}
+            
+        # Format context for AI
+        context = f"""
+        User Productivity Summary for {current_date}:
+        - Focus Score: {summary.focus_score}%
+        - Total Usage: {summary.overall_total_usage // 60} minutes
+        - Productive Time: {summary.total_productive_time // 60} minutes
+        - Distraction Time: {summary.total_non_productive_time // 60} minutes
+        - Top Productive App: {summary.max_productive_app}
+        - Most Used App: {summary.most_used_app}
+        """
+        
+        messages = [
+            {"role": "system", "content": "You are a productivity expert assistant. Analyze the user's data and provide 3 ultra-concise, actionable tips to improve their focus tomorrow. Be encouraging but direct."},
+            {"role": "user", "content": f"Here is my data: {context}"}
+        ]
+        
+        insights = ai_provider.create_chat_completion(messages)
+        
+        return {
+            "user_id": user_id,
+            "date": current_date,
+            "insights": insights,
+            "provider": ai_provider.provider
+        }
+            
+    except Exception as e:
+        print(f"❌ Error generating AI insights: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate insights: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=AI_SERVICE_HOST, port=AI_SERVICE_PORT)

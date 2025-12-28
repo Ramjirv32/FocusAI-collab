@@ -5,26 +5,27 @@ const API_URL = 'http://localhost:5001/api';
 
 export const chatService = {
   // Send a message to the AI assistant
-  async sendMessage(message, historyId, userData = null) {
+  async sendMessage(message, historyId, userData = null, signal = null) {
     try {
       console.log('🤖 Sending chat message:', message);
       console.log('📊 Including user data:', userData);
-      
+
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('No authentication token found');
       }
 
       const response = await axios.post(
-        `${API_URL}/chat`, 
-        { 
-          message, 
+        `${API_URL}/chat`,
+        {
+          message,
           historyId,
           userData // Include the user data in the request
         },
-        { 
+        {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 20000 // Increase timeout to 20 seconds for AI processing
+          timeout: 40000, // Increase timeout to 40 seconds for AI processing
+          signal: signal // Allow cancellation
         }
       );
 
@@ -32,7 +33,7 @@ export const chatService = {
       return response.data;
     } catch (error) {
       console.error('❌ Chat service error:', error);
-      
+
       // Check for specific error types and provide appropriate responses
       if (error.code === 'ECONNABORTED') {
         return {
@@ -42,11 +43,11 @@ export const chatService = {
           hasProductivityData: false
         };
       }
-      
+
       if (error.response) {
         // The server responded with an error status code
         console.log('Server error details:', error.response.data);
-        
+
         // If the server sent back a specific error message, use it
         if (error.response.data && error.response.data.response) {
           return {
@@ -57,7 +58,7 @@ export const chatService = {
           };
         }
       }
-      
+
       // Default error response
       return {
         success: false,
@@ -78,7 +79,7 @@ export const chatService = {
       }
 
       const response = await axios.get(
-        `${API_URL}/chat/history`, 
+        `${API_URL}/chat/history`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -160,7 +161,7 @@ export const chatService = {
       throw error;
     }
   },
-  
+
   // Fetch user productivity data
   async getUserProductivityData() {
     try {
@@ -172,11 +173,11 @@ export const chatService = {
 
       // Get data from multiple endpoints to compile a complete picture
       const [focusResponse, statsResponse] = await Promise.all([
-        axios.get(`${API_URL}/focus/summary`, { 
-          headers: { Authorization: `Bearer ${token}` } 
+        axios.get(`${API_URL}/focus/summary`, {
+          headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`${API_URL}/statistics/overview`, { 
-          headers: { Authorization: `Bearer ${token}` } 
+        axios.get(`${API_URL}/statistics/overview`, {
+          headers: { Authorization: `Bearer ${token}` }
         })
       ]);
 

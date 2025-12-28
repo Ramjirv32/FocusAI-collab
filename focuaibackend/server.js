@@ -1199,13 +1199,17 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
     }
 
     // Process app usage data
+    const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi', 'google-chrome'];
     if (appUsageData && Array.isArray(appUsageData)) {
       for (const app of appUsageData) {
         const appName = app.appName || app.name || 'Unknown';
         const duration = parseInt(app.duration) || 0;
-        const classification = classifyApp(appName);
 
-        if (duration > 0) {
+        const appLower = appName.toLowerCase();
+        const isBrowser = browsers.some(b => appLower.includes(b));
+
+        if (duration > 0 && !isBrowser) {
+          const classification = classifyApp(appName);
           summary.updateProductivityData(appName, duration, classification === 'productive');
         }
       }
@@ -1520,10 +1524,20 @@ async function updateProductivitySummaryForUser(userId, email, date) {
     summary.totalNonProductiveTime = 0;
     summary.overallTotalUsage = 0;
 
-    // Process app usage
+    // Process app usage (skipping browsers to avoid double counting with tabs)
+    const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi', 'google-chrome'];
     for (const app of appUsage) {
-      const classification = classifyApp(app.appName);
-      summary.updateProductivityData(app.appName, app.duration, classification === 'productive');
+      const appLower = app.appName.toLowerCase();
+      const isBrowser = browsers.some(b => appLower.includes(b));
+
+      // If it's a browser, we'll rely on tabUsage for more accurate productivity tracking
+      // Otherwise, we'll count the app
+      if (!isBrowser) {
+        const classification = classifyApp(app.appName);
+        summary.updateProductivityData(app.appName, app.duration, classification === 'productive');
+      } else {
+        console.log(`Skipping browser app ${app.appName} in summary to avoid double counting with tabs`);
+      }
     }
 
     // Process tab usage
