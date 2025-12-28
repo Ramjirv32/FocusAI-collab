@@ -69,46 +69,23 @@ const Statistics = () => {
   // Create fallback data for demo purposes
   const generateFallbackData = () => {
     const fallbackStats = {
-      uniqueApps: 12,
-      uniqueWebsites: 23,
-      totalActiveTime: 480, // 8 hours in minutes
-      focusTime: 320, // 5hr 20min
-      distractionTime: 160, // 2hr 40min
-      focusScore: 67,
-      previousFocusScore: 62,
-      previousActiveTime: 450,
-      mostProductiveHour: '10:00 AM',
-      averageSessionLength: 45,
-      totalSessions: 18,
-      longestFocusSession: 90,
-      currentStreak: 5,
-      topApps: [
-        { _id: 'VS Code', totalTime: 180, visitCount: 12 },
-        { _id: 'Chrome', totalTime: 120, visitCount: 15 },
-        { _id: 'Terminal', totalTime: 60, visitCount: 8 },
-        { _id: 'Slack', totalTime: 45, visitCount: 9 },
-        { _id: 'Spotify', totalTime: 30, visitCount: 3 },
-      ],
-      topWebsites: [
-        { _id: 'github.com', totalTime: 60, visitCount: 10 },
-        { _id: 'stackoverflow.com', totalTime: 45, visitCount: 8 },
-        { _id: 'google.com', totalTime: 30, visitCount: 12 },
-        { _id: 'developer.mozilla.org', totalTime: 25, visitCount: 6 },
-        { _id: 'youtube.com', totalTime: 20, visitCount: 5 },
-      ],
-      categoryBreakdown: [
-        { category: 'productive', totalTime: 320 },
-        { category: 'distraction', totalTime: 160 },
-      ],
-      dailyBreakdown: [
-        { date: 'Mon', focusTime: 120, distractionTime: 45, focusScore: 73 },
-        { date: 'Tue', focusTime: 145, distractionTime: 30, focusScore: 83 },
-        { date: 'Wed', focusTime: 100, distractionTime: 60, focusScore: 62 },
-        { date: 'Thu', focusTime: 180, distractionTime: 40, focusScore: 82 },
-        { date: 'Fri', focusTime: 160, distractionTime: 35, focusScore: 82 },
-        { date: 'Sat', focusTime: 60, distractionTime: 90, focusScore: 40 },
-        { date: 'Sun', focusTime: 90, distractionTime: 50, focusScore: 64 },
-      ]
+      uniqueApps: 0,
+      uniqueWebsites: 0,
+      totalActiveTime: 0,
+      focusTime: 0,
+      distractionTime: 0,
+      focusScore: 0,
+      previousFocusScore: 0,
+      previousActiveTime: 0,
+      mostProductiveHour: 'N/A',
+      averageSessionLength: 0,
+      totalSessions: 0,
+      longestFocusSession: 0,
+      currentStreak: 0,
+      topApps: [],
+      topWebsites: [],
+      categoryBreakdown: [],
+      dailyBreakdown: []
     };
 
     setStatistics(fallbackStats);
@@ -118,12 +95,12 @@ const Statistics = () => {
       distraction: day.distractionTime || 0,
       score: day.focusScore || 0
     })));
-    
+
     setCategoryData([
       { name: 'Productive', value: fallbackStats.focusTime, color: '#22c55e' },
       { name: 'Distraction', value: fallbackStats.distractionTime, color: '#ef4444' }
     ]);
-    
+
     setShowFallbackData(true);
   };
 
@@ -133,31 +110,31 @@ const Statistics = () => {
       setIsLoading(true);
       setError(null);
       setShowFallbackData(false);
-      
+
       // Check backend connection first
       const isConnected = await checkBackendConnection();
       if (!isConnected) {
         throw new Error('Backend server is not running or cannot be reached');
       }
-      
+
       // Use our new enhanced statistics endpoint
       console.log('Fetching stats with timeframe:', timeFrame);
       console.log('Auth headers:', getAuthHeader());
-      
+
       const response = await axios.get(
         `http://localhost:5001/api/statistics`,
-        { 
+        {
           headers: getAuthHeader(),
           params: { timeFrame },
           timeout: 5001
         }
       );
-      
+
       console.log('Statistics data:', response.data);
-      
+
       if (response.data && Object.keys(response.data).length > 0) {
         setStatistics(response.data);
-        
+
         // Generate timeline data if available
         if (response.data.dailyBreakdown && response.data.dailyBreakdown.length > 0) {
           setTimelineData(response.data.dailyBreakdown.map((day: any) => ({
@@ -169,7 +146,7 @@ const Statistics = () => {
         } else {
           // Create empty timeline data with appropriate periods
           let emptyData = [];
-          
+
           if (timeFrame === 'daily') {
             // 24 hours
             emptyData = Array.from({ length: 24 }, (_, i) => ({
@@ -204,21 +181,21 @@ const Statistics = () => {
               score: 0
             }));
           }
-          
+
           setTimelineData(emptyData);
         }
-        
+
         // Generate category data if available
         if (response.data.categoryBreakdown && response.data.categoryBreakdown.length > 0) {
           setCategoryData(
             response.data.categoryBreakdown.map((category: any, index: number) => ({
-              name: category.category === 'productive' ? 'Productive' : 
-                    category.category === 'distraction' ? 'Distraction' : 
-                    category.category,
+              name: category.category === 'productive' ? 'Productive' :
+                category.category === 'distraction' ? 'Distraction' :
+                  category.category,
               value: category.totalTime || 0,
-              color: category.category === 'productive' ? '#22c55e' : 
-                     category.category === 'distraction' ? '#ef4444' : 
-                     COLORS[index % COLORS.length]
+              color: category.category === 'productive' ? '#22c55e' :
+                category.category === 'distraction' ? '#ef4444' :
+                  COLORS[index % COLORS.length]
             }))
           );
         } else {
@@ -233,7 +210,7 @@ const Statistics = () => {
       }
     } catch (err: any) {
       console.error('Error in statistics retrieval process:', err);
-      
+
       // Handle different error types
       if (axios.isAxiosError(err)) {
         if (err.code === 'ECONNABORTED') {
@@ -248,10 +225,10 @@ const Statistics = () => {
       } else {
         setError(err.message || 'An unknown error occurred');
       }
-      
+
       // If all else fails, use fallback data
       generateFallbackData();
-      
+
       toast({
         title: "Showing Sample Data",
         description: "Unable to connect to the server. Displaying sample data for demonstration.",
@@ -270,7 +247,7 @@ const Statistics = () => {
       console.log('No user detected, using fallback data');
       generateFallbackData();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, selectedTimeFrame]);
 
   const handleRefresh = () => {
@@ -279,7 +256,7 @@ const Statistics = () => {
 
   const formatTime = (minutes: number) => {
     if (minutes === undefined || minutes === null) return '0m';
-    
+
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
@@ -289,11 +266,10 @@ const Statistics = () => {
     if (!previous || previous === 0) return null;
     const change = ((current - previous) / previous) * 100;
     const isPositive = change > 0;
-    
+
     return (
-      <div className={`flex items-center gap-1 text-xs ${
-        isPositive ? 'text-green-600' : 'text-red-600'
-      }`}>
+      <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-green-600' : 'text-red-600'
+        }`}>
         {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
         {Math.abs(change).toFixed(1)}%
       </div>
@@ -303,10 +279,10 @@ const Statistics = () => {
   // Time series chart tooltip formatter
   const formatTimeTooltip = (value: number, name: string) => {
     const formattedValue = formatTime(value);
-    const formattedName = name === 'focus' ? 'Focus Time' : 
-                          name === 'distraction' ? 'Distraction Time' :
-                          name === 'score' ? 'Focus Score' : name;
-    
+    const formattedName = name === 'focus' ? 'Focus Time' :
+      name === 'distraction' ? 'Distraction Time' :
+        name === 'score' ? 'Focus Score' : name;
+
     return [formattedValue, formattedName];
   };
 
@@ -342,7 +318,7 @@ const Statistics = () => {
               </Card>
             ))}
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle><Skeleton className="h-6 w-36" /></CardTitle>
@@ -396,8 +372,8 @@ const Statistics = () => {
               Cannot connect to the backend server. Please make sure it's running at http://localhost:5001.
               Showing sample data for demonstration purposes.
               <div className="mt-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={handleRefresh}
                 >
@@ -407,7 +383,7 @@ const Statistics = () => {
             </AlertDescription>
           </Alert>
         )}
-        
+
         {error && !showConnectionError && (
           <Alert variant={showFallbackData ? "default" : "destructive"}>
             <AlertCircle className="h-4 w-4" />
@@ -415,7 +391,7 @@ const Statistics = () => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         {showFallbackData && !error && !showConnectionError && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
@@ -437,14 +413,14 @@ const Statistics = () => {
             <CardContent>
               <div className="text-2xl font-bold">{statistics?.uniqueApps || 0}</div>
               <p className="text-xs text-muted-foreground">
-                {statistics?.appUsageGrowth ? 
+                {statistics?.appUsageGrowth ?
                   `${statistics.appUsageGrowth > 0 ? '+' : ''}${statistics.appUsageGrowth} from last period` :
                   'No comparison data'
                 }
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -462,7 +438,7 @@ const Statistics = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -481,17 +457,17 @@ const Statistics = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Productivity Timeline Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Productivity Timeline</CardTitle>
             <CardDescription>
               Your focus vs distraction time over {
-                selectedTimeFrame === 'daily' ? 'today' : 
-                selectedTimeFrame === 'weekly' ? 'this week' : 
-                selectedTimeFrame === 'monthly' ? 'this month' :
-                'this year'
+                selectedTimeFrame === 'daily' ? 'today' :
+                  selectedTimeFrame === 'weekly' ? 'this week' :
+                    selectedTimeFrame === 'monthly' ? 'this month' :
+                      'this year'
               }
               {statistics?.period && (
                 <span className="ml-2 text-xs">
@@ -513,8 +489,8 @@ const Statistics = () => {
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis
+                    dataKey="name"
                     angle={selectedTimeFrame === 'monthly' || timelineData.length > 20 ? -45 : 0}
                     textAnchor={selectedTimeFrame === 'monthly' || timelineData.length > 20 ? "end" : "middle"}
                     height={selectedTimeFrame === 'monthly' || timelineData.length > 20 ? 50 : 30}
@@ -551,18 +527,17 @@ const Statistics = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
               <span>Focus Score Trends</span>
               {statistics?.focusScore !== undefined && (
-                <Badge 
-                  className={`text-lg ${
-                    statistics.focusScore >= 70 ? 'bg-green-100 text-green-800' : 
-                    statistics.focusScore >= 50 ? 'bg-amber-100 text-amber-800' : 
-                    'bg-red-100 text-red-800'
-                  }`}
+                <Badge
+                  className={`text-lg ${statistics.focusScore >= 70 ? 'bg-green-100 text-green-800' :
+                      statistics.focusScore >= 50 ? 'bg-amber-100 text-amber-800' :
+                        'bg-red-100 text-red-800'
+                    }`}
                 >
                   {statistics.focusScore}%
                 </Badge>
@@ -582,45 +557,45 @@ const Statistics = () => {
                       statistics.focusScore >= statistics.previousFocusScore ? (
                         <span className="text-green-600 flex items-center">
                           <TrendingUp className="h-4 w-4 mr-1" />
-                          {statistics.previousFocusScore === 0 ? '100' : 
-                            ((statistics.focusScore - statistics.previousFocusScore) / 
-                            (statistics.previousFocusScore || 1) * 100).toFixed(1)}%
+                          {statistics.previousFocusScore === 0 ? '100' :
+                            ((statistics.focusScore - statistics.previousFocusScore) /
+                              (statistics.previousFocusScore || 1) * 100).toFixed(1)}%
                         </span>
                       ) : (
                         <span className="text-red-600 flex items-center">
                           <TrendingDown className="h-4 w-4 mr-1" />
-                          {statistics.previousFocusScore === 0 ? '0' : 
-                            ((statistics.previousFocusScore - statistics.focusScore) / 
-                            (statistics.previousFocusScore || 1) * 100).toFixed(1)}%
+                          {statistics.previousFocusScore === 0 ? '0' :
+                            ((statistics.previousFocusScore - statistics.focusScore) /
+                              (statistics.previousFocusScore || 1) * 100).toFixed(1)}%
                         </span>
                       )
                     )}
                   </span>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Current Period</span>
                     <span>{statistics?.focusScore || 0}%</span>
                   </div>
-                  <Progress 
-                    value={statistics?.focusScore || 0} 
+                  <Progress
+                    value={statistics?.focusScore || 0}
                     className="h-2 bg-slate-100"
                   />
-                  
+
                   <div className="flex justify-between text-sm mt-4">
                     <span>Previous Period</span>
                     <span>{statistics?.previousFocusScore || 0}%</span>
                   </div>
-                  <Progress 
-                    value={statistics?.previousFocusScore || 0} 
+                  <Progress
+                    value={statistics?.previousFocusScore || 0}
                     className="h-2 bg-slate-100"
                   />
                 </div>
-                
+
                 <div className="mt-6 space-y-4">
                   <h4 className="font-medium text-sm">Productivity Insights</h4>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="border rounded-md p-3">
                       <div className="flex items-center gap-2 mb-1">
@@ -636,7 +611,7 @@ const Statistics = () => {
                         <span>{formatTime(statistics?.previousActiveTime)}</span>
                       </div>
                     </div>
-                    
+
                     <div className="border rounded-md p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="h-4 w-4 text-purple-600" />
@@ -654,52 +629,49 @@ const Statistics = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h4 className="font-medium text-sm mb-2">Focus Score Rating</h4>
-                <div className={`p-4 rounded-md mb-4 ${
-                  statistics?.focusScore >= 80 ? 'bg-green-50 border border-green-100' :
-                  statistics?.focusScore >= 60 ? 'bg-blue-50 border border-blue-100' :
-                  statistics?.focusScore >= 40 ? 'bg-amber-50 border border-amber-100' :
-                  'bg-red-50 border border-red-100'
-                }`}>
+                <div className={`p-4 rounded-md mb-4 ${statistics?.focusScore >= 80 ? 'bg-green-50 border border-green-100' :
+                    statistics?.focusScore >= 60 ? 'bg-blue-50 border border-blue-100' :
+                      statistics?.focusScore >= 40 ? 'bg-amber-50 border border-amber-100' :
+                        'bg-red-50 border border-red-100'
+                  }`}>
                   <div className="flex items-center justify-between">
                     <h5 className="font-medium">{
                       statistics?.focusScore >= 80 ? 'Excellent Focus' :
-                      statistics?.focusScore >= 60 ? 'Good Focus' :
-                      statistics?.focusScore >= 40 ? 'Moderate Focus' :
-                      'Needs Improvement'
+                        statistics?.focusScore >= 60 ? 'Good Focus' :
+                          statistics?.focusScore >= 40 ? 'Moderate Focus' :
+                            'Needs Improvement'
                     }</h5>
-                    <span className={`text-lg font-bold ${
-                      statistics?.focusScore >= 80 ? 'text-green-700' :
-                      statistics?.focusScore >= 60 ? 'text-blue-700' :
-                      statistics?.focusScore >= 40 ? 'text-amber-700' :
-                      'text-red-700'
-                    }`}>{statistics?.focusScore || 0}%</span>
+                    <span className={`text-lg font-bold ${statistics?.focusScore >= 80 ? 'text-green-700' :
+                        statistics?.focusScore >= 60 ? 'text-blue-700' :
+                          statistics?.focusScore >= 40 ? 'text-amber-700' :
+                            'text-red-700'
+                      }`}>{statistics?.focusScore || 0}%</span>
                   </div>
-                  
+
                   <p className="text-sm mt-2">{
                     statistics?.focusScore >= 80 ? 'Your focus performance is excellent! Keep up the great work.' :
-                    statistics?.focusScore >= 60 ? 'You\'re showing good focus habits. With a few adjustments, you could reach excellence.' :
-                    statistics?.focusScore >= 40 ? 'You\'re maintaining moderate focus. Consider ways to minimize distractions.' :
-                    'Your focus could use improvement. Try to identify and minimize distractions.'
+                      statistics?.focusScore >= 60 ? 'You\'re showing good focus habits. With a few adjustments, you could reach excellence.' :
+                        statistics?.focusScore >= 40 ? 'You\'re maintaining moderate focus. Consider ways to minimize distractions.' :
+                          'Your focus could use improvement. Try to identify and minimize distractions.'
                   }</p>
                 </div>
-                
+
                 <h4 className="font-medium text-sm mb-2">Productivity Tips</h4>
                 <ul className="text-sm space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-green-600 mt-0.5">•</span>
-                    {statistics?.mostProductiveHour ? 
+                    {statistics?.mostProductiveHour ?
                       `Schedule important tasks around your most productive hour (${statistics.mostProductiveHour}).` :
                       'Track your productivity to discover your most productive hours.'
                     }
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-600 mt-0.5">•</span>
-                    {statistics?.averageSessionLength ? 
-                      `Your average focus session is ${formatTime(statistics.averageSessionLength)}. Try the Pomodoro technique with ${
-                        statistics.averageSessionLength < 25 ? 'longer' : 'similar'
+                    {statistics?.averageSessionLength ?
+                      `Your average focus session is ${formatTime(statistics.averageSessionLength)}. Try the Pomodoro technique with ${statistics.averageSessionLength < 25 ? 'longer' : 'similar'
                       } intervals.` :
                       'Try the Pomodoro technique with 25-minute focus intervals.'
                     }
@@ -716,14 +688,14 @@ const Statistics = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Tabs defaultValue="apps" className="space-y-4">
           <TabsList>
             <TabsTrigger value="apps">App Usage</TabsTrigger>
             <TabsTrigger value="websites">Website Usage</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="apps" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -743,7 +715,7 @@ const Statistics = () => {
                             <div>
                               <p className="font-medium text-sm">{app._id}</p>
                               <p className="text-xs text-muted-foreground">
-                                {statistics.totalActiveTime ? 
+                                {statistics.totalActiveTime ?
                                   `${((app.totalTime / (statistics.totalActiveTime || 1)) * 100).toFixed(1)}% of total time` :
                                   `${app.visitCount || 1} sessions`
                                 }
@@ -760,7 +732,7 @@ const Statistics = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* App Usage Chart */}
                   {statistics?.topApps?.length > 0 && (
                     <div className="h-64 mt-6">
@@ -792,7 +764,7 @@ const Statistics = () => {
                   )}
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Usage Patterns</CardTitle>
@@ -804,28 +776,28 @@ const Statistics = () => {
                       <span className="text-sm font-medium">Most Productive Hour</span>
                       <Badge>{statistics?.mostProductiveHour || 'N/A'}</Badge>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Average Session Length</span>
                       <Badge variant="outline">{formatTime(statistics?.averageSessionLength)}</Badge>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Total Sessions</span>
                       <Badge variant="outline">{statistics?.totalSessions || 0}</Badge>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Longest Focus Session</span>
                       <Badge variant="outline">{formatTime(statistics?.longestFocusSession)}</Badge>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Current Streak</span>
                       <Badge>{statistics?.currentStreak || 0} days</Badge>
                     </div>
                   </div>
-                  
+
                   {/* Focus vs Distraction Donut Chart */}
                   <div className="h-64 mt-4">
                     <ResponsiveContainer width="100%" height="100%">
@@ -854,7 +826,7 @@ const Statistics = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="websites" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -874,10 +846,10 @@ const Statistics = () => {
                             <div>
                               <p className="font-medium text-sm">{website._id}</p>
                               <p className="text-xs text-muted-foreground">
-                                {website.visitCount ? `${website.visitCount} visits` : ''} 
+                                {website.visitCount ? `${website.visitCount} visits` : ''}
                                 {website.visitCount && statistics.totalActiveTime ? ' • ' : ''}
-                                {statistics.totalActiveTime ? 
-                                  `${((website.totalTime / (statistics.totalActiveTime || 1)) * 100).toFixed(1)}% of total time` : 
+                                {statistics.totalActiveTime ?
+                                  `${((website.totalTime / (statistics.totalActiveTime || 1)) * 100).toFixed(1)}% of total time` :
                                   ''}
                               </p>
                             </div>
@@ -892,7 +864,7 @@ const Statistics = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Website Usage Chart */}
                   {statistics?.topWebsites?.length > 0 && (
                     <div className="h-64 mt-6">
@@ -924,7 +896,7 @@ const Statistics = () => {
                   )}
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Website Categories</CardTitle>
@@ -943,13 +915,13 @@ const Statistics = () => {
                               {formatTime(category.totalTime)}
                             </span>
                           </div>
-                          <Progress 
+                          <Progress
                             value={
-                              statistics.totalActiveTime ? 
-                                (category.totalTime / statistics.totalActiveTime) * 100 : 
+                              statistics.totalActiveTime ?
+                                (category.totalTime / statistics.totalActiveTime) * 100 :
                                 0
-                            } 
-                            className="h-2" 
+                            }
+                            className="h-2"
                           />
                         </div>
                       ))}
@@ -964,7 +936,7 @@ const Statistics = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="categories" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -997,7 +969,7 @@ const Statistics = () => {
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   </div>
-                  
+
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium flex items-center gap-2">
@@ -1016,8 +988,8 @@ const Statistics = () => {
                     <div className="flex justify-between items-center pt-2 border-t">
                       <span className="text-sm font-medium">Productivity Ratio</span>
                       <span className="font-medium">
-                        {statistics?.totalActiveTime ? 
-                          `${((statistics.focusTime / (statistics.totalActiveTime || 1)) * 100).toFixed(1)}%` : 
+                        {statistics?.totalActiveTime ?
+                          `${((statistics.focusTime / (statistics.totalActiveTime || 1)) * 100).toFixed(1)}%` :
                           '0%'
                         }
                       </span>
@@ -1025,7 +997,7 @@ const Statistics = () => {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Daily Activity Distribution</CardTitle>
@@ -1055,7 +1027,7 @@ const Statistics = () => {
                       <p className="text-muted-foreground">No hourly activity data available</p>
                     </div>
                   )}
-                  
+
                   <div className="mt-4">
                     <h4 className="font-medium mb-2">Activity Insights</h4>
                     <ul className="space-y-1 text-sm">

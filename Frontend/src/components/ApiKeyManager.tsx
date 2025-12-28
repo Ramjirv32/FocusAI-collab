@@ -101,20 +101,17 @@ const ApiKeyManager = () => {
                 setCurrentApiKey(newApiKey);
                 setTestStatus('success');
 
-                // Check if services were auto-restarted (Windows) or need manual restart (Linux)
-                if (data.autoRestarted) {
-                    setTestMessage('✅ API key updated and services restarted automatically!');
-                    // Auto-close after showing success message
-                    setTimeout(() => {
-                        setIsOpen(false);
-                        setNewApiKey('');
-                        setTestStatus('idle');
-                    }, 2000);
-                } else {
-                    // Linux/Mac - show persistent message with restart command
-                    setTestMessage(data.message || 'API key updated! Please restart services: sudo systemctl restart focusai-backend focusai-ai');
-                    // Don't auto-close so user can see the restart command
-                }
+                // Show persistent restart message as requested
+                const restartMsg = data.autoRestarted
+                    ? '✅ API key updated! Services are restarting automatically. Please wait a moment.'
+                    : '⚠️ API key updated! Please restart services manually to apply changes: sudo systemctl restart focusai-backend focusai-ai';
+
+                setTestMessage(restartMsg);
+
+                // Set a flag in localStorage for persistence until actual restart is confirmed (or page reloaded)
+                localStorage.setItem('focusai_restart_pending', 'true');
+
+                // We stay in the same page/dialog as requested
             } else {
                 setTestStatus('error');
                 setTestMessage(data.error || 'Failed to update API key');

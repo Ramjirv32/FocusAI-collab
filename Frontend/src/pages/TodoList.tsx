@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,13 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { 
-  Plus, 
-  Trash2, 
-  Edit, 
-  Calendar, 
-  CheckCircle2, 
-  Circle, 
+import {
+  Plus,
+  Trash2,
+  Edit,
+  Calendar,
+  CheckCircle2,
+  Circle,
   AlertCircle,
   Filter,
   ListTodo,
@@ -24,7 +25,9 @@ import {
   List,
   CalendarDays,
   Bell,
-  BellOff
+  BellOff,
+  BellRing,
+  Settings
 } from 'lucide-react';
 import { todoService, Todo, CreateTodoData, TodoStats } from '@/services/todoService';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
@@ -33,6 +36,7 @@ import TodoAlert from '@/components/Todo/TodoAlert';
 import { useTodoAlerts } from '@/hooks/useTodoAlerts';
 
 const TodoList = () => {
+  const navigate = useNavigate();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [stats, setStats] = useState<TodoStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,11 +46,11 @@ const TodoList = () => {
   const [activeTab, setActiveTab] = useState<'list' | 'calendar'>('list');
 
   // Todo Alert System
-  const { 
-    currentAlert, 
-    isMonitoring, 
-    dismissAlert, 
-    completeTask, 
+  const {
+    currentAlert,
+    isMonitoring,
+    dismissAlert,
+    completeTask,
     snoozeAlert,
     startMonitoring,
     stopMonitoring,
@@ -74,7 +78,7 @@ const TodoList = () => {
       } else if (filter === 'overdue') {
         filterParams.overdue = true;
       }
-      
+
       if (priorityFilter !== 'all') {
         filterParams.priority = priorityFilter;
       }
@@ -118,7 +122,7 @@ const TodoList = () => {
         ...newTodo,
         dueDate: newTodo.dueDate || undefined
       };
-      
+
       await todoService.createTodo(todoData);
       setIsCreateDialogOpen(false);
       setNewTodo({
@@ -196,13 +200,13 @@ const TodoList = () => {
     if (isMonitoring) {
       stopMonitoring();
       toast({
-        title: 'Alerts Disabled',
-        description: 'Todo due time alerts have been disabled',
+        title: 'Alerts Paused',
+        description: 'Todo alerts are paused for this session. Visit Settings to disable permanently.',
       });
     } else {
       startMonitoring();
       toast({
-        title: 'Alerts Enabled',
+        title: 'Alerts Resumed',
         description: 'You will receive alerts for tasks due within 15 minutes',
       });
     }
@@ -267,34 +271,35 @@ const TodoList = () => {
             <p className="text-muted-foreground">Manage your tasks and stay productive</p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {/* Alert Status Toggle */}
             <Button
-              variant={isMonitoring ? "default" : "outline"}
+              variant={isMonitoring ? "outline" : "secondary"}
               size="sm"
               onClick={toggleAlertMonitoring}
-              className="flex items-center gap-2"
+              className={isMonitoring ? "text-primary border-primary/20" : "bg-primary text-primary-foreground"}
             >
-              {isMonitoring ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
-              {isMonitoring ? 'Alerts On' : 'Alerts Off'}
+              {isMonitoring ? (
+                <><BellRing className="h-4 w-4 mr-2" /> Alerts On</>
+              ) : (
+                <><BellOff className="h-4 w-4 mr-2" /> Alerts Paused</>
+              )}
             </Button>
 
-            {/* Test Alert Button (for development/testing) */}
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              onClick={triggerCheck}
-              className="text-muted-foreground"
-              title="Check for upcoming tasks"
+              onClick={() => navigate('/settings')}
+              title="Configure persistent alert settings"
             >
-              <AlertTriangle className="h-4 w-4" />
+              <Settings className="h-4 w-4" />
             </Button>
 
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Todo
+                  Add Task
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
@@ -326,8 +331,8 @@ const TodoList = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="priority">Priority</Label>
-                      <Select 
-                        value={newTodo.priority} 
+                      <Select
+                        value={newTodo.priority}
                         onValueChange={(value: any) => setNewTodo({ ...newTodo, priority: value })}
                       >
                         <SelectTrigger>
@@ -363,8 +368,8 @@ const TodoList = () => {
                     <Button onClick={handleCreateTodo} className="flex-1">
                       Create Todo
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setIsCreateDialogOpen(false)}
                     >
                       Cancel

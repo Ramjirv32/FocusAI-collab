@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { 
-  Home, 
-  BarChart3, 
-  Settings, 
-  User, 
-  HelpCircle, 
-  LogOut, 
+import {
+  Home,
+  BarChart3,
+  Settings,
+  User,
+  HelpCircle,
+  LogOut,
   ChevronLeft,
   ChevronRight,
   Activity,
@@ -66,19 +66,14 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       path: '/chat-assistant',
       description: 'AI Productivity Assistant'
     },
-     {
+    {
       title: 'Notifications',
       icon: Bell,
       path: '/notifications',
       description: 'Alerts & Updates'
     },
- 
-    {
-      title: 'Help & Support',
-      icon: HelpCircle,
-      path: '/help',
-      description: 'Get Help'
-    },
+
+
     {
       title: 'Settings',
       icon: Settings,
@@ -95,7 +90,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
   ];
 
   const bottomMenuItems = [
-   
+
   ];
 
   const handleLogout = async () => {
@@ -120,8 +115,8 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       onClick={() => item.isLogout ? handleLogout() : handleMenuClick(item.path)}
       className={cn(
         "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group text-left",
-        isActive 
-          ? "bg-primary text-primary-foreground shadow-sm" 
+        isActive
+          ? "bg-primary text-primary-foreground shadow-sm"
           : "hover:bg-muted/50 text-muted-foreground hover:text-foreground"
       )}
     >
@@ -144,8 +139,8 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
     <aside className={cn(
       "bg-background border-r transition-all duration-300 ease-in-out flex flex-col",
       // Position and sizing
-      isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000) 
-        ? "fixed left-0 top-0 z-40 h-screen" 
+      isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000)
+        ? "fixed left-0 top-0 z-40 h-screen"
         : "relative h-screen",
       collapsed ? "w-16" : "w-64",
       // Hide completely when collapsed on mobile/small screens

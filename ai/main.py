@@ -1,4 +1,4 @@
-# Load user configuration FIRST (before anything else)
+
 import load_config
 
 from fastapi import FastAPI, HTTPException
@@ -16,10 +16,8 @@ import numpy as np
 import uvicorn
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Configuration from environment variables
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:5001')
 AI_SERVICE_PORT = int(os.getenv('AI_SERVICE_PORT', '8000'))
 AI_SERVICE_HOST = os.getenv('AI_SERVICE_HOST', '0.0.0.0')
@@ -28,21 +26,16 @@ print(f"🔧 Configuration loaded:")
 print(f"   Backend URL: {BACKEND_URL}")
 print(f"   AI Service: {AI_SERVICE_HOST}:{AI_SERVICE_PORT}")
 
-
-# Global variables for model
 model = None
-app_name_encoder = None
-tab_name_encoder = None
-label_encoder = None
+tfidf_app_vectorizer = None
+tfidf_tab_vectorizer = None
+model_metadata = None
 
-# Global variable for background task
 background_task = None
 is_fetching_enabled = True
 
-# Initialize the global data storage
 REAL_MONGODB_DATA = []
 
-# Define the response models
 class FocusActivity(BaseModel):
     app_name: str
     tab_title: str
@@ -91,89 +84,57 @@ class ProductivitySummaryResponse(BaseModel):
     most_used_app: str
     distraction_apps: Dict[str, int]
 
-# Enhanced data processing function with tab and app separation
 def process_user_data(user_data):
-    """Process user app and tab data separately and calculate productivity metrics"""
     try:
         app_usage = user_data.get("appUsage", [])
         tab_usage = user_data.get("tabUsage", [])
-        
-        # Define productivity classifications
-        productive_apps = ["Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs", "Git", "Docker"]
-        distraction_apps = ["Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", "TikTok", "Reddit", "Gaming", "Steam"]
-        
-        # Process app usage
         productive_content = {}
         non_productive_content = {}
         total_productive_time = 0
         total_non_productive_time = 0
-        
-        print(f"🔄 Processing {len(app_usage)} app records and {len(tab_usage)} tab records...")
-        
-        # Process applications
+        print(f"🔄 Processing {len(app_usage)} app records and {len(tab_usage)} tab records with XGBoost model...")
         for app in app_usage:
             if not isinstance(app, dict):
                 continue
-                
             app_name = app.get("appName", "")
             duration = app.get("duration", 0)
-            
             if not app_name or duration <= 0:
                 continue
-            
-            # Classify app as productive or non-productive
-            is_productive = any(prod_app.lower() in app_name.lower() for prod_app in productive_apps)
-            is_distraction = any(dist_app.lower() in app_name.lower() for dist_app in distraction_apps)
-            
-            if is_productive:
+            prediction = predict_with_xgboost(app_name, app_name, duration)
+            if prediction['label'] == 'Productive':
                 productive_content[app_name] = productive_content.get(app_name, 0) + duration
                 total_productive_time += duration
-            elif is_distraction:
+            else:
                 non_productive_content[app_name] = non_productive_content.get(app_name, 0) + duration
                 total_non_productive_time += duration
-            else:
-                # Default unknown apps to productive (could be work-related)
-                productive_content[app_name] = productive_content.get(app_name, 0) + duration
-                total_productive_time += duration
-        
-        # Process tab usage (browser tabs)
         for tab in tab_usage:
             if not isinstance(tab, dict):
                 continue
-                
             domain = tab.get("domain", tab.get("title", "Browser"))
             duration = tab.get("duration", 0)
-            
             if not domain or duration <= 0:
                 continue
-            
-            # Classify tab based on domain
             tab_name = f"Browser - {domain}"
-            is_social_media = any(social in domain.lower() for social in ["youtube", "facebook", "twitter", "instagram", "tiktok", "reddit"])
-            is_productive_site = any(prod in domain.lower() for prod in ["github", "stackoverflow", "docs", "documentation", "gitlab", "bitbucket"])
-            
-            if is_social_media:
-                non_productive_content[tab_name] = non_productive_content.get(tab_name, 0) + duration
-                total_non_productive_time += duration
-            elif is_productive_site:
+            prediction = predict_with_xgboost("Browser", domain, duration)
+            print(f"🔍 Tab: '{domain}' ({duration}s) → {prediction['label']} ({prediction['confidence']:.0%})")
+            if prediction['label'] == 'Productive':
                 productive_content[tab_name] = productive_content.get(tab_name, 0) + duration
                 total_productive_time += duration
             else:
-                # Default to productive for work-related browsing
-                productive_content[tab_name] = productive_content.get(tab_name, 0) + duration
-                total_productive_time += duration
+                non_productive_content[tab_name] = non_productive_content.get(tab_name, 0) + duration
+                total_non_productive_time += duration
         
-        # Calculate metrics
+        
         overall_total_usage = total_productive_time + total_non_productive_time
         focus_score = int((total_productive_time / overall_total_usage * 100) if overall_total_usage > 0 else 0)
         distraction_score = int((total_non_productive_time / overall_total_usage * 100) if overall_total_usage > 0 else 0)
         
-        # Find most productive and most used apps
+        
         max_productive_app = max(productive_content.items(), key=lambda x: x[1])[0] if productive_content else ""
         all_apps = {**productive_content, **non_productive_content}
         most_used_app = max(all_apps.items(), key=lambda x: x[1])[0] if all_apps else ""
         
-        # Find most visited tab (from tab usage)
+        
         most_visited_tab = ""
         if tab_usage:
             tab_durations = {tab.get("domain", "Browser"): tab.get("duration", 0) for tab in tab_usage if isinstance(tab, dict)}
@@ -214,8 +175,114 @@ def process_user_data(user_data):
             "distraction_apps": {},
         }
         
+def predict_with_xgboost(app_name, tab_name, duration):
+    global model, tfidf_app_vectorizer, tfidf_tab_vectorizer, model_metadata
+    
+    try:
+        if 'ai' in app_name.lower() or 'ai' in tab_name.lower():
+            return {
+                'label': 'Productive',
+                'confidence': 0.95
+            }
+        if model is None or tfidf_app_vectorizer is None or tfidf_tab_vectorizer is None:
+            
+            return predict_with_rules(app_name, tab_name, duration)
+        
+        
+        current_hour = datetime.now().hour
+        
+        
+        app_tfidf = tfidf_app_vectorizer.transform([app_name]).toarray()
+        app_df_dict = {f'app_{i}': app_tfidf[0][i] for i in range(app_tfidf.shape[1])}
+        
+        
+        tab_tfidf = tfidf_tab_vectorizer.transform([tab_name]).toarray()
+        tab_df_dict = {f'tab_{i}': tab_tfidf[0][i] for i in range(tab_tfidf.shape[1])}
+        
+        
+        duration_minutes = duration / 60
+        duration_dict = {
+            'duration': duration,
+            'duration_minutes': duration_minutes,
+            'duration_log': np.log1p(duration),
+            'duration_squared': duration ** 2,
+            'duration_sqrt': np.sqrt(duration),
+        }
+        
+        
+        temporal_dict = {
+            'hour': current_hour,
+            'is_working_hours': 1 if 9 <= current_hour <= 17 else 0,
+            'is_early_morning': 1 if 6 <= current_hour < 9 else 0,
+            'is_late_night': 1 if current_hour >= 18 or current_hour < 6 else 0,
+            'hour_sin': np.sin(2 * np.pi * current_hour / 24),
+            'hour_cos': np.cos(2 * np.pi * current_hour / 24),
+        }
+        
+        
+        source_cols = [col for col in model_metadata['feature_names'] if col.startswith('source_')]
+        type_cols = [col for col in model_metadata['feature_names'] if col.startswith('type_')]
+        
+        source_dict = {col: 0 for col in source_cols}
+        type_dict = {col: 0 for col in type_cols}
+        
+        
+        features_dict = {**app_df_dict, **tab_df_dict, **duration_dict, **temporal_dict, **source_dict, **type_dict}
+        
+        
+        import pandas as pd
+        X_sample = pd.DataFrame([features_dict])
+        X_sample = X_sample[model_metadata['feature_names']]
+        
+        
+        prediction = model.predict(X_sample)[0]
+        probability = model.predict_proba(X_sample)[0]
+        confidence = float(max(probability))
+        
+        label = 'Productive' if prediction == 1 else 'Non-Productive'
+        
+        return {
+            'label': label,
+            'confidence': confidence
+        }
+    
+    except Exception as e:
+        print(f"❌ Error in XGBoost prediction: {e}")
+        
+        return predict_with_rules(app_name, tab_name, duration)
+
+def predict_with_rules(app_name, tab_name, duration):
+    productive_apps = ["Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", 
+                      "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs", "Git", "Docker", "Cursor",
+                      "GitHub", "GitLab", "Notion", "Asana", "Jira", "Trello", "Antigravity", "FocusAI", 
+                      "focuai", "visual studio", "windsurf", "sublime", "android studio", "xcode"]
+    distraction_apps = ["Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", 
+                       "TikTok", "Reddit", "Gaming", "Steam", "Twitch", "hulu", "disney", "prime video"]
+    
+    
+    if any(prod_app.lower() in app_name.lower() for prod_app in productive_apps):
+        return {'label': 'Productive', 'confidence': 0.85}
+    elif any(dist_app.lower() in app_name.lower() for dist_app in distraction_apps):
+        return {'label': 'Non-Productive', 'confidence': 0.80}
+    
+    browsers = ["browser", "chrome", "firefox", "chromium", "brave", "edge", "safari", "opera"]
+    if any(b in app_name.lower() for b in browsers):
+        
+        if any(social in tab_name.lower() for social in ["youtube", "facebook", "twitter", "instagram", "tiktok"]):
+            return {'label': 'Non-Productive', 'confidence': 0.75}
+        elif any(prod in tab_name.lower() for prod in ["github", "stackoverflow", "docs", "documentation"]):
+            return {'label': 'Productive', 'confidence': 0.75}
+        else:
+            return {'label': 'Productive', 'confidence': 0.65}  
+    else:
+        
+        
+        if duration > 300:
+            return {'label': 'Productive', 'confidence': 0.60}
+        else:
+            return {'label': 'Non-Productive', 'confidence': 0.60}
+
 def process_real_data(app_data):
-    """Process raw MongoDB app usage data into focus activities - Legacy function for compatibility"""
     try:
         activities = []
         
@@ -223,13 +290,13 @@ def process_real_data(app_data):
             print("⚠️ No app data provided for processing")
             return activities
         
-        # Handle both old format (list) and new format (dict with appUsage/tabUsage)
+        
         if isinstance(app_data, dict) and ("appUsage" in app_data or "tabUsage" in app_data):
-            # New format - process both app and tab data
+            
             all_apps = []
             all_apps.extend(app_data.get("appUsage", []))
             
-            # Convert tab data to app format
+            
             for tab in app_data.get("tabUsage", []):
                 if isinstance(tab, dict):
                     domain = tab.get("domain", tab.get("title", "Browser"))
@@ -243,11 +310,7 @@ def process_real_data(app_data):
             
             app_data = all_apps
         
-        # Define productivity classifications based on app names
-        productive_apps = ["Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs"]
-        distraction_apps = ["Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", "TikTok", "Reddit", "Gaming"]
-        
-        print(f"🔄 Processing {len(app_data)} app records...")
+        print(f"🔄 Processing {len(app_data)} app records with XGBoost model...")
         
         for app in app_data:
             if not isinstance(app, dict):
@@ -259,30 +322,15 @@ def process_real_data(app_data):
             if not app_name or duration <= 0:
                 continue
             
-            # Simple classification based on app name
-            if any(prod_app.lower() in app_name.lower() for prod_app in productive_apps):
-                predicted_label = "Focused"
-                confidence = 0.85
-            elif any(dist_app.lower() in app_name.lower() for dist_app in distraction_apps):
-                predicted_label = "Distracted"
-                confidence = 0.80
-            elif "browser" in app_name.lower() or "chrome" in app_name.lower() or "firefox" in app_name.lower():
-                # Browser apps - check the domain/title for better classification
-                if any(social in app_name.lower() for social in ["youtube", "facebook", "twitter", "instagram"]):
-                    predicted_label = "Distracted"
-                    confidence = 0.75
-                else:
-                    predicted_label = "Focused"  # Assume work-related browsing
-                    confidence = 0.65
-            else:
-                # For unknown apps, use duration as a heuristic
-                # Short sessions might be distractions, longer sessions might be productive
-                predicted_label = "Focused" if duration > 300 else "Distracted"
-                confidence = 0.60
+            
+            prediction_result = predict_with_xgboost(app_name, app_name, duration)
+            
+            predicted_label = "Focused" if prediction_result['label'] == 'Productive' else "Distracted"
+            confidence = prediction_result['confidence']
                 
             activity = FocusActivity(
                 app_name=app_name,
-                tab_title=app_name,  # Use app name as tab title for simplicity
+                tab_title=app_name,  
                 duration=int(duration),
                 predicted_label=predicted_label,
                 confidence=confidence
@@ -290,20 +338,18 @@ def process_real_data(app_data):
             
             activities.append(activity)
             
-        print(f"✅ Processed {len(activities)} activities")
+        print(f"✅ Processed {len(activities)} activities with XGBoost model")
         return activities
         
     except Exception as e:
         print(f"❌ Error processing data: {str(e)}")
         return []
 
-# Function to get existing productivity summary from backend
 async def get_existing_productivity_summary(user_id: str, email: str, date: str):
-    """Fetch existing productivity summary from backend"""
     try:
         backend_url = BACKEND_URL
         
-        # Try to get existing summary
+        
         response = requests.get(f"{backend_url}/api/productivity-summary", 
                               params={"date": date}, 
                               headers={"Authorization": f"Bearer {get_user_token(user_id)}"}, 
@@ -312,7 +358,7 @@ async def get_existing_productivity_summary(user_id: str, email: str, date: str)
         if response.status_code == 200:
             data = response.json()
             if data.get("success") and data.get("summaries"):
-                summary = data["summaries"][0]  # Get first summary
+                summary = data["summaries"][0]  
                 print(f"✅ Found existing productivity summary for {email} on {date}")
                 return summary
         
@@ -323,16 +369,14 @@ async def get_existing_productivity_summary(user_id: str, email: str, date: str)
         print(f"❌ Error fetching existing summary: {e}")
         return None
 
-# Function to update backend with incremental data
 async def update_backend_productivity_summary(user_id: str, email: str, date: str, new_metrics: dict, existing_summary: dict = None):
-    """Update backend with incremental productivity data"""
     try:
         backend_url = BACKEND_URL
         
         if existing_summary:
             print(f"🔄 Calculating incremental updates...")
             
-            # Calculate incremental changes
+            
             existing_productive = existing_summary.get("totalProductiveTime", 0)
             existing_non_productive = existing_summary.get("totalNonProductiveTime", 0)
             existing_total = existing_summary.get("overallTotalUsage", 0)
@@ -341,7 +385,7 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
             new_non_productive = new_metrics["total_non_productive_time"]
             new_total = new_metrics["overall_total_usage"]
             
-            # Calculate differential (only add new time)
+            
             productive_diff = max(0, new_productive - existing_productive)
             non_productive_diff = max(0, new_non_productive - existing_non_productive)
             total_diff = max(0, new_total - existing_total)
@@ -351,34 +395,34 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
             print(f"   Non-productive time diff: +{non_productive_diff}s")
             print(f"   Total time diff: +{total_diff}s")
             
-            # Update existing content maps
+            
             updated_productive_content = existing_summary.get("productiveContent", {})
             updated_non_productive_content = existing_summary.get("nonProductiveContent", {})
             
-            # Add new productive content incrementally
+            
             for app, duration in new_metrics["productive_content"].items():
                 if app in updated_productive_content:
-                    # Add only the difference
+                    
                     existing_duration = updated_productive_content[app]
                     increment = max(0, duration - existing_duration)
                     updated_productive_content[app] = existing_duration + increment
                 else:
                     updated_productive_content[app] = duration
             
-            # Add new non-productive content incrementally
+            
             for app, duration in new_metrics["non_productive_content"].items():
                 if app in updated_non_productive_content:
-                    # Add only the difference
+                    
                     existing_duration = updated_non_productive_content[app]
                     increment = max(0, duration - existing_duration)
                     updated_non_productive_content[app] = existing_duration + increment
                 else:
                     updated_non_productive_content[app] = duration
             
-            # Prepare update payload
+            
             update_payload = {
                 "appUsageData": [{"appName": app, "duration": dur} for app, dur in updated_productive_content.items()],
-                "tabUsageData": [],  # Could be enhanced to include tab data
+                "tabUsageData": [],  
                 "date": date,
                 "incrementalUpdate": True,
                 "totalProductiveTime": existing_productive + productive_diff,
@@ -387,7 +431,7 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
             }
         else:
             print(f"🆕 Creating new productivity summary...")
-            # Create new summary
+            
             update_payload = {
                 "appUsageData": [{"appName": app, "duration": dur} for app, dur in new_metrics["productive_content"].items()],
                 "tabUsageData": [],
@@ -398,7 +442,7 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
                 "overallTotalUsage": new_metrics["overall_total_usage"]
             }
         
-        # Send update to backend
+        
         response = requests.post(f"{backend_url}/api/productivity-summary",
                                json=update_payload,
                                headers={"Authorization": f"Bearer {get_user_token(user_id)}"}, 
@@ -416,16 +460,12 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
         print(f"❌ Error updating backend productivity summary: {e}")
         return None
 
-# Helper function to get user token (implement based on your auth system)
 def get_user_token(user_id: str):
-    """Get authentication token for user - implement based on your auth system"""
-    # This is a placeholder - you'll need to implement actual token retrieval
-    # For now, return empty string as your backend might not require auth for this endpoint
+    
+    
     return ""
 
-# Legacy function - kept for compatibility  
 def process_legacy_data(app_data):
-    """Process raw MongoDB app usage data into focus activities"""
     try:
         activities = []
         
@@ -433,7 +473,7 @@ def process_legacy_data(app_data):
             print("⚠️ No app data provided for processing")
             return activities
         
-        # Define productivity classifications based on app names
+        
         productive_apps = ["Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs"]
         distraction_apps = ["Netflix", "Spotify", "YouTube", "Twitter", "Instagram", "Facebook", "TikTok", "Reddit", "Gaming"]
         
@@ -449,7 +489,7 @@ def process_legacy_data(app_data):
             if not app_name or duration <= 0:
                 continue
             
-            # Simple classification based on app name
+            
             if any(prod_app.lower() in app_name.lower() for prod_app in productive_apps):
                 predicted_label = "Focused"
                 confidence = 0.85
@@ -457,22 +497,22 @@ def process_legacy_data(app_data):
                 predicted_label = "Distracted"
                 confidence = 0.80
             elif "browser" in app_name.lower() or "chrome" in app_name.lower() or "firefox" in app_name.lower():
-                # Browser apps - check the domain/title for better classification
+                
                 if any(social in app_name.lower() for social in ["youtube", "facebook", "twitter", "instagram"]):
                     predicted_label = "Distracted"
                     confidence = 0.75
                 else:
-                    predicted_label = "Focused"  # Assume work-related browsing
+                    predicted_label = "Focused"  
                     confidence = 0.65
             else:
-                # For unknown apps, use duration as a heuristic
-                # Short sessions might be distractions, longer sessions might be productive
+                
+                
                 predicted_label = "Focused" if duration > 300 else "Distracted"
                 confidence = 0.60
                 
             activity = FocusActivity(
                 app_name=app_name,
-                tab_title=app_name,  # Use app name as tab title for simplicity
+                tab_title=app_name,  
                 duration=int(duration),
                 predicted_label=predicted_label,
                 confidence=confidence
@@ -487,9 +527,7 @@ def process_legacy_data(app_data):
         print(f"❌ Error processing data: {str(e)}")
         return []
 
-# Add this function to categorize activities by focus/distraction
 def categorize_activities(activities):
-    """Group activities into focus and distraction areas"""
     try:
         focus_areas = {}
         distraction_areas = {}
@@ -518,7 +556,7 @@ def categorize_activities(activities):
                 area["apps"].append(activity.app_name)
             area["confidences"].append(activity.confidence)
         
-        # Convert to list of AppCategoryItem and calculate average confidence
+        
         focus_items = []
         for _, area in focus_areas.items():
             avg_confidence = sum(area["confidences"]) / len(area["confidences"]) if area["confidences"] else 0
@@ -547,9 +585,7 @@ def categorize_activities(activities):
         print(f"❌ Error categorizing activities: {str(e)}")
         return [], []
 
-# Add this function to generate summary statistics
 def generate_summary(activities):
-    """Generate summary statistics from activities"""
     try:
         focused_activities = [a for a in activities if a.predicted_label.lower() == "focused"]
         distracted_activities = [a for a in activities if a.predicted_label.lower() == "distracted"]
@@ -558,10 +594,10 @@ def generate_summary(activities):
         distracted_duration = sum(a.duration for a in distracted_activities)
         total_duration = focused_duration + distracted_duration
         
-        # Calculate productivity score (percentage of focused time)
+        
         productivity_score = int((focused_duration / total_duration * 100) if total_duration > 0 else 0)
         
-        # Find most focused and distracting apps
+        
         focused_apps = Counter([a.app_name for a in focused_activities])
         distracted_apps = Counter([a.app_name for a in distracted_activities])
         
@@ -570,7 +606,7 @@ def generate_summary(activities):
         
         return FocusSummary(
             productivity_score=productivity_score,
-            focused_duration_minutes=focused_duration // 60,  # Convert seconds to minutes
+            focused_duration_minutes=focused_duration // 60,  
             distracted_duration_minutes=distracted_duration // 60,
             total_duration_minutes=total_duration // 60,
             most_focused_app=most_focused_app,
@@ -591,7 +627,6 @@ def generate_summary(activities):
         )
 
 def create_placeholder_model():
-    """Create placeholder model files if they don't exist"""
     try:
         import numpy as np
         from sklearn.ensemble import RandomForestClassifier
@@ -600,35 +635,35 @@ def create_placeholder_model():
         
         print("🔧 Creating placeholder model files...")
         
-        # Remove existing model files if they exist to avoid compatibility issues
+        
         model_files = ['focus_model.pkl', 'app_name_encoder.pkl', 'tab_name_encoder.pkl', 'label_encoder.pkl']
         for file in model_files:
             if os.path.exists(file):
                 os.remove(file)
                 print(f"🗑️ Removed existing {file}")
         
-        # Create simple app name encoder
+        
         app_name_encoder = LabelEncoder()
         app_names = ['Chrome', 'VS Code', 'Code', 'MongoDB Compass', 'Google-chrome', 'Gnome-terminal', 'focusai-app', 'Gnome-control-center']
         app_name_encoder.fit(app_names)
         joblib.dump(app_name_encoder, 'app_name_encoder.pkl')
         
-        # Create simple tab name encoder
+        
         tab_name_encoder = LabelEncoder()
         tab_names = ['Chrome - Activity', 'VS Code - Activity', 'Code - Activity', 'MongoDB Compass - Activity', 
                     'Google-chrome - Activity', 'Gnome-terminal - Activity', 'YouTube - Comedy Clips']
         tab_name_encoder.fit(tab_names)
         joblib.dump(tab_name_encoder, 'tab_name_encoder.pkl')
         
-        # Create simple label encoder
+        
         label_encoder = LabelEncoder()
         labels = ['Focused', 'Distracted']
         label_encoder.fit(labels)
         joblib.dump(label_encoder, 'label_encoder.pkl')
         
-        # Create simple random forest model with current sklearn version
+        
         X_dummy = np.array([[0, 0, 100], [0, 0, 200], [1, 1, 300], [1, 1, 400]])
-        y_dummy = np.array([0, 0, 1, 1])  # 0: Distracted, 1: Focused
+        y_dummy = np.array([0, 0, 1, 1])  
         
         model = RandomForestClassifier(n_estimators=10, random_state=42)
         model.fit(X_dummy, y_dummy)
@@ -640,15 +675,13 @@ def create_placeholder_model():
         print(f"❌ Error creating placeholder models: {e}")
         return False
 
-# Add this function to fetch real MongoDB data from backend
 async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: str = None):
-    """Fetch real MongoDB data from the backend for a specific user"""
     try:
         backend_url = BACKEND_URL
         
         print(f"🔄 Fetching data for user {user_id}, email {email}, date {date}")
         
-        # Try different backend endpoints
+        
         endpoints_to_try = [
             f"{backend_url}/g",
             f"{backend_url}/api/user-data",
@@ -656,7 +689,7 @@ async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: 
         
         for endpoint in endpoints_to_try:
             try:
-                # Add query parameters if provided
+                
                 params = {}
                 if user_id:
                     params['userId'] = user_id
@@ -672,15 +705,15 @@ async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: 
                     backend_data = response.json()
                     print(f"✅ Fetched backend data from {endpoint}")
                     
-                    # Process and format the data
+                    
                     formatted_data = []
                     
-                    # Process app usage data
+                    
                     app_usage = backend_data.get('appUsage', [])
                     if isinstance(app_usage, list):
                         for app in app_usage:
                             if isinstance(app, dict):
-                                # Filter by user if specified
+                                
                                 if user_id and str(app.get('userId')) != str(user_id):
                                     continue
                                 if email and app.get('email') != email:
@@ -697,12 +730,12 @@ async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: 
                                     "lastUpdated": app.get('lastUpdated', datetime.now().isoformat())
                                 })
                     
-                    # Process tab usage data as additional app entries
+                    
                     tab_usage = backend_data.get('tabUsage', [])
                     if isinstance(tab_usage, list):
                         for tab in tab_usage:
                             if isinstance(tab, dict):
-                                # Filter by user if specified
+                                
                                 if user_id and str(tab.get('userId')) != str(user_id):
                                     continue
                                 if email and tab.get('email') != email:
@@ -710,7 +743,7 @@ async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: 
                                 if date and tab.get('date') != date:
                                     continue
                                 
-                                # Convert tab to app format
+                                
                                 app_name = tab.get('domain', tab.get('title', 'Browser'))
                                 if app_name and app_name != 'unknown':
                                     formatted_data.append({
@@ -732,7 +765,7 @@ async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: 
                 print(f"⚠️ Could not fetch from {endpoint}: {e}")
                 continue
         
-        # If no backend endpoints worked, return empty list
+        
         print("⚠️ All backend endpoints failed, returning empty data")
         return []
         
@@ -740,28 +773,26 @@ async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: 
         print(f"❌ Error fetching MongoDB data: {e}")
         return []
 
-# Update the periodic fetch to use the new function
 async def fetch_data_periodically():
-    """Background task to fetch data from backend every minute"""
     global REAL_MONGODB_DATA, is_fetching_enabled
     
     while is_fetching_enabled:
         try:
             print("🔄 Running periodic data fetch from MongoDB...")
             
-            # Fetch fresh data from MongoDB
+            
             fresh_data = await fetch_real_mongodb_data()
             
             if fresh_data:
-                # Update global data with fresh MongoDB data
+                
                 current_date = datetime.now().strftime("%Y-%m-%d")
                 
-                # Remove old data for current date
+                
                 REAL_MONGODB_DATA = [
                     x for x in REAL_MONGODB_DATA 
                     if x.get("date") != current_date
                 ]
-                # Add fresh data
+                
                 REAL_MONGODB_DATA.extend(fresh_data)
                 print(f"✅ Updated with {len(fresh_data)} fresh records from MongoDB")
             else:
@@ -770,85 +801,57 @@ async def fetch_data_periodically():
         except Exception as e:
             print(f"❌ Error in periodic MongoDB fetch: {e}")
         
-        # Wait for 60 seconds before next fetch
+        
         await asyncio.sleep(60)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    global model, app_name_encoder, tab_name_encoder, label_encoder, background_task, is_fetching_enabled
+    
+    global model, tfidf_app_vectorizer, tfidf_tab_vectorizer, model_metadata, background_task, is_fetching_enabled
     
     print("🚀 Starting Focus AI Analysis API...")
     
-    # Load the trained model and encoders
-    try:
-        model = joblib.load('focus_model.pkl')
-        app_name_encoder = joblib.load('app_name_encoder.pkl')
-        tab_name_encoder = joblib.load('tab_name_encoder.pkl')
-        label_encoder = joblib.load('label_encoder.pkl')
-        print("✅ Model and encoders loaded successfully")
-    except FileNotFoundError as e:
-        print(f"❌ Model files not found: {e}")
-        print("🔄 Attempting to create placeholder models...")
-        
-        if create_placeholder_model():
-            # Try loading again
-            try:
-                model = joblib.load('focus_model.pkl')
-                app_name_encoder = joblib.load('app_name_encoder.pkl')
-                tab_name_encoder = joblib.load('tab_name_encoder.pkl')
-                label_encoder = joblib.load('label_encoder.pkl')
-                print("✅ Placeholder models loaded successfully")
-            except Exception as e:
-                print(f"❌ Failed to load placeholder models: {e}")
-                model = None
-        else:
-            model = None
-    except ValueError as e:
-        if "node array from the pickle has an incompatible dtype" in str(e):
-            print(f"❌ Sklearn version incompatibility detected: {e}")
-            print("🔄 Recreating models with current sklearn version...")
-            
-            if create_placeholder_model():
-                try:
-                    model = joblib.load('focus_model.pkl')
-                    app_name_encoder = joblib.load('app_name_encoder.pkl')
-                    tab_name_encoder = joblib.load('tab_name_encoder.pkl')
-                    label_encoder = joblib.load('label_encoder.pkl')
-                    print("✅ Recreated models loaded successfully")
-                except Exception as e:
-                    print(f"❌ Failed to load recreated models: {e}")
-                    model = None
-            else:
-                model = None
-        else:
-            print(f"❌ Model loading error: {e}")
-            model = None
-    except Exception as e:
-        print(f"❌ Unexpected model loading error: {e}")
-        print("🔄 Attempting to create fresh models...")
-        
-        if create_placeholder_model():
-            try:
-                model = joblib.load('focus_model.pkl')
-                app_name_encoder = joblib.load('app_name_encoder.pkl')
-                tab_name_encoder = joblib.load('tab_name_encoder.pkl')
-                label_encoder = joblib.load('label_encoder.pkl')
-                print("✅ Fresh models loaded successfully")
-            except Exception as e:
-                print(f"❌ Failed to load fresh models: {e}")
-                model = None
-        else:
-            model = None
     
-    # Start the background data fetching task
+    import json
+    import pandas as pd
+    
+    model_dir = 'trainedmodel'
+    try:
+        print(f"📦 Loading XGBoost model from {model_dir}/...")
+        model = joblib.load(f'{model_dir}/xgboost_productivity_model.pkl')
+        tfidf_app_vectorizer = joblib.load(f'{model_dir}/tfidf_app_vectorizer.pkl')
+        tfidf_tab_vectorizer = joblib.load(f'{model_dir}/tfidf_tab_vectorizer.pkl')
+        
+        with open(f'{model_dir}/model_metadata.json') as f:
+            model_metadata = json.load(f)
+        
+        print("✅ XGBoost model loaded successfully")
+        print(f"   Model type: {model_metadata.get('model_type', 'Unknown')}")
+        print(f"   Training accuracy: {model_metadata.get('accuracy', 0):.4f} ({model_metadata.get('accuracy', 0)*100:.2f}%)")
+        print(f"   Features: {model_metadata.get('n_features', 0)}")
+    except FileNotFoundError as e:
+        print(f"❌ XGBoost model files not found in {model_dir}/: {e}")
+        print("⚠️ Falling back to rule-based classification")
+        model = None
+        tfidf_app_vectorizer = None
+        tfidf_tab_vectorizer = None
+        model_metadata = None
+    except Exception as e:
+        print(f"❌ Error loading XGBoost model: {e}")
+        print("⚠️ Falling back to rule-based classification")
+        model = None
+        tfidf_app_vectorizer = None
+        tfidf_tab_vectorizer = None
+        model_metadata = None
+    
+    
     print("🚀 Starting background data fetch task...")
     is_fetching_enabled = True
     background_task = asyncio.create_task(fetch_data_periodically())
     
     yield
     
-    # Shutdown
+    
     print("🔌 API shutting down")
     is_fetching_enabled = False
     if background_task:
@@ -864,13 +867,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 
 @app.get("/")
@@ -879,33 +881,27 @@ async def root():
 
 @app.post("/user/{user_id}/analyze-and-store")
 async def analyze_and_store_productivity(user_id: str, date: Optional[str] = None, email: Optional[str] = None):
-    """
-    Enhanced endpoint that:
-    1. Fetches user tab and app usage data
-    2. Analyzes it with the model to calculate productivity/distraction scores
-    3. Categorizes the data and updates backend with incremental storage
-    """
     try:
         current_date = date or datetime.now().strftime("%Y-%m-%d")
         
         print(f"🚀 Starting analyze and store for user {user_id} (email: {email}) on {current_date}")
         
-        # Step 1: Fetch user data (both app and tab usage)
+        
         user_data = await fetch_real_mongodb_data(user_id=user_id, email=email, date=current_date)
         
         if not user_data or (not user_data.get("appUsage") and not user_data.get("tabUsage")):
             raise HTTPException(status_code=404, detail=f"No app or tab usage data found for user {user_id} on {current_date}")
         
-        # Step 2: Process the data and calculate productivity metrics
+        
         processed_metrics = process_user_data(user_data)
         
         if not processed_metrics:
             raise HTTPException(status_code=500, detail="Failed to process user data")
         
-        # Step 3: Get existing productivity summary from backend
+        
         existing_summary = await get_existing_productivity_summary(user_id, email or "unknown@example.com", current_date)
         
-        # Step 4: Update backend with incremental data (a + (b - a) logic)
+        
         backend_result = await update_backend_productivity_summary(
             user_id, 
             email or "unknown@example.com", 
@@ -914,11 +910,11 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
             existing_summary
         )
         
-        # Step 5: Prepare response with categorized data
+        
         focus_areas = []
         distraction_areas = []
         
-        # Create focus areas from productive content
+        
         if processed_metrics["productive_content"]:
             total_productive_duration = sum(processed_metrics["productive_content"].values())
             focus_areas.append(AppCategoryItem(
@@ -929,7 +925,7 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
                 avg_confidence=0.85
             ))
         
-        # Create distraction areas from non-productive content
+        
         if processed_metrics["non_productive_content"]:
             total_distraction_duration = sum(processed_metrics["non_productive_content"].values())
             distraction_areas.append(AppCategoryItem(
@@ -940,7 +936,7 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
                 avg_confidence=0.80
             ))
         
-        # Create summary
+        
         summary = FocusSummary(
             productivity_score=processed_metrics["focus_score"],
             focused_duration_minutes=processed_metrics["total_productive_time"] // 60,
@@ -951,10 +947,10 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
             focus_percentage=processed_metrics["focus_score"]
         )
         
-        # Prepare detailed activities
+        
         detailed_activities = []
         
-        # Add productive activities
+        
         for app_name, duration in processed_metrics["productive_content"].items():
             detailed_activities.append(FocusActivity(
                 app_name=app_name,
@@ -964,7 +960,7 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
                 confidence=0.85
             ))
         
-        # Add non-productive activities
+        
         for app_name, duration in processed_metrics["non_productive_content"].items():
             detailed_activities.append(FocusActivity(
                 app_name=app_name,
@@ -974,7 +970,7 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
                 confidence=0.80
             ))
         
-        # Create comprehensive response
+        
         response = {
             "user_id": user_id,
             "email": email or "unknown@example.com",
@@ -1011,15 +1007,11 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
 
 @app.get("/user/{user_id}/productivity-analysis", response_model=FocusAnalysisResponse)
 async def get_productivity_analysis(user_id: str, date: Optional[str] = None, email: Optional[str] = None):
-    """
-    Get comprehensive productivity analysis for a user
-    This endpoint fetches, analyzes, and stores data in one call
-    """
     try:
-        # Call the analyze and store endpoint
+        
         result = await analyze_and_store_productivity(user_id, date, email)
         
-        # Return in FocusAnalysisResponse format
+        
         return FocusAnalysisResponse(
             user_id=result["user_id"],
             analysis_date=result["analysis_date"],
@@ -1034,22 +1026,21 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
     except Exception as e:
         print(f"❌ Error in productivity analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get productivity analysis: {str(e)}")
-    """Analyze user focus based on app usage data from MongoDB"""
     try:
-        # Use current date if none provided
+        
         if not date:
             date = datetime.now().strftime("%Y-%m-%d")
             
         print(f"🔍 Analyzing focus for user {user_id} (email: {email}) on {date}")
         
-        # Fetch real data from MongoDB backend
+        
         app_data = await fetch_real_mongodb_data(user_id=user_id, email=email, date=date)
         
-        # Also check our local data as fallback
+        
         local_data = [item for item in REAL_MONGODB_DATA 
                      if item["userId"] == user_id and item["date"] == date]
         
-        # Combine both data sources, preferring backend data
+        
         if app_data:
             combined_data = app_data
             print(f"✅ Using {len(app_data)} records from MongoDB backend")
@@ -1060,7 +1051,7 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
             combined_data = []
             print(f"⚠️ No data found for user {user_id}")
         
-        # If no data, return empty but valid response
+        
         if not combined_data:
             return {
                 "user_id": user_id,
@@ -1081,18 +1072,18 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
                 }
             }
         
-        # Process the data
+        
         activities = process_real_data(combined_data)
         if not activities:
             raise HTTPException(status_code=404, detail=f"Failed to process data for user {user_id}")
             
-        # Categorize activities
+        
         focus_areas, distraction_areas = categorize_activities(activities)
         
-        # Generate summary
+        
         summary = generate_summary(activities)
         
-        # Create response
+        
         return {
             "user_id": user_id,
             "analysis_date": date,
@@ -1112,12 +1103,11 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
         raise HTTPException(status_code=500, detail=f"Failed to analyze focus: {str(e)}")
 
 async def fetch_user_data_from_backend(user_id: str, date: str = None):
-    """Fetch real user data from the backend API"""
     try:
-        # Backend API endpoints
+        
         backend_url = BACKEND_URL
         
-        # Try to fetch app usage data from backend
+        
         try:
             response = requests.get(f"{backend_url}/public/focus-data", timeout=5)
             if response.status_code == 200:
@@ -1129,7 +1119,7 @@ async def fetch_user_data_from_backend(user_id: str, date: str = None):
         except Exception as e:
             print(f"⚠️ Could not fetch from backend: {e}")
         
-        # Fallback to existing data if backend is not available
+        
         return None
         
     except Exception as e:
@@ -1138,19 +1128,18 @@ async def fetch_user_data_from_backend(user_id: str, date: str = None):
 
 @app.get("/user/{user_id}/quick-stats")
 async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
-    """Get quick focus stats for a user"""
     try:
-        # Use current date if none provided
+        
         if not date:
             date = datetime.now().strftime("%Y-%m-%d")
             
-        # First try to get real data from backend
+        
         backend_data = await fetch_user_data_from_backend(user_id, date)
         
-        # Filter data for the specified user (from both backend and local data)
+        
         user_data = [item for item in REAL_MONGODB_DATA if item["userId"] == user_id]
         
-        # If we have backend data, process it and add to user_data
+        
         if backend_data and isinstance(backend_data, dict):
             app_usage = backend_data.get("appUsage", {})
             if isinstance(app_usage, dict):
@@ -1179,10 +1168,10 @@ async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
                 "distraction_areas_count": 0
             }
         
-        # Get activities
+        
         activities = process_real_data(user_data)
         
-        # Calculate focus metrics
+        
         focused_activities = [a for a in activities if a.predicted_label.lower() == "focused"]
         distracted_activities = [a for a in activities if a.predicted_label.lower() == "distracted"]
         
@@ -1190,10 +1179,10 @@ async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
         distracted_duration = sum(a.duration for a in distracted_activities) if distracted_activities else 0
         total_duration = focused_duration + distracted_duration
         
-        # Calculate productivity score (percentage of focused time)
+        
         productivity_score = int((focused_duration / total_duration * 100) if total_duration > 0 else 0)
         
-        # Get unique apps in each category
+        
         focus_areas = set(a.app_name for a in focused_activities)
         distraction_areas = set(a.app_name for a in distracted_activities)
         
@@ -1202,9 +1191,10 @@ async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
             "date": date,
             "quick_stats": {
                 "productivity_score": productivity_score,
-                "focus_time_minutes": focused_duration // 60,  # Convert seconds to minutes
+                "focus_time_minutes": focused_duration // 60,  
                 "distraction_time_minutes": distracted_duration // 60,
-                "total_time_minutes": total_duration // 60
+                "total_time_minutes": total_duration // 60,
+                "total_activities": len(activities)
             },
             "focus_areas_count": len(focus_areas),
             "distraction_areas_count": len(distraction_areas)
@@ -1215,13 +1205,12 @@ async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
 
 @app.post("/seed-test-data/{user_id}")
 async def seed_test_data(user_id: str, date: Optional[str] = None):
-    """Seed test data for a specific user"""
     try:
-        # Use current date if none provided
+        
         if not date:
             date = datetime.now().strftime("%Y-%m-%d")
         
-        # Create sample test data for the user
+        
         test_data = [
             {"userId": user_id, "email": "test@example.com", "date": date, "appName": "VSCode", "duration": 3600, "lastUpdated": f"{date}T10:33:51.141Z"},
             {"userId": user_id, "email": "test@example.com", "date": date, "appName": "Chrome", "duration": 1800, "lastUpdated": f"{date}T12:33:16.138Z"},
@@ -1231,9 +1220,9 @@ async def seed_test_data(user_id: str, date: Optional[str] = None):
             {"userId": user_id, "email": "test@example.com", "date": date, "appName": "YouTube", "duration": 1500, "lastUpdated": f"{date}T18:30:08.901Z"}
         ]
         
-        # Add test data to the global data
+        
         for item in test_data:
-            # Remove existing entries for this user and date and app
+            
             global REAL_MONGODB_DATA
             REAL_MONGODB_DATA = [
                 x for x in REAL_MONGODB_DATA 
@@ -1248,13 +1237,8 @@ async def seed_test_data(user_id: str, date: Optional[str] = None):
 
 @app.post("/sync-user-data/{user_id}")
 async def sync_user_data(user_id: str, data: Dict[str, Any]):
-    """
-    Sync user app and tab data for focus analysis
-    
-    This endpoint receives data from the frontend and processes it for focus analysis
-    """
     try:
-        # Extract data
+        
         date = data.get("date", datetime.now().strftime("%Y-%m-%d"))
         app_usage = data.get("appUsage", [])
         tab_usage = data.get("tabUsage", [])
@@ -1265,7 +1249,7 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
         print(f"Tab usage entries: {len(tab_usage)}")
         print(f"Current session entries: {len(current_session)}")
         
-        # Debug: Print the actual data structure
+        
         print(f"🔍 App usage type: {type(app_usage)}")
         print(f"🔍 App usage sample: {app_usage}")
         if isinstance(app_usage, dict) and len(app_usage) > 0:
@@ -1273,13 +1257,13 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
         elif isinstance(app_usage, list) and len(app_usage) > 0:
             print(f"🔍 First app usage item: {app_usage[0] if app_usage else 'None'}")
         
-        # Format data for our model
+        
         formatted_app_data = []
         
-        # Process app usage data from backend
-        # Handle both array format and object format
+        
+        
         if isinstance(app_usage, dict):
-            # If app_usage is an object like {"Spotify": 1000, "Code": 1327}
+            
             for app_name, duration in app_usage.items():
                 if app_name and duration > 0:
                     formatted_app = {
@@ -1292,7 +1276,7 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
                     }
                     formatted_app_data.append(formatted_app)
         elif isinstance(app_usage, list):
-            # If app_usage is an array of objects
+            
             for app in app_usage:
                 if isinstance(app, dict):
                     app_name = app.get("appName") or app.get("app") or app.get("name", "Unknown")
@@ -1309,7 +1293,7 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
                         }
                         formatted_app_data.append(formatted_app)
         
-        # Process current session data as well
+        
         for session in current_session:
             if isinstance(session, dict):
                 app_name = session.get("appName") or session.get("app") or session.get("name", "Unknown")
@@ -1326,15 +1310,15 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
                     }
                     formatted_app_data.append(formatted_app)
         
-        # If we have data, store it in our global variable
+        
         if formatted_app_data:
-            # Remove existing data for this user and date
+            
             global REAL_MONGODB_DATA
             REAL_MONGODB_DATA = [
                 x for x in REAL_MONGODB_DATA 
                 if not (x["userId"] == user_id and x["date"] == date)
             ]
-            # Add new data
+            
             REAL_MONGODB_DATA.extend(formatted_app_data)
             
             print(f"✅ Stored {len(formatted_app_data)} entries for user {user_id}")
@@ -1360,7 +1344,6 @@ async def sync_user_data(user_id: str, data: Dict[str, Any]):
 
 @app.get("/background-fetch-status")
 async def get_background_fetch_status():
-    """Get the status of background data fetching"""
     global is_fetching_enabled, background_task
     return {
         "fetching_enabled": is_fetching_enabled,
@@ -1370,13 +1353,12 @@ async def get_background_fetch_status():
 
 @app.post("/toggle-background-fetch")
 async def toggle_background_fetch():
-    """Toggle background data fetching on/off"""
     global is_fetching_enabled, background_task
     
     is_fetching_enabled = not is_fetching_enabled
     
     if is_fetching_enabled:
-        # Restart the background task if it's not running
+        
         if background_task is None or background_task.done():
             background_task = asyncio.create_task(fetch_data_periodically())
         return {"message": "Background fetching enabled", "status": "enabled"}
@@ -1385,7 +1367,6 @@ async def toggle_background_fetch():
 
 @app.post("/manual-fetch")
 async def manual_fetch():
-    """Manually trigger a data fetch from backend"""
     global REAL_MONGODB_DATA
     
     try:
@@ -1405,31 +1386,28 @@ async def manual_fetch():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Manual fetch failed: {str(e)}")
 
-# ========== PRODUCTIVITY SUMMARY ENDPOINTS ==========
-
 @app.get("/user/{user_id}/productivity-summary", response_model=ProductivitySummaryResponse)
 async def get_user_productivity_summary(user_id: str, date: Optional[str] = None, email: Optional[str] = None):
-    """Get productivity summary for a user from the backend"""
     try:
         backend_url = BACKEND_URL
         current_date = date or datetime.now().strftime("%Y-%m-%d")
         
         print(f"📊 Fetching productivity summary for user {user_id} (email: {email}) on {current_date}")
         
-        # Try to fetch from backend first
+        
         try:
             params = {"date": current_date}
             headers = {}
             
-            # If we have user auth info, we'd add it here
-            # For now, we'll try the public endpoint
+            
+            
             response = requests.get(f"{backend_url}/api/productivity-summary", params=params, timeout=10)
             
             if response.status_code == 200:
                 backend_data = response.json()
                 
                 if backend_data.get("success") and backend_data.get("summaries"):
-                    summary = backend_data["summaries"][0]  # Get the first/latest summary
+                    summary = backend_data["summaries"][0]  
                     
                     return ProductivitySummaryResponse(
                         user_id=summary["userId"],
@@ -1450,11 +1428,11 @@ async def get_user_productivity_summary(user_id: str, date: Optional[str] = None
         except requests.exceptions.RequestException as e:
             print(f"⚠️ Could not fetch from backend productivity API: {e}")
         
-        # Fallback: Generate summary from raw app/tab data
+        
         app_data = await fetch_real_mongodb_data(user_id=user_id, email=email, date=current_date)
         
         if not app_data:
-            # Return empty summary
+            
             return ProductivitySummaryResponse(
                 user_id=user_id,
                 email=email or "unknown@example.com",
@@ -1471,13 +1449,13 @@ async def get_user_productivity_summary(user_id: str, date: Optional[str] = None
                 distraction_apps={}
             )
         
-        # Generate summary from app data
+        
         productive_content = {}
         non_productive_content = {}
         distraction_apps = {}
         
-        # Define productive and non-productive apps
-        productive_apps = ["code", "vscode", "terminal", "gnome-terminal", "mysql", "postman", "slack", "eclipse", "intellij", "pycharm", "vim", "emacs"]
+        
+        productive_apps = ["code", "vscode", "terminal", "gnome-terminal", "mysql", "postman", "slack", "eclipse", "intellij", "pycharm", "vim", "emacs", "antigravity", "focus", "focuai"]
         non_productive_apps = ["netflix", "spotify", "youtube", "twitter", "instagram", "facebook", "tiktok", "reddit", "gaming"]
         
         for app in app_data:
@@ -1489,7 +1467,7 @@ async def get_user_productivity_summary(user_id: str, date: Optional[str] = None
             
             app_lower = app_name.lower()
             
-            # Classify app
+            
             is_productive = any(prod_app in app_lower for prod_app in productive_apps)
             is_non_productive = any(non_prod_app in app_lower for non_prod_app in non_productive_apps)
             
@@ -1512,7 +1490,7 @@ async def get_user_productivity_summary(user_id: str, date: Optional[str] = None
         all_apps = {**productive_content, **non_productive_content}
         most_used_app = max(all_apps.items(), key=lambda x: x[1])[0] if all_apps else ""
         
-        most_visited_tab = ""  # Would need tab data to calculate this
+        most_visited_tab = ""  
         
         return ProductivitySummaryResponse(
             user_id=user_id,
@@ -1536,7 +1514,6 @@ async def get_user_productivity_summary(user_id: str, date: Optional[str] = None
 
 @app.post("/user/{user_id}/update-productivity")
 async def update_user_productivity_summary(user_id: str, data: Dict[str, Any]):
-    """Update productivity summary for a user"""
     try:
         backend_url = BACKEND_URL
         

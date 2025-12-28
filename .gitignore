@@ -96,8 +96,8 @@ Thumbs.db
 *.hdf5
 *.joblib
 *.sav
-model/
-models/
+# model/
+# models/
 checkpoints/
 logs/
 runs/

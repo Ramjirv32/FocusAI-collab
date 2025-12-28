@@ -1,10 +1,17 @@
 {
     "name": "focusai-app",
     "version": "1.0.0",
+    "description": "AI-powered productivity and focus management platform",
+    "author": "Ramji",
     "main": "main.js",
     "scripts": {
         "dev": "concurrently \"cd focuaibackend && node server.js\" \"cd Frontend && npm run dev\" \"wait-on http://localhost:8080 && npx electron .\"",
-        "start": "npx electron ."
+        "start": "npx electron .",
+        "build:frontend": "cd Frontend && npm run build",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder",
+        "dist:win": "electron-builder --win --x64",
+        "dist:win:portable": "electron-builder --win portable --x64"
     },
     "dependencies": {
         "@fullcalendar/daygrid": "^6.1.19",
@@ -15,7 +22,6 @@
         "body-parser": "^1.20.2",
         "cors": "^2.8.5",
         "date-fns": "^4.1.0",
-        "electron": "^27.3.11",
         "express": "^4.18.2",
         "moment": "^2.30.1",
         "node-fetch": "^2.7.0",
@@ -23,6 +29,67 @@
     },
     "devDependencies": {
         "concurrently": "^9.1.2",
-        "wait-on": "^7.0.1"
+        "wait-on": "^7.0.1",
+        "electron": "^27.3.11",
+        "electron-builder": "^24.13.3"
+    },
+    "build": {
+        "appId": "com.focusai.app",
+        "productName": "FocusAI",
+        "copyright": "Copyright © 2025 Ramji",
+        "directories": {
+            "output": "dist",
+            "buildResources": "build"
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "settings.html",
+            "src/**/*",
+            "Frontend/dist/**/*",
+            "focuaibackend/**/*",
+            "ai/**/*",
+            "!focuaibackend/node_modules",
+            "!ai/node_modules",
+            "!ai/__pycache__",
+            "!ai/**/*.pyc",
+            "node_modules/**/*"
+        ],
+        "extraResources": [
+            {
+                "from": ".env.example",
+                "to": ".env.example"
+            }
+        ],
+        "win": {
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "build/icon.ico",
+            "artifactName": "${productName}-Setup-${version}.${ext}",
+            "sign": null,
+            "signDlls": false
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true,
+            "shortcutName": "FocusAI",
+            "installerIcon": "build/icon.ico",
+            "uninstallerIcon": "build/icon.ico",
+            "installerHeaderIcon": "build/icon.ico",
+            "license": "LICENSE",
+            "perMachine": false,
+            "allowElevation": true
+        },
+        "portable": {
+            "artifactName": "${productName}-Portable-${version}.${ext}"
+        }
     }
 }

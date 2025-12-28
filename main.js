@@ -27,14 +27,6 @@ function createMainWindow() {
 
   // Create application menu
   createMenu();
-
-  // Check if Groq API key is configured
-  if (!configManager.hasGroqKey()) {
-    // Show settings window if no API key
-    setTimeout(() => {
-      createSettingsWindow();
-    }, 1000);
-  }
 }
 
 function createMenu() {
@@ -42,14 +34,6 @@ function createMenu() {
     {
       label: 'File',
       submenu: [
-        {
-          label: 'Settings',
-          accelerator: 'CmdOrCtrl+,',
-          click: () => {
-            createSettingsWindow();
-          }
-        },
-        { type: 'separator' },
         {
           label: 'Reload',
           accelerator: 'CmdOrCtrl+R',
@@ -137,13 +121,6 @@ function createMenu() {
           click: () => {
             const { shell } = require('electron');
             shell.openExternal('https://github.com/Ramjirv32/FocusAI-collab#readme');
-          }
-        },
-        {
-          label: 'Get Groq API Key',
-          click: () => {
-            const { shell } = require('electron');
-            shell.openExternal('https://console.groq.com/keys');
           }
         },
         { type: 'separator' },

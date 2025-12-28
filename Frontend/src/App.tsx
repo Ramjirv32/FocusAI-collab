@@ -22,7 +22,7 @@ import Activities from "./pages/Activities";
 import TodoList from "./pages/TodoList";
 import VoiceMeeting from "./pages/VoiceMeeting";
 import React from 'react';
-import ProductivityChatBot from '@/components/ChatBot/ProductivityChatBot'
+
 
 
 const queryClient = new QueryClient();
@@ -30,112 +30,105 @@ const queryClient = new QueryClient();
 
 const AppRoutes = () => (
   <Routes>
-    <Route 
-      path="/" 
+    <Route
+      path="/"
       element={
         <ProtectedRoute>
           <Index />
         </ProtectedRoute>
-      } 
+      }
     />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
-    <Route 
-      path="/focus-analytics" 
+    <Route
+      path="/focus-analytics"
       element={
         <ProtectedRoute>
           <FocusAnalytics />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/statistics" 
+    <Route
+      path="/statistics"
       element={
         <ProtectedRoute>
           <Statistics />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/chat-assistant" 
+    <Route
+      path="/chat-assistant"
       element={
         <ProtectedRoute>
           <ChatAssistant />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/voice-meeting" 
+    <Route
+      path="/voice-meeting"
       element={
         <ProtectedRoute>
           <VoiceMeeting />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/gamification" 
+    <Route
+      path="/gamification"
       element={
         <ProtectedRoute>
           <Gamification />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/notifications" 
+    <Route
+      path="/notifications"
       element={
         <ProtectedRoute>
           <Notifications />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/extension" 
+    <Route
+      path="/extension"
       element={
         <ProtectedRoute>
           <Extension />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/diagnostics" 
+    <Route
+      path="/diagnostics"
       element={
         <ProtectedRoute>
           <Diagnostics />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/activities" 
+    <Route
+      path="/activities"
       element={
         <ProtectedRoute>
           <Activities />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/todo-list" 
+    <Route
+      path="/todo-list"
       element={
         <ProtectedRoute>
           <TodoList />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/settings" 
+    <Route
+      path="/settings"
       element={
         <ProtectedRoute>
           <Settings />
         </ProtectedRoute>
       }
     />
-    <Route 
-      path="/help" 
-      element={
-        <ProtectedRoute>
-          <Help />
-        </ProtectedRoute>
-      }
-    />
+
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
@@ -145,9 +138,9 @@ const App = () => {
     // Debug auth state on app load
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    console.log('App loaded - Auth state:', { 
-      hasToken: !!token, 
-      hasUser: !!user 
+    console.log('App loaded - Auth state:', {
+      hasToken: !!token,
+      hasUser: !!user
     });
   }, []);
 
@@ -159,7 +152,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <AppRoutes />
-            <ProductivityChatBot />
+
           </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>

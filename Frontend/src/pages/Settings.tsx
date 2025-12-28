@@ -9,17 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  ArrowLeft, 
-  Settings as SettingsIcon, 
-  User, 
-  Bell, 
-  Shield, 
-  Palette, 
-  Database, 
-  Chrome, 
-  Monitor, 
+import {
+  ArrowLeft,
+  Settings as SettingsIcon,
+  User,
+  Bell,
+  Shield,
+  Palette,
+  Database,
+  Chrome,
+  Monitor,
   Zap,
+  Target,
   Save,
   RefreshCw,
   Download,
@@ -44,34 +45,17 @@ const Settings = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [settings, setSettings] = useState({
     notifications: {
-      focusReminders: true,
       productivityAlerts: true,
-      weeklyReports: false,
+      todoReminders: true,
       achievements: true,
       dailyReminders: true,
-      email: true
+      email: false
     },
     tracking: {
       autoTrack: true,
       trackPrivateTabs: false,
       syncInterval: 30,
       minSessionTime: 5
-    },
-    display: {
-      theme: 'system',
-      compactMode: false,
-      showExtensionStatus: true,
-      animationsEnabled: true
-    },
-    privacy: {
-      dataRetention: 90,
-      anonymizeData: false,
-      shareAnalytics: false,
-      profileVisibility: 'public',
-      showInLeaderboard: true,
-      showProfilePhoto: true,
-      showLocation: true,
-      showJobTitle: true
     },
     gamification: {
       dailyGoals: {
@@ -85,7 +69,6 @@ const Settings = () => {
   // Get auth headers
   const getAuthHeader = useCallback(() => {
     const authToken = token || localStorage.getItem('token');
-    console.log('Settings - Auth token available:', !!authToken);
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   }, [token]);
 
@@ -94,34 +77,32 @@ const Settings = () => {
     try {
       setIsLoading(true);
       const headers = getAuthHeader();
-      
+
       const response = await axios.get('http://localhost:5001/api/settings', {
         headers
       });
-      
-      // Merge backend settings with default settings to ensure all properties exist
+
+      // Merge backend settings with default settings
       setSettings(prevSettings => ({
         ...prevSettings,
-        ...response.data,
         notifications: {
           ...prevSettings.notifications,
-          ...response.data.notifications
+          ...(response.data.notifications || {})
         },
-        privacy: {
-          ...prevSettings.privacy,
-          ...response.data.privacy
+        tracking: {
+          ...prevSettings.tracking,
+          ...(response.data.tracking || {})
         },
         gamification: {
           ...prevSettings.gamification,
-          ...response.data.gamification
+          ...(response.data.gamification || {})
         }
       }));
-      console.log('Settings loaded and merged:', response.data);
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast({
         title: "Error",
-        description: "Failed to load settings. Please try again.",
+        description: "Failed to load settings. Using local defaults.",
         variant: "destructive"
       });
     } finally {
@@ -134,22 +115,21 @@ const Settings = () => {
     try {
       setIsSaving(true);
       const headers = getAuthHeader();
-      
+
       await axios.put('http://localhost:5001/api/settings', settings, {
         headers
       });
-      
+
       setHasChanges(false);
       toast({
         title: "Settings Saved",
-        description: "Your settings have been updated successfully.",
-        variant: "default"
+        description: "Your preferences have been updated.",
       });
     } catch (error) {
       console.error('Error saving settings:', error);
       toast({
-        title: "Error",
-        description: "Failed to save settings. Please try again.",
+        title: "Save Failed",
+        description: "Could not connect to the backend server.",
         variant: "destructive"
       });
     } finally {
@@ -161,30 +141,28 @@ const Settings = () => {
   const exportData = async () => {
     try {
       const headers = getAuthHeader();
-      
       const response = await axios.get('http://localhost:5001/api/settings/export-data', {
         headers,
         responseType: 'blob'
       });
-      
+
       const blob = new Blob([response.data], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'focusai-data-export.json';
+      link.download = `focusai-export-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       window.URL.revokeObjectURL(url);
-      
+
       toast({
-        title: "Data Exported",
-        description: "Your data has been exported successfully.",
-        variant: "default"
+        title: "Success",
+        description: "Tracking data exported to your downloads folder.",
       });
     } catch (error) {
       console.error('Error exporting data:', error);
       toast({
-        title: "Error",
-        description: "Failed to export data. Please try again.",
+        title: "Export Failed",
+        description: "Unable to generate your data backup.",
         variant: "destructive"
       });
     }
@@ -192,26 +170,24 @@ const Settings = () => {
 
   // Reset data
   const resetData = async (type: string) => {
+    if (!confirm(`Are you sure you want to reset all your ${type} data? This cannot be undone.`)) return;
+
     try {
       const headers = getAuthHeader();
-      
       await axios.post('http://localhost:5001/api/settings/reset-data', { type }, {
         headers
       });
-      
+
       toast({
         title: "Data Reset",
-        description: `Your ${type} data has been reset successfully.`,
-        variant: "default"
+        description: "Your history has been cleared.",
       });
-      
-      // Reload settings
+
       fetchSettings();
     } catch (error) {
       console.error('Error resetting data:', error);
       toast({
-        title: "Error",
-        description: "Failed to reset data. Please try again.",
+        title: "Reset Failed",
         variant: "destructive"
       });
     }
@@ -248,61 +224,11 @@ const Settings = () => {
     setHasChanges(true);
   };
 
-  const settingsCategories = [
-    {
-      title: 'Profile Settings',
-      description: 'Manage your account and profile information',
-      icon: User,
-      items: [
-        'Update profile information',
-        'Change password',
-        'Email preferences',
-        'Privacy settings'
-      ]
-    },
-    {
-      title: 'Chrome Extension', 
-      description: 'Configure browser extension and tracking',
-      icon: Chrome,
-      items: [
-        'Extension connection status',
-        'Tab tracking preferences',
-        'Data sync settings',
-        'Installation guide'
-      ]
-    },
-    {
-      title: 'Privacy & Security',
-      description: 'Control your data and security settings',
-      icon: Shield,
-      items: [
-        'Data export options',
-        'Activity tracking settings',
-        'Two-factor authentication',
-        'Connected applications'
-      ]
-    },
-    {
-      title: 'Display & Performance',
-      description: 'Customize the look and performance',
-      icon: Monitor,
-      items: [
-        'Theme selection',
-        'Animation preferences',
-        'Layout options',
-        'Performance settings'
-      ]
-    }
-  ];
-
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Loading your settings...</p>
-          </div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -310,333 +236,237 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <SettingsIcon className="h-8 w-8 text-primary" />
-              Settings
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Configure your FocusAI experience and preferences
+            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+            <p className="text-muted-foreground mt-1 text-lg">
+              Manage your local FocusAI instance and tracking preferences.
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             {hasChanges && (
-              <Badge variant="outline" className="flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                Unsaved Changes
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                Unsaved
               </Badge>
             )}
-            <Button 
-              onClick={saveSettings} 
+            <Button
+              onClick={saveSettings}
               disabled={!hasChanges || isSaving}
-              className="flex items-center gap-2"
+              size="lg"
+              className="px-8"
             >
-              {isSaving ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+              Save Changes
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="notifications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="tracking">Tracking</TabsTrigger>
-            <TabsTrigger value="display">Display</TabsTrigger>
-            <TabsTrigger value="privacy">Privacy</TabsTrigger>
-            <TabsTrigger value="gamification">Goals</TabsTrigger>
-            <TabsTrigger value="data">Data</TabsTrigger>
+        <Tabs defaultValue="tracking" className="w-full">
+          <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 mb-8 overflow-x-auto">
+            <TabsTrigger value="tracking" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Usage Tracking</TabsTrigger>
+            <TabsTrigger value="notifications" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Notifications</TabsTrigger>
+            <TabsTrigger value="gamification" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Goals</TabsTrigger>
+            <TabsTrigger value="data" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Data & Storage</TabsTrigger>
           </TabsList>
 
-          {/* Notifications Settings */}
-          <TabsContent value="notifications" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Notification Preferences
-                </CardTitle>
-                <CardDescription>
-                  Choose what notifications you want to receive and how often
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Focus Reminders</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Get reminded to start focus sessions
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.notifications.focusReminders}
-                        onCheckedChange={(checked) => updateSetting('notifications', 'focusReminders', checked)}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Productivity Alerts</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Notifications about your productivity patterns
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.notifications.productivityAlerts}
-                        onCheckedChange={(checked) => updateSetting('notifications', 'productivityAlerts', checked)}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Achievement Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Get notified when you earn badges or complete challenges
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.notifications.achievements}
-                        onCheckedChange={(checked) => updateSetting('notifications', 'achievements', checked)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Daily Reminders</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Daily goal and streak reminders
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.notifications.dailyReminders}
-                        onCheckedChange={(checked) => updateSetting('notifications', 'dailyReminders', checked)}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Weekly Reports</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Weekly productivity summaries and insights
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.notifications.weeklyReports}
-                        onCheckedChange={(checked) => updateSetting('notifications', 'weeklyReports', checked)}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label className="text-base">Email Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive notifications via email
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings.notifications.email}
-                        onCheckedChange={(checked) => updateSetting('notifications', 'email', checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           {/* Tracking Settings */}
-          <TabsContent value="tracking" className="space-y-6">
-            <Card>
+          <TabsContent value="tracking" className="space-y-6 outline-none">
+            <Card className="border-none shadow-sm bg-muted/30">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Monitor className="h-5 w-5" />
-                  Activity Tracking
+                  <Monitor className="h-5 w-5 text-primary" />
+                  Activity Detection
                 </CardTitle>
                 <CardDescription>
-                  Configure how FocusAI tracks your activity and usage patterns
+                  Decide how your work activity is captured localy.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between p-4 bg-background rounded-xl border">
                     <div className="space-y-0.5">
-                      <Label className="text-base">Auto-track Applications</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Automatically track application usage time
+                      <Label className="text-base font-semibold">Automatic Background Tracking</Label>
+                      <p className="text-sm text-muted-foreground max-w-sm">
+                        Continuously monitor active applications while you work.
                       </p>
                     </div>
                     <Switch
-                      checked={settings?.tracking?.autoTrack || false}
+                      checked={settings.tracking.autoTrack}
                       onCheckedChange={(checked) => updateSetting('tracking', 'autoTrack', checked)}
                     />
                   </div>
-                  
-                  <div className="flex items-center justify-between">
+
+                  <div className="flex items-center justify-between p-4 bg-background rounded-xl border">
                     <div className="space-y-0.5">
-                      <Label className="text-base">Track Private/Incognito Tabs</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Include private browsing sessions in tracking
+                      <Label className="text-base font-semibold">Capture Private Tabs</Label>
+                      <p className="text-sm text-muted-foreground max-w-sm">
+                        Include incognito/private browsing domain data in reports.
                       </p>
                     </div>
                     <Switch
-                      checked={settings?.tracking?.trackPrivateTabs || false}
+                      checked={settings.tracking.trackPrivateTabs}
                       onCheckedChange={(checked) => updateSetting('tracking', 'trackPrivateTabs', checked)}
                     />
                   </div>
                 </div>
-                
-                <Separator />
-                
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <Label className="text-base">Sync Interval (seconds)</Label>
-                    <p className="text-sm text-muted-foreground">
-                      How often to sync tracking data: {settings?.tracking?.syncInterval || 30}s
-                    </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label className="font-semibold">Sync Frequency</Label>
+                      <span className="text-primary font-mono bg-primary/10 px-2 py-1 rounded text-sm">{settings.tracking.syncInterval}s</span>
+                    </div>
                     <Slider
-                      value={[settings?.tracking?.syncInterval || 30]}
-                      onValueChange={([value]) => updateSetting('tracking', 'syncInterval', value)}
-                      max={300}
-                      min={10}
-                      step={10}
-                      className="w-full"
+                      value={[settings.tracking.syncInterval]}
+                      onValueChange={([v]) => updateSetting('tracking', 'syncInterval', v)}
+                      max={300} min={10} step={10}
                     />
+                    <p className="text-xs text-muted-foreground">How often data is saved to your local database.</p>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <Label className="text-base">Minimum Session Time (minutes)</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Minimum time to count as a valid session: {settings?.tracking?.minSessionTime || 5} min
-                    </p>
+
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label className="font-semibold">Min Session Filter</Label>
+                      <span className="text-primary font-mono bg-primary/10 px-2 py-1 rounded text-sm">{settings.tracking.minSessionTime}m</span>
+                    </div>
                     <Slider
-                      value={[settings?.tracking?.minSessionTime || 5]}
-                      onValueChange={([value]) => updateSetting('tracking', 'minSessionTime', value)}
-                      max={30}
-                      min={1}
-                      step={1}
-                      className="w-full"
+                      value={[settings.tracking.minSessionTime]}
+                      onValueChange={([v]) => updateSetting('tracking', 'minSessionTime', v)}
+                      max={30} min={1} step={1}
                     />
+                    <p className="text-xs text-muted-foreground">Ignore distracting apps used for less than this time.</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
-            <ChromeExtensionStatus />
           </TabsContent>
 
-          {/* Display Settings */}
-          <TabsContent value="display" className="space-y-6">
-            <Card>
+          {/* Notifications Settings */}
+          <TabsContent value="notifications" className="space-y-6 outline-none">
+            <Card className="border-none shadow-sm bg-muted/30">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Palette className="h-5 w-5" />
-                  Display Preferences
+                  <Bell className="h-5 w-5 text-primary" />
+                  Local Alerts
                 </CardTitle>
                 <CardDescription>
-                  Customize the appearance and performance
+                  Manage desktop notifications for focus and achievements.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Compact Mode</h4>
-                    <p className="text-sm text-muted-foreground">Use less space for UI elements</p>
-                  </div>
-                  <Switch
-                    checked={settings?.display?.compactMode || false}
-                    onCheckedChange={(checked) => updateSetting('display', 'compactMode', checked)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Show Extension Status</h4>
-                    <p className="text-sm text-muted-foreground">Display Chrome extension status widget</p>
-                  </div>
-                  <Switch
-                    checked={settings?.display?.showExtensionStatus || true}
-                    onCheckedChange={(checked) => updateSetting('display', 'showExtensionStatus', checked)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Animations</h4>
-                    <p className="text-sm text-muted-foreground">Enable smooth animations and transitions</p>
-                  </div>
-                  <Switch
-                    checked={settings?.display?.animationsEnabled || true}
-                    onCheckedChange={(checked) => updateSetting('display', 'animationsEnabled', checked)}
-                  />
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { id: 'productivityAlerts', label: 'Productivity Drops', desc: 'Alert when target score falls below 70%' },
+                    { id: 'todoReminders', label: 'Todo Reminders', desc: 'Alert when tasks are due within 15 minutes' },
+                    { id: 'achievements', label: 'Achievement Badges', desc: 'Notify on reaching focus milestones' },
+                    { id: 'dailyReminders', label: 'Daily Review', desc: 'Summary of the day\'s performance' },
+                    { id: 'email', label: 'Email Reports', desc: 'Weekly PDF summary to your inbox' }
+                  ].map((notif) => (
+                    <div key={notif.id} className="flex items-center justify-between p-4 bg-background rounded-xl border">
+                      <div className="space-y-0.5">
+                        <Label className="font-semibold">{notif.label}</Label>
+                        <p className="text-xs text-muted-foreground">{notif.desc}</p>
+                      </div>
+                      <Switch
+                        checked={settings.notifications[notif.id as keyof typeof settings.notifications]}
+                        onCheckedChange={(checked) => updateSetting('notifications', notif.id, checked)}
+                      />
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Extension Settings */}
-          <TabsContent value="extension" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ChromeExtensionStatus />
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5" />
-                    Extension Actions
-                  </CardTitle>
-                  <CardDescription>
-                    Quick actions for the Chrome extension
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full" variant="outline">
-                    <Chrome className="h-4 w-4 mr-2" />
-                    Open Extension Popup
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <Database className="h-4 w-4 mr-2" />
-                    Force Data Sync
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    Clear Extension Cache
-                  </Button>
-                  <Button className="w-full" variant="destructive">
-                    Reset Extension Settings
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+          {/* Gamification Settings */}
+          <TabsContent value="gamification" className="space-y-6 outline-none">
+            <Card className="border-none shadow-sm bg-muted/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  Daily Targets
+                </CardTitle>
+                <CardDescription>
+                  Set the benchmarks for your productivity score.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-8">
+                <div className="space-y-6 p-6 bg-background rounded-xl border">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-base font-semibold">Focused Hours Target</Label>
+                      <span className="text-xl font-bold text-primary font-mono">{Math.round(settings.gamification.dailyGoals.focusTimeTarget / 60)}h</span>
+                    </div>
+                    <Slider
+                      value={[settings.gamification.dailyGoals.focusTimeTarget]}
+                      onValueChange={([v]) => updateNestedSetting('gamification', 'dailyGoals', 'focusTimeTarget', v)}
+                      max={600} min={60} step={30}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-base font-semibold">Target Focus Score</Label>
+                      <span className="text-xl font-bold text-primary font-mono">{settings.gamification.dailyGoals.focusScoreTarget}%</span>
+                    </div>
+                    <Slider
+                      value={[settings.gamification.dailyGoals.focusScoreTarget]}
+                      onValueChange={([v]) => updateNestedSetting('gamification', 'dailyGoals', 'focusScoreTarget', v)}
+                      max={100} min={50} step={5}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Data Control Settings */}
+          <TabsContent value="data" className="space-y-6 outline-none">
+            <Card className="border-none shadow-sm bg-muted/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  Local Data Vault
+                </CardTitle>
+                <CardDescription>
+                  FocusAI stores all your data locally on this machine.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-5 bg-background rounded-xl border group hover:border-primary transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Download className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">Full Data Archive</h4>
+                      <p className="text-sm text-muted-foreground">Download all tracking history as JSON.</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={exportData}>Download</Button>
+                </div>
+
+                <div className="flex items-center justify-between p-5 bg-background rounded-xl border group hover:border-red-200 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <Trash2 className="h-5 w-5 text-red-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-red-900">Purge Activity History</h4>
+                      <p className="text-sm text-red-600/80">Irreversibly delete all focus tracking data.</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => resetData('usage')}>Purge Data</Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Common settings and actions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="outline">Reset to Defaults</Button>
-              <Button variant="outline">Export Settings</Button>
-              <Button variant="outline">Import Settings</Button>
-              <Button variant="destructive">Clear All Data</Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

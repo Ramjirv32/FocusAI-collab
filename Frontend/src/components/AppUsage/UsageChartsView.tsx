@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
   Bar,
-  PieChart, 
+  PieChart,
   Pie,
   Cell,
   XAxis,
@@ -27,12 +27,12 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
     appUsage: {},
     tabUsage: {}
   });
-  
+
   const [productivityData, setProductivityData] = useState({
     productive: 0,
     unproductive: 0,
   });
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,48 +42,48 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         // Get raw usage data
         const rawResponse = await axios.get('http://localhost:5001/raw-usage');
         setRawData(rawResponse.data);
-        
+
         // Get productivity data
         const focusResponse = await axios.get('http://localhost:5001/focus-data');
-        
+
         // Calculate productive vs unproductive time
         // This is a simplified version - you would need to implement proper
         // productivity classification in your real app
         const tabs = focusResponse.data.tabs || [];
-        
+
         // For demo, consider domains with "github", "docs", or "stackoverflow" as productive
         const productive = tabs
           .filter((tab: any) => {
             try {
               const url = new URL(tab.url);
-              return url.hostname.includes('github') || 
-                     url.hostname.includes('docs') || 
-                     url.hostname.includes('stackoverflow');
+              return url.hostname.includes('github') ||
+                url.hostname.includes('docs') ||
+                url.hostname.includes('stackoverflow');
             } catch (e) {
               return false;
             }
           })
           .reduce((sum: number, tab: any) => sum + (tab.duration || 0), 0);
-        
+
         const unproductive = tabs
           .filter((tab: any) => {
             try {
               const url = new URL(tab.url);
-              return url.hostname.includes('youtube') || 
-                     url.hostname.includes('facebook') ||
-                     url.hostname.includes('twitter') ||
-                     url.hostname.includes('instagram');
+              return url.hostname.includes('youtube') ||
+                url.hostname.includes('facebook') ||
+                url.hostname.includes('twitter') ||
+                url.hostname.includes('instagram');
             } catch (e) {
               return false;
             }
           })
           .reduce((sum: number, tab: any) => sum + (tab.duration || 0), 0);
-        
+
         setProductivityData({ productive, unproductive });
       } catch (e) {
         console.error("Error fetching usage data:", e);
@@ -94,7 +94,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
     };
 
     fetchData();
-    
+
     // Refresh data every minute
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
@@ -102,10 +102,10 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
 
   const formatDuration = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
-    
+
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
-    
+
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     return `${hours}h ${remainingMinutes}m`;
@@ -128,7 +128,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
         </CardHeader>
         <CardContent>
           <p>{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md"
           >
@@ -160,7 +160,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
   return (
     <div className={className}>
       <h2 className="text-2xl font-bold mb-4">Activity Visualizations</h2>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* App Usage Chart */}
         <Card>
@@ -176,17 +176,17 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" tickFormatter={formatDuration} />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
+                <YAxis
+                  type="category"
+                  dataKey="name"
                   width={100}
                   tick={{ fontSize: 12 }}
                 />
                 <Tooltip formatter={(value) => [formatDuration(Number(value)), "Duration"]} />
                 <Legend />
-                <Bar 
-                  dataKey="duration" 
-                  fill="#8884d8" 
+                <Bar
+                  dataKey="duration"
+                  fill="#8884d8"
                   radius={[0, 4, 4, 0]}
                 />
               </BarChart>
@@ -208,17 +208,17 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" tickFormatter={formatDuration} />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
+                <YAxis
+                  type="category"
+                  dataKey="name"
                   width={120}
                   tick={{ fontSize: 12 }}
                 />
                 <Tooltip formatter={(value) => [formatDuration(Number(value)), "Duration"]} />
                 <Legend />
-                <Bar 
-                  dataKey="duration" 
-                  fill="#82ca9d" 
+                <Bar
+                  dataKey="duration"
+                  fill="#82ca9d"
                   radius={[0, 4, 4, 0]}
                 />
               </BarChart>
@@ -226,7 +226,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
           </CardContent>
         </Card>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Productivity Analysis</CardTitle>
@@ -243,7 +243,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => 
+                  label={({ name, percent }) =>
                     `${name}: ${(percent * 100).toFixed(0)}%`
                   }
                 >
@@ -254,7 +254,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
                 <Tooltip formatter={(value) => [formatDuration(Number(value)), "Time"]} />
               </PieChart>
             </ResponsiveContainer>
-            
+
             <div className="flex flex-col justify-center">
               <h3 className="text-lg font-medium mb-4">Summary</h3>
               <ul className="space-y-2">
@@ -269,20 +269,20 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
                 <li className="flex justify-between">
                   <span>Productivity ratio:</span>
                   <span className="font-medium">
-                    {productivityData.productive + productivityData.unproductive > 0 
+                    {productivityData.productive + productivityData.unproductive > 0
                       ? `${((productivityData.productive / (productivityData.productive + productivityData.unproductive)) * 100).toFixed(1)}%`
                       : '0%'
                     }
                   </span>
                 </li>
               </ul>
-              
-              <button 
+
+              <button
                 className="mt-6 px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md"
                 onClick={async () => {
                   if (window.confirm("Are you sure you want to reset all tracking data? This cannot be undone.")) {
                     try {
-                      await axios.post('http://localhost:5000/reset-data');
+                      await axios.post('http://localhost:5001/api/settings/reset-data');
                       alert("Data reset successful");
                       window.location.reload();
                     } catch (e) {
