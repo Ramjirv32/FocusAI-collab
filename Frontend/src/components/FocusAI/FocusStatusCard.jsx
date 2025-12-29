@@ -36,18 +36,18 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  // Format minutes as hours and minutes
-  const formatTime = (minutes) => {
-    if (!minutes) return '0m';
-
-    // Ensure minutes is a reasonable value (max 24 hours)
-    const sanitizedMinutes = Math.min(minutes, 24 * 60);
+  // Format seconds as hours and minutes
+  const formatTime = (seconds) => {
+    if (!seconds || seconds < 0) return '0m';
 
     // Round to nearest integer
-    const roundedMinutes = Math.round(sanitizedMinutes);
+    const roundedSeconds = Math.round(seconds);
 
-    const hours = Math.floor(roundedMinutes / 60);
-    const mins = roundedMinutes % 60;
+    // If less than a minute but more than 0, show 1m
+    if (roundedSeconds > 0 && roundedSeconds < 60) return '1m';
+
+    const hours = Math.floor(roundedSeconds / 3600);
+    const mins = Math.floor((roundedSeconds % 3600) / 60);
 
     if (hours === 0) return `${mins}m`;
     return `${hours}h ${mins}m`;
@@ -280,24 +280,24 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         const summaries = productivityData.summaries;
 
         let totalFocusScore = 0;
-        let totalFocusTimeMinutes = 0;
-        let totalDistractionTimeMinutes = 0;
+        let totalFocusTimeSeconds = 0;
+        let totalDistractionTimeSeconds = 0;
 
         summaries.forEach(summary => {
           totalFocusScore += summary.focusScore || 0;
-          totalFocusTimeMinutes += (summary.totalProductiveTime || 0) / 60; // Convert to minutes
-          totalDistractionTimeMinutes += (summary.totalNonProductiveTime || 0) / 60; // Convert to minutes
+          totalFocusTimeSeconds += (summary.totalProductiveTime || 0); // Keep in seconds
+          totalDistractionTimeSeconds += (summary.totalNonProductiveTime || 0); // Keep in seconds
         });
 
         focusScore = summaries.length > 0 ? totalFocusScore / summaries.length : 0;
-        focusTime = Math.round(totalFocusTimeMinutes);
-        distractionTime = Math.round(totalDistractionTimeMinutes);
+        focusTime = totalFocusTimeSeconds;
+        distractionTime = totalDistractionTimeSeconds;
       } else {
         // Calculate from raw app/tab data as fallback
-        const totalTime = Math.max(totalAppTime / 60, totalTabTime / 60); // Convert to minutes
-        focusScore = totalTime > 0 ? Math.min(85, Math.max(15, 50 + (appCount * 2))) : 0;
-        focusTime = Math.round(totalTime * 0.7);
-        distractionTime = Math.round(totalTime * 0.3);
+        const totalTimeSeconds = Math.max(totalAppTime, totalTabTime); // Keep in seconds
+        focusScore = totalTimeSeconds > 0 ? Math.min(85, Math.max(15, 50 + (appCount * 2))) : 0;
+        focusTime = totalTimeSeconds * 0.7;
+        distractionTime = totalTimeSeconds * 0.3;
       }
 
       const timeFrameStats = {
@@ -308,11 +308,11 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         totalActivities: appCount + tabUsage.length,
         topApps: topApps.map(([name, duration]) => ({
           name,
-          duration: Math.round(duration / 60) // Convert to minutes
+          duration: duration // Keep in seconds
         })),
         topWebsites: topWebsites.map(([domain, data]) => ({
           domain,
-          duration: Math.round(data.duration / 60), // Convert to minutes
+          duration: data.duration, // Keep in seconds
           visits: data.count
         })),
         appCount,
@@ -382,10 +382,12 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
   }
 
   // Use stats prop if available, otherwise use fetched timeframe data
+  // Standardize everything to seconds for our new formatTime function
+  const focusTime = stats?.totalProductiveTime || (stats?.focus_time_minutes ? stats.focus_time_minutes * 60 : 0) || currentData.focusTime || 0;
+  const distractionTime = stats?.totalNonProductiveTime || (stats?.distraction_time_minutes ? stats.distraction_time_minutes * 60 : 0) || currentData.distractionTime || 0;
+  const totalTime = focusTime + distractionTime;
+
   const focusScore = stats?.focus_score || stats?.productivity_score || currentData.focusScore || 0;
-  const focusTime = stats?.focus_time_minutes || currentData.focusTime || 0;
-  const distractionTime = stats?.distraction_time_minutes || currentData.distractionTime || 0;
-  const totalTime = (stats ? focusTime + distractionTime : currentData.totalTime) || 0;
 
   // Calculate total activities from available data
   let totalActivities = stats?.total_activities || currentData.totalActivities || 0;
@@ -684,7 +686,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
                         <div className="flex items-center gap-2 mt-2">
                           <Timer className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-sm">
-                            {formatTime(Math.round(item.duration / 60))} {/* Round and convert seconds to minutes */}
+                            {formatTime(item.duration)} {/* Input is in seconds */}
                           </span>
 
                           <Clock3 className="h-3.5 w-3.5 ml-2 text-muted-foreground" />

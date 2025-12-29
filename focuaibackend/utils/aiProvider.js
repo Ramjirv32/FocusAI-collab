@@ -15,10 +15,13 @@ class AIProvider {
     }
 
     initGroq() {
-        if (this.groqKey) {
+        // Only initialize Groq if it's the selected provider
+        if (this.provider === 'groq' && this.groqKey) {
             this.groq = new Groq({
                 apiKey: this.groqKey
             });
+        } else {
+            this.groq = null;
         }
     }
 
@@ -27,6 +30,8 @@ class AIProvider {
         this.groqKey = process.env.GROQ_API_KEY;
         this.ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
         this.ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+
+        // Re-initialize based on new provider selection
         this.initGroq();
     }
 
@@ -34,9 +39,13 @@ class AIProvider {
         this.refreshConfig(); // Ensure we have latest env vars
 
         if (this.provider === 'groq') {
-            if (!this.groq) this.initGroq();
-            if (!this.groq) throw new Error('Groq API key not configured');
+            if (!this.groq) {
+                // Try initializing one more time in case key was just set
+                this.initGroq();
+                if (!this.groq) throw new Error('Groq selected but API key not configured');
+            }
 
+            console.log('☁️ Using Cloud AI (Groq)');
             const completion = await this.groq.chat.completions.create({
                 messages,
                 model: 'llama-3.3-70b-versatile',
@@ -45,8 +54,9 @@ class AIProvider {
             });
 
             return completion.choices[0].message.content;
-        } else {
+        } else if (this.provider === 'ollama') {
             // Ollama
+            console.log('🏠 Using Local AI (Ollama)');
             try {
                 const response = await fetch(`${this.ollamaUrl}/api/chat`, {
                     method: 'POST',

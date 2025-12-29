@@ -254,12 +254,20 @@ const Statistics = () => {
     fetchStatistics(selectedTimeFrame);
   };
 
-  const formatTime = (minutes: number) => {
-    if (minutes === undefined || minutes === null) return '0m';
+  const formatTime = (seconds: number) => {
+    if (seconds === undefined || seconds === null || seconds < 0) return '0m';
 
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.round(seconds % 60);
+
+    // If less than a minute but more than 0, show 1m (or could show seconds, but 1m is cleaner for this UI)
+    if (hours === 0 && minutes === 0 && seconds > 0) return '1m';
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   const getTrendIndicator = (current: number, previous: number) => {

@@ -1135,11 +1135,11 @@ async function getUserRankInLeaderboard(userId, timeFrame = 'weekly') {
 // ========== PRODUCTIVITY SUMMARY ENDPOINTS ==========
 
 // Helper function to classify apps as productive or non-productive
-const classifyApp = (appName) => {
-  const appLower = appName.toLowerCase();
+const classifyApp = (nameOrUrl) => {
+  const inputLower = (nameOrUrl || '').toLowerCase();
 
   // Rule 1: Direct matches for our own apps or high-confidence productive keywords
-  if (appLower.includes('ai') || appLower.includes('antigravity') || appLower.includes('focus') || appLower.includes('focuai') || appLower.includes('cursor')) {
+  if (inputLower.includes('ai') || inputLower.includes('antigravity') || inputLower.includes('focus') || inputLower.includes('focuai') || inputLower.includes('cursor')) {
     return 'productive';
   }
 
@@ -1149,7 +1149,8 @@ const classifyApp = (appName) => {
     'iterm', 'konsole', 'xterm', 'mysql', 'postman', 'slack', 'eclipse', 'intellij',
     'pycharm', 'vim', 'emacs', 'git', 'docker', 'mongodb compass', 'figma', 'notion',
     'jira', 'confluence', 'trello', 'asana', 'linear', 'windsurf', 'sublime', 'android studio',
-    'xcode', 'wezterm', 'alacritty', 'zeal', 'dbeaver', 'insomnia'
+    'xcode', 'wezterm', 'alacritty', 'zeal', 'dbeaver', 'insomnia', 'github', 'gitlab',
+    'bitbucket', 'stackoverflow', 'dev.to', 'medium', 'w3schools', 'mdn'
   ];
 
   // Rule 3: Known distractions
@@ -1159,16 +1160,15 @@ const classifyApp = (appName) => {
     'telegram', 'snapchat', 'twitch', 'hulu', 'disney+', 'prime video'
   ];
 
-  if (productiveApps.some(app => appLower.includes(app))) {
+  if (productiveApps.some(app => inputLower.includes(app))) {
     return 'productive';
-  } else if (nonProductiveApps.some(app => appLower.includes(app))) {
+  } else if (nonProductiveApps.some(app => inputLower.includes(app))) {
     return 'non-productive';
   }
 
   // Rule 4: Browsers - generally productive as they are tools, though specific sites might not be
-  // The site-specific logic should handle the distraction part if it's a browser tab
   const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi'];
-  if (browsers.some(b => appLower.includes(b))) {
+  if (browsers.some(b => inputLower.includes(b))) {
     return 'productive';
   }
 
@@ -1261,6 +1261,97 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
   }
 });
 
+// Internal endpoint for AI server to update productivity summary (no auth required)
+// This endpoint is called by the AI server after analyzing user data
+app.post('/api/internal/productivity-summary', async (req, res) => {
+  try {
+    const { userId, email, date, appUsageData, tabUsageData } = req.body;
+
+    if (!userId || !email) {
+      return res.status(400).json({ error: 'userId and email are required' });
+    }
+
+    const currentDate = date || new Date().toISOString().slice(0, 10);
+
+    console.log(`📊 [AI Server] Updating productivity summary for ${email} on ${currentDate}`);
+
+    // Find existing summary or create new one
+    let summary = await ProductivitySummary.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      email: email,
+      date: currentDate
+    });
+
+    if (!summary) {
+      summary = new ProductivitySummary({
+        userId: new mongoose.Types.ObjectId(userId),
+        email: email,
+        date: currentDate
+      });
+    }
+
+    // Process app usage data
+    const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi', 'google-chrome'];
+    if (appUsageData && Array.isArray(appUsageData)) {
+      for (const app of appUsageData) {
+        const appName = app.appName || app.name || 'Unknown';
+        const duration = parseInt(app.duration) || 0;
+
+        const appLower = appName.toLowerCase();
+        const isBrowser = browsers.some(b => appLower.includes(b));
+
+        if (duration > 0 && !isBrowser) {
+          const classification = classifyApp(appName);
+          summary.updateProductivityData(appName, duration, classification === 'productive');
+        }
+      }
+    }
+
+    // Process tab usage data
+    if (tabUsageData && Array.isArray(tabUsageData)) {
+      for (const tab of tabUsageData) {
+        const domain = tab.domain || tab.title || 'Browser';
+        const duration = parseInt(tab.duration) || 0;
+
+        if (duration > 0) {
+          const classification = classifyApp(domain);
+          summary.updateProductivityData(`Browser - ${domain}`, duration, classification === 'productive');
+
+          if (!summary.mostVisitedTab || duration > (summary.nonProductiveContent.get(summary.mostVisitedTab) || 0)) {
+            summary.mostVisitedTab = domain;
+          }
+        }
+      }
+    }
+
+    await summary.save();
+
+    console.log(`✅ [AI Server] Productivity summary saved for ${email} - Focus Score: ${summary.focusScore}%`);
+
+    res.json({
+      success: true,
+      summary: {
+        userId: summary.userId,
+        email: summary.email,
+        date: summary.date,
+        productiveContent: Object.fromEntries(summary.productiveContent),
+        nonProductiveContent: Object.fromEntries(summary.nonProductiveContent),
+        maxProductiveApp: summary.maxProductiveApp,
+        totalProductiveTime: summary.totalProductiveTime,
+        totalNonProductiveTime: summary.totalNonProductiveTime,
+        overallTotalUsage: summary.overallTotalUsage,
+        focusScore: summary.focusScore,
+        mostVisitedTab: summary.mostVisitedTab,
+        mostUsedApp: summary.mostUsedApp,
+        distractionApps: Object.fromEntries(summary.distractionApps)
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ [AI Server] Error updating productivity summary:', error);
+    res.status(500).json({ error: 'Failed to update productivity summary', details: error.message });
+  }
+});
 
 
 
@@ -1543,7 +1634,9 @@ async function updateProductivitySummaryForUser(userId, email, date) {
     // Process tab usage
     for (const tab of tabUsage) {
       const domain = tab.domain || tab.title || 'Browser';
-      const classification = classifyApp(domain);
+      // Use full URL or title for better classification context
+      const context = tab.url || tab.title || domain;
+      const classification = classifyApp(context);
       summary.updateProductivityData(`Browser - ${domain}`, tab.duration, classification === 'productive');
 
       // Update most visited tab

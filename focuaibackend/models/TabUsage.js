@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const tabUsageSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.Mixed, 
+    type: mongoose.Schema.Types.Mixed,
     required: true
   },
   email: {
@@ -13,6 +13,7 @@ const tabUsageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  url: String,
   domain: String,
   duration: {
     type: Number,
@@ -20,7 +21,7 @@ const tabUsageSchema = new mongoose.Schema({
   },
   date: {
     type: String,
-    default: () => new Date().toISOString().split('T')[0] 
+    default: () => new Date().toISOString().split('T')[0]
   },
   lastUpdated: {
     type: Date,

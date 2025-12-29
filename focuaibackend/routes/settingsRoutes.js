@@ -102,23 +102,24 @@ router.put('/ai-config', auth, async (req, res) => {
         const lines = envContent.split('\n');
 
         for (const [key, value] of Object.entries(updates)) {
-          if (!value) continue;
+          // Use empty string if value is null/undefined to effectively clear it
+          const valToSet = value === undefined || value === null ? '' : value;
 
           let found = false;
           for (let i = 0; i < lines.length; i++) {
             if (lines[i].startsWith(`${key}=`)) {
-              lines[i] = `${key}=${value}`;
+              lines[i] = `${key}=${valToSet}`;
               found = true;
               break;
             }
             if (envFile.includes('Frontend') && lines[i].startsWith(`VITE_${key}=`)) {
-              lines[i] = `VITE_${key}=${value}`;
+              lines[i] = `VITE_${key}=${valToSet}`;
             }
           }
           if (!found) {
-            lines.push(`${key}=${value}`);
+            lines.push(`${key}=${valToSet}`);
             if (envFile.includes('Frontend')) {
-              lines.push(`VITE_${key}=${value}`);
+              lines.push(`VITE_${key}=${valToSet}`);
             }
           }
         }

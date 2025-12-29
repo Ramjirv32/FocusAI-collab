@@ -176,11 +176,11 @@ const Index = () => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/alerts/check`,
-        { 
+        {
           focusScore,
           date: new Date().toISOString().split('T')[0]
         },
-        { 
+        {
           headers: getAuthHeader(),
           timeout: 5000 // 5 second timeout
         }
@@ -229,7 +229,11 @@ const Index = () => {
           const rawFocusTimeMinutes = consolidatedData.quickStats.quick_stats.focus_time_minutes || 0;
           const rawDistractionTimeMinutes = consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0;
 
-          await checkProductivityAlerts(consolidatedData.quickStats.quick_stats.focus_score);
+          // Check productivity alerts only if we have a valid focus score
+          const focusScore = consolidatedData.quickStats.quick_stats.focus_score;
+          if (focusScore !== undefined && focusScore !== null && !isNaN(focusScore) && focusScore > 0) {
+            await checkProductivityAlerts(focusScore);
+          }
           // Cap values at realistic amounts (max 24 hours)
           const maxDailyMinutes = 24 * 60; // 24 hours in minutes
 
@@ -633,8 +637,8 @@ const Index = () => {
       {/* Top Bar Alert (for non-blocking alerts) */}
       {alertMessage && !isBlockingAlert && (
         <div className={`fixed top-0 left-0 right-0 z-[90] w-full p-4 border-b-2 shadow-lg animate-in slide-in-from-top ${alertSeverity === 'critical' ? 'bg-red-600 border-red-700' :
-            alertSeverity === 'high' ? 'bg-orange-500 border-orange-600' :
-              'bg-yellow-500 border-yellow-600'
+          alertSeverity === 'high' ? 'bg-orange-500 border-orange-600' :
+            'bg-yellow-500 border-yellow-600'
           } text-white`}>
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 flex-grow justify-center">
@@ -717,10 +721,10 @@ const Index = () => {
 
             {/* LeetCode-Style Heatmap */}
             <div className="mt-6">
-              <LeetCodeStyleHeatmap 
+              <LeetCodeStyleHeatmap
                 data={tabLogs ? (() => {
                   const dailyData = {};
-                  
+
                   // Group logs by date and calculate daily focus score
                   tabLogs.forEach(log => {
                     try {
@@ -730,14 +734,14 @@ const Index = () => {
                         return;
                       }
                       const dateStr = date.toISOString().slice(0, 10);
-                      
+
                       if (!dailyData[dateStr]) {
                         dailyData[dateStr] = {
                           count: 0,
                           totalScore: 0
                         };
                       }
-                      
+
                       // Use individual log score or fallback to random
                       const logScore = log.score || log.focusScore || Math.floor(Math.random() * 100);
                       dailyData[dateStr].totalScore += logScore;
@@ -746,7 +750,7 @@ const Index = () => {
                       console.error('Invalid log entry:', log.timestamp);
                     }
                   });
-                  
+
                   // Convert to heatmap format
                   return Object.entries(dailyData).map(([date, data]) => ({
                     date: date,

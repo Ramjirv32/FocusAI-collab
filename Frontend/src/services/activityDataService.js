@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// Configure API endpoints - FIXED TO CORRECT PORTS
-const AI_API_URL = 'http://localhost:8000'; // Python AI server (DO NOT CHANGE)
-const MODEL_API_URL = 'http://localhost:8000'; // Model AI Train server (DO NOT CHANGE)
-const BACKEND_API_URL = 'http://localhost:5001'; // Your app backend
+// Get API URLs from environment variables with fallback to localhost
+const AI_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; // Python AI server
+const MODEL_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; // Model AI Train server
+const BACKEND_API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'; // Your app backend
 
 /**
  * Get authentication headers with the JWT token

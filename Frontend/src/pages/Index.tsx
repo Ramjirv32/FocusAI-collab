@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '@/config/api';
+
 
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import TimeFrameSelector from '@/components/TabInsights/TimeFrameSelector';
@@ -36,23 +38,23 @@ const Index = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        
+
         // Get token from localStorage for authentication
         const headers = getAuthHeader();
-        
+
         // Fetch tab logs with authorization header
-        const tabResponse = await axios.get('http://localhost:5001/tabs', { headers });
+        const tabResponse = await axios.get(`${API_BASE_URL}/tabs`, { headers });
         setTabLogs(tabResponse.data);
-        
+
         // Fetch app usage data with authorization header
-        const appResponse = await axios.get('http://localhost:5001/focus-data', { headers });
-        
+        const appResponse = await axios.get(`${API_BASE_URL}/focus-data`, { headers });
+
         // Debug the response
         console.log('App usage response:', appResponse.data);
-        
+
         setAppUsageData(appResponse.data.appUsage || {});
         setCurrentSessionData(appResponse.data.currentSession || []);
-        
+
       } catch (err) {
         console.error('Error fetching data:', err);
         setError(err.message || 'Failed to fetch data');
@@ -60,9 +62,9 @@ const Index = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
-    
+
     const tabInterval = setInterval(() => {
       fetchData();
     }, 30000);
@@ -71,30 +73,30 @@ const Index = () => {
     const sendHeartbeat = async () => {
       try {
         const headers = getAuthHeader();
-        await axios.post('http://localhost:5001/api/heartbeat', {}, { headers });
+        await axios.post(`${API_BASE_URL}/api/heartbeat`, {}, { headers });
       } catch (err) {
         console.error('Heartbeat error:', err);
       }
     };
-    
+
     // Send heartbeat every 30 seconds
     sendHeartbeat(); // Send immediately
     const heartbeatInterval = setInterval(sendHeartbeat, 30000);
-    
+
     // Clean up on component unmount
     return () => {
       clearInterval(tabInterval);
       clearInterval(heartbeatInterval);
     };
   }, []);
-  
+
 
   const filteredLogs = tabLogs ? filterByTimeFrame(tabLogs, selectedTimeFrame) : [];
   const domainGroups = tabLogs ? groupByDomain(filteredLogs) : {};
-  
+
 
   const chartData: GroupedTabData[] = Object.values(domainGroups);
-  
+
 
   const summary = tabLogs ? generateSummary(filteredLogs) : {
     totalTime: 0,
@@ -120,13 +122,13 @@ const Index = () => {
               Track and analyze your browsing and app usage patterns
             </p>
           </div>
-          
-          <TimeFrameSelector 
+
+          <TimeFrameSelector
             selectedTimeFrame={selectedTimeFrame}
             onTimeFrameChange={setSelectedTimeFrame}
           />
         </div>
-        
+
         {isLoading ? (
           <div className="grid place-items-center py-10">
             <div className="flex flex-col items-center gap-2">
@@ -150,25 +152,25 @@ const Index = () => {
           </Card>
         ) : (
           <>
-            <DataSummary 
-              summary={summary} 
-              timeFrame={timeFrameDisplays[selectedTimeFrame]} 
+            <DataSummary
+              summary={summary}
+              timeFrame={timeFrameDisplays[selectedTimeFrame]}
             />
-            
+
             {/* Add AI Focus Analysis */}
             <div className="mt-6">
               <FocusScoreCard />
             </div>
-            
+
             <div className="mt-6">
               <EnhancedUsageCharts />
             </div>
-            
+
             {/* Add the new Tab Usage Analytics component */}
             <div className="mt-6">
               <TabUsageAnalytics />
             </div>
-            
+
             {/* You can keep the original components for reference, but they're not needed */}
             {/*
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">

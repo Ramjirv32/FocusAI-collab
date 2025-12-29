@@ -111,12 +111,14 @@ def process_user_data(user_data):
             if not isinstance(tab, dict):
                 continue
             domain = tab.get("domain", tab.get("title", "Browser"))
+            url = tab.get("url", "")
             duration = tab.get("duration", 0)
             if not domain or duration <= 0:
                 continue
             tab_name = f"Browser - {domain}"
-            prediction = predict_with_xgboost("Browser", domain, duration)
-            print(f"🔍 Tab: '{domain}' ({duration}s) → {prediction['label']} ({prediction['confidence']:.0%})")
+            # Use full URL for prediction if available, otherwise domain
+            prediction = predict_with_xgboost("Browser", url if url else domain, duration)
+            print(f"🔍 Tab: '{url if url else domain}' ({duration}s) → {prediction['label']} ({prediction['confidence']:.0%})")
             if prediction['label'] == 'Productive':
                 productive_content[tab_name] = productive_content.get(tab_name, 0) + duration
                 total_productive_time += duration
@@ -252,6 +254,10 @@ def predict_with_xgboost(app_name, tab_name, duration):
         return predict_with_rules(app_name, tab_name, duration)
 
 def predict_with_rules(app_name, tab_name, duration):
+    # Standardize to lowercase for comparison
+    app_lower = app_name.lower()
+    tab_lower = tab_name.lower()
+
     productive_apps = [
         "Code", "VSCode", "Terminal", "Gnome-terminal", "mysql", "postman", "Slack", 
         "Eclipse", "IntelliJ", "PyCharm", "Vim", "Emacs", "Git", "Docker", "Cursor",
@@ -389,32 +395,40 @@ def predict_with_rules(app_name, tab_name, duration):
         "newrelic", "elastic", "dynatrace", "appdynamics"
     ]
     
-    # Check if it's in productive apps list (app name matching)
-    if any(prod_app.lower() in app_name.lower() for prod_app in productive_apps):
-        return {'label': 'Productive', 'confidence': 0.90}
-    elif any(dist_app.lower() in app_name.lower() for dist_app in distraction_apps):
-        return {'label': 'Non-Productive', 'confidence': 0.85}
+    # Combined lists for rule-based classification
+    all_productive = [a.lower() for a in productive_apps] + [d.lower() for d in productive_domains]
+    all_non_productive = [a.lower() for a in distraction_apps]
+
+    # Rule-based classification logic
+    # Check if any productive keyword is in app name or tab name (URL)
+    if any(keyword in app_lower for keyword in all_productive) or any(keyword in tab_lower for keyword in all_productive):
+        return {
+            'label': 'Productive',
+            'confidence': 0.95
+        }
     
-    # Browser-based classification (tab/domain matching)
+    # Check if any non-productive keyword is in app name or tab name (URL)
+    if any(keyword in app_lower for keyword in all_non_productive) or any(keyword in tab_lower for keyword in all_non_productive):
+        return {
+            'label': 'Non-Productive',
+            'confidence': 0.95
+        }
+    
+    # Check for browser-specific rules if it's a browser
     browsers = ["browser", "chrome", "firefox", "chromium", "brave", "edge", "safari", "opera"]
-    if any(b in app_name.lower() for b in browsers):
-        
-        # Check productive domains FIRST
-        if any(prod_domain in tab_name.lower() for prod_domain in productive_domains):
-            return {'label': 'Productive', 'confidence': 0.88}
-        
-        # Then check distraction domains
-        if any(social in tab_name.lower() for social in ["youtube", "facebook", "twitter", "instagram", "tiktok", "reddit", "netflix", "twitch", "gaming", "steam", "pornhub", "xhamster"]):
-            return {'label': 'Non-Productive', 'confidence': 0.85}
-        
-        # Neutral/unknown domains
-        return {'label': 'Productive', 'confidence': 0.70}
-    else:
-        # Unknown app - classify by duration (long usage = likely productive for developers/corporate)
-        if duration > 300:
-            return {'label': 'Productive', 'confidence': 0.75}
-        else:
-            return {'label': 'Productive', 'confidence': 0.65}  # Default to productive for short unknown apps
+    if any(b in app_lower for b in browsers):
+        # We already checked productive/non-productive keywords above
+        # If we reach here, default to productive for browsers as they are tools
+        return {
+            'label': 'Productive',
+            'confidence': 0.7
+        }
+
+    # Default to neutral if no rules match
+    return {
+        'label': 'Neutral',
+        'confidence': 0.5
+    }
 
 def process_real_data(app_data):
     try:
@@ -510,7 +524,7 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
         if existing_summary:
             print(f"🔄 Calculating incremental updates...")
             
-            
+            # Get existing values
             existing_productive = existing_summary.get("totalProductiveTime", 0)
             existing_non_productive = existing_summary.get("totalNonProductiveTime", 0)
             existing_total = existing_summary.get("overallTotalUsage", 0)
@@ -519,7 +533,7 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
             new_non_productive = new_metrics["total_non_productive_time"]
             new_total = new_metrics["overall_total_usage"]
             
-            
+            # Calculate incremental differences
             productive_diff = max(0, new_productive - existing_productive)
             non_productive_diff = max(0, new_non_productive - existing_non_productive)
             total_diff = max(0, new_total - existing_total)
@@ -529,34 +543,36 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
             print(f"   Non-productive time diff: +{non_productive_diff}s")
             print(f"   Total time diff: +{total_diff}s")
             
-            
+            # Merge content maps
             updated_productive_content = existing_summary.get("productiveContent", {})
             updated_non_productive_content = existing_summary.get("nonProductiveContent", {})
             
-            
+            # Update productive content
             for app, duration in new_metrics["productive_content"].items():
                 if app in updated_productive_content:
-                    
+                    # Calculate increment
                     existing_duration = updated_productive_content[app]
                     increment = max(0, duration - existing_duration)
                     updated_productive_content[app] = existing_duration + increment
                 else:
                     updated_productive_content[app] = duration
             
-            
+            # Update non-productive content
             for app, duration in new_metrics["non_productive_content"].items():
                 if app in updated_non_productive_content:
-                    
+                    # Calculate increment
                     existing_duration = updated_non_productive_content[app]
                     increment = max(0, duration - existing_duration)
                     updated_non_productive_content[app] = existing_duration + increment
                 else:
                     updated_non_productive_content[app] = duration
             
-            
+            # Prepare payload for incremental update
             update_payload = {
+                "userId": user_id,
+                "email": email,
                 "appUsageData": [{"appName": app, "duration": dur} for app, dur in updated_productive_content.items()],
-                "tabUsageData": [],  
+                "tabUsageData": [],  # Tabs are already included in appUsageData with "Browser -" prefix
                 "date": date,
                 "incrementalUpdate": True,
                 "totalProductiveTime": existing_productive + productive_diff,
@@ -565,8 +581,10 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
             }
         else:
             print(f"🆕 Creating new productivity summary...")
-            
+            # Prepare payload for new summary
             update_payload = {
+                "userId": user_id,
+                "email": email,
                 "appUsageData": [{"appName": app, "duration": dur} for app, dur in new_metrics["productive_content"].items()],
                 "tabUsageData": [],
                 "date": date,
@@ -576,10 +594,9 @@ async def update_backend_productivity_summary(user_id: str, email: str, date: st
                 "overallTotalUsage": new_metrics["overall_total_usage"]
             }
         
-        
-        response = requests.post(f"{backend_url}/api/productivity-summary",
+        # Use the internal endpoint that doesn't require authentication
+        response = requests.post(f"{backend_url}/api/internal/productivity-summary",
                                json=update_payload,
-                               headers={"Authorization": f"Bearer {get_user_token(user_id)}"}, 
                                timeout=15)
         
         if response.status_code == 200:
@@ -1013,12 +1030,14 @@ async def fetch_real_mongodb_data(user_id: str = None, email: str = None, date: 
                                 
                                 
                                 app_name = tab.get('domain', tab.get('title', 'Browser'))
+                                url = tab.get('url', '')
                                 if app_name and app_name != 'unknown':
                                     formatted_data.append({
                                         "userId": str(tab.get('userId', '')),
                                         "email": tab.get('email', ''),
                                         "date": tab.get('date', datetime.now().strftime("%Y-%m-%d")),
                                         "appName": f"Browser - {app_name}",
+                                        "url": url,
                                         "duration": int(tab.get('duration', 0)),
                                         "lastUpdated": tab.get('lastUpdated', datetime.now().isoformat())
                                     })
@@ -1160,6 +1179,11 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
         if not user_data_list or len(user_data_list) == 0:
             raise HTTPException(status_code=404, detail=f"No app or tab usage data found for user {user_id} on {current_date}")
         
+        # Extract email from the first data record if not provided
+        if not email and user_data_list and len(user_data_list) > 0:
+            email = user_data_list[0].get('email', 'unknown@example.com')
+            print(f"📧 Extracted email from data: {email}")
+        
         # Convert list to the format expected by process_user_data
         user_data = {"appUsage": user_data_list}
         
@@ -1278,10 +1302,10 @@ async def analyze_and_store_productivity(user_id: str, date: Optional[str] = Non
 @app.get("/user/{user_id}/productivity-analysis", response_model=FocusAnalysisResponse)
 async def get_productivity_analysis(user_id: str, date: Optional[str] = None, email: Optional[str] = None):
     try:
-        
+        # Call the analyze_and_store function
         result = await analyze_and_store_productivity(user_id, date, email)
         
-        
+        # Return the formatted response
         return FocusAnalysisResponse(
             user_id=result["user_id"],
             analysis_date=result["analysis_date"],
@@ -1295,82 +1319,9 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
         
     except Exception as e:
         print(f"❌ Error in productivity analysis: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to get productivity analysis: {str(e)}")
-    try:
-        
-        if not date:
-            date = datetime.now().strftime("%Y-%m-%d")
-            
-        print(f"🔍 Analyzing focus for user {user_id} (email: {email}) on {date}")
-        
-        
-        app_data = await fetch_real_mongodb_data(user_id=user_id, email=email, date=date)
-        
-        
-        local_data = [item for item in REAL_MONGODB_DATA 
-                     if item["userId"] == user_id and item["date"] == date]
-        
-        
-        if app_data:
-            combined_data = app_data
-            print(f"✅ Using {len(app_data)} records from MongoDB backend")
-        elif local_data:
-            combined_data = local_data
-            print(f"✅ Using {len(local_data)} records from local data")
-        else:
-            combined_data = []
-            print(f"⚠️ No data found for user {user_id}")
-        
-        
-        if not combined_data:
-            return {
-                "user_id": user_id,
-                "analysis_date": date,
-                "total_activities": 0,
-                "total_duration": 0,
-                "focus_areas": [],
-                "distraction_areas": [],
-                "detailed_activities": [],
-                "summary": {
-                    "productivity_score": 0,
-                    "focused_duration_minutes": 0,
-                    "distracted_duration_minutes": 0,
-                    "total_duration_minutes": 0,
-                    "most_focused_app": "None",
-                    "most_distracting_app": "None",
-                    "focus_percentage": 0
-                }
-            }
-        
-        
-        activities = process_real_data(combined_data)
-        if not activities:
-            raise HTTPException(status_code=404, detail=f"Failed to process data for user {user_id}")
-            
-        
-        focus_areas, distraction_areas = categorize_activities(activities)
-        
-        
-        summary = generate_summary(activities)
-        
-        
-        return {
-            "user_id": user_id,
-            "analysis_date": date,
-            "total_activities": len(activities),
-            "total_duration": sum(a.duration for a in activities),
-            "focus_areas": focus_areas,
-            "distraction_areas": distraction_areas,
-            "detailed_activities": activities,
-            "summary": summary
-        }
-            
-    except HTTPException as e:
-        print(f"❌ Error in focus analysis: {e.status_code}: {e.detail}")
-        raise
-    except Exception as e:
-        print(f"❌ Unexpected error in focus analysis: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to analyze focus: {str(e)}")
 
 async def fetch_user_data_from_backend(user_id: str, date: str = None):
     try:
