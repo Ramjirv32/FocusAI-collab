@@ -17,7 +17,7 @@ interface FocusAICardProps {
 const FocusAICard: React.FC<FocusAICardProps> = ({ focusStats, isSyncing, date, error, onSync }) => {
   const { user } = useAuth();
 
-  // Check if user is logged in
+  
   if (!user) {
     return (
       <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200 shadow-lg hover:shadow-xl transition-shadow">
@@ -47,7 +47,7 @@ const FocusAICard: React.FC<FocusAICardProps> = ({ focusStats, isSyncing, date, 
     );
   }
 
-  // Format minutes as hours and minutes
+  
   const formatTime = (minutes: number | undefined): string => {
     if (!minutes) return '0m';
     

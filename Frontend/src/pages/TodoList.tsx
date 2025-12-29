@@ -45,7 +45,7 @@ const TodoList = () => {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'list' | 'calendar'>('list');
 
-  // Todo Alert System
+  
   const {
     currentAlert,
     isMonitoring,
@@ -57,7 +57,7 @@ const TodoList = () => {
     triggerCheck
   } = useTodoAlerts();
 
-  // Form state
+  
   const [newTodo, setNewTodo] = useState<CreateTodoData>({
     title: '',
     description: '',
@@ -66,7 +66,7 @@ const TodoList = () => {
     dueDate: ''
   });
 
-  // Load todos and stats
+  
   const loadTodos = async () => {
     try {
       setLoading(true);
@@ -106,7 +106,7 @@ const TodoList = () => {
     loadTodos();
   }, [filter, priorityFilter]);
 
-  // Create todo
+  
   const handleCreateTodo = async () => {
     if (!newTodo.title.trim()) {
       toast({
@@ -147,7 +147,7 @@ const TodoList = () => {
     }
   };
 
-  // Toggle todo completion
+  
   const toggleTodoCompletion = async (todo: Todo) => {
     try {
       await todoService.updateTodo(todo._id, {
@@ -168,7 +168,7 @@ const TodoList = () => {
     }
   };
 
-  // Delete todo
+  
   const deleteTodo = async (id: string) => {
     if (!confirm('Are you sure you want to delete this todo?')) return;
 
@@ -189,13 +189,13 @@ const TodoList = () => {
     }
   };
 
-  // Handle alert completion
+  
   const handleAlertComplete = () => {
     completeTask();
-    loadTodos(); // Refresh the todo list
+    loadTodos(); 
   };
 
-  // Toggle alert monitoring
+  
   const toggleAlertMonitoring = () => {
     if (isMonitoring) {
       stopMonitoring();
@@ -250,7 +250,7 @@ const TodoList = () => {
 
   return (
     <DashboardLayout>
-      {/* Todo Alert Modal */}
+      {}
       {currentAlert && (
         <TodoAlert
           alert={currentAlert}
@@ -261,7 +261,7 @@ const TodoList = () => {
       )}
 
       <div className={`container mx-auto p-6 space-y-6 ${currentAlert ? 'pointer-events-none opacity-50' : ''}`}>
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -272,7 +272,7 @@ const TodoList = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Alert Status Toggle */}
+            {}
             <Button
               variant={isMonitoring ? "outline" : "secondary"}
               size="sm"
@@ -381,7 +381,7 @@ const TodoList = () => {
           </div>
         </div>
 
-        {/* Alert Status Info */}
+        {}
         {isMonitoring && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 text-sm text-blue-800">
             <Bell className="h-4 w-4" />
@@ -389,7 +389,7 @@ const TodoList = () => {
           </div>
         )}
 
-        {/* Stats Cards */}
+        {}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <Card>
@@ -443,7 +443,7 @@ const TodoList = () => {
           </div>
         )}
 
-        {/* View Tabs */}
+        {}
         <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
           <TabsList className="grid w-full max-w-sm grid-cols-2">
             <TabsTrigger value="list" className="flex items-center gap-2">
@@ -457,7 +457,7 @@ const TodoList = () => {
           </TabsList>
 
           <TabsContent value="list" className="space-y-4">
-            {/* Filters */}
+            {}
             <div className="flex gap-4">
               <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
                 <SelectTrigger className="w-40">
@@ -485,7 +485,7 @@ const TodoList = () => {
               </Select>
             </div>
 
-            {/* Todo List */}
+            {}
             <div className="space-y-3">
               {loading ? (
                 <div className="text-center py-8">Loading todos...</div>
@@ -571,7 +571,7 @@ const TodoList = () => {
 
           <TabsContent value="calendar">
             <TodoCalendar onTodoSelect={(todo) => {
-              // Handle todo selection from calendar if needed
+              
               console.log('Selected todo from calendar:', todo);
             }} />
           </TabsContent>

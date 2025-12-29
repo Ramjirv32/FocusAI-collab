@@ -16,11 +16,11 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
   distractingApps,
   hasData = true
 }) => {
-  // Generate recommendations based on the focus data
+  
   const getRecommendations = () => {
     const recommendations = [];
     
-    // Focus score recommendations
+    
     if (focusPercentage < 30) {
       recommendations.push({
         title: "Critical Focus Improvement Needed",
@@ -41,7 +41,7 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
       });
     }
     
-    // Distraction recommendations
+    
     if (distractingApps.length > 0) {
       const topDistractions = distractingApps.slice(0, 2).map(app => app).join(" and ");
       recommendations.push({
@@ -51,7 +51,7 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
       });
     }
     
-    // Productive app recommendations
+    
     if (productiveApps.length > 0) {
       const topProductive = productiveApps[0];
       recommendations.push({

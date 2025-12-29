@@ -308,7 +308,7 @@ export function GamificationDashboard({
             )}
           </div>
 
-          {/* Test Button for Development */}
+          {}
           <Button 
             size="sm" 
             variant="outline" 
@@ -324,7 +324,7 @@ export function GamificationDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6 text-center">
@@ -356,7 +356,7 @@ export function GamificationDashboard({
         </Card>
       </div>
 
-      {/* Badges Section */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -401,7 +401,7 @@ export function GamificationDashboard({
         </CardContent>
       </Card>
 
-      {/* Active Challenges */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -463,7 +463,7 @@ export function GamificationDashboard({
         </CardContent>
       </Card>
 
-      {/* Development Tools */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>Development Tools</CardTitle>

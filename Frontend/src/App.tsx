@@ -135,7 +135,7 @@ const AppRoutes = () => (
 
 const App = () => {
   React.useEffect(() => {
-    // Debug auth state on app load
+    
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
     console.log('App loaded - Auth state:', {

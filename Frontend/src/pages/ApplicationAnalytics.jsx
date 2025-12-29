@@ -31,7 +31,7 @@ const ApplicationAnalytics = () => {
     to: new Date()
   });
   
-  // Demo data for testing when no real data is available
+  
   const demoData = {
     data: {
       trends: Array.from({ length: 7 }, (_, i) => {
@@ -116,7 +116,7 @@ const ApplicationAnalytics = () => {
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       
-      // If we failed to load data, offer to use demo data
+      
       toast({
         title: 'Connection Error',
         description: 'Failed to load analytics data. Would you like to use demo data instead?',
@@ -201,7 +201,7 @@ const ApplicationAnalytics = () => {
     }
   };
 
-  // Format time from seconds to hours/minutes
+  
   const formatTime = (seconds) => {
     if (!seconds) return '0m';
     const hours = Math.floor(seconds / 3600);
@@ -218,7 +218,7 @@ const ApplicationAnalytics = () => {
     return appUsageData.data.slice(0, 10).map(item => {
       const appUsage = Object.entries(item.appUsage).map(([name, duration]) => ({
         name: name.length > 20 ? name.substring(0, 20) + '...' : name,
-        duration: Math.floor(duration / 60), // Convert to minutes
+        duration: Math.floor(duration / 60), 
         fullName: name
       }));
       
@@ -247,12 +247,12 @@ const ApplicationAnalytics = () => {
     return trendData.data.trends.map(day => {
       const formattedDay = {
         date: day.date,
-        totalDuration: Math.floor(day.totalDuration / 60) // Convert to minutes
+        totalDuration: Math.floor(day.totalDuration / 60) 
       };
       
-      // Add each top app as a data point
+      
       Object.entries(day.apps).forEach(([appName, duration]) => {
-        formattedDay[appName] = Math.floor(duration / 60); // Convert to minutes
+        formattedDay[appName] = Math.floor(duration / 60); 
       });
       
       return formattedDay;
@@ -320,7 +320,7 @@ const ApplicationAnalytics = () => {
         </TabsList>
         
         <TabsContent value={timeFrame} className="space-y-6">
-          {/* Overview Card */}
+          {}
           <Card>
             <CardHeader>
               <CardTitle>Application Usage Overview</CardTitle>
@@ -383,7 +383,7 @@ const ApplicationAnalytics = () => {
             </CardContent>
           </Card>
 
-          {/* App vs Web Comparison */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -437,7 +437,7 @@ const ApplicationAnalytics = () => {
               </CardContent>
             </Card>
 
-            {/* Top Apps Card */}
+            {}
             <Card>
               <CardHeader>
                 <CardTitle>Top Applications</CardTitle>
@@ -470,7 +470,7 @@ const ApplicationAnalytics = () => {
             </Card>
           </div>
 
-          {/* Trends Card */}
+          {}
           <Card>
             <CardHeader>
               <CardTitle>Usage Trends</CardTitle>

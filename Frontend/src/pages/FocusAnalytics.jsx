@@ -17,7 +17,7 @@ import DashboardLayout from '../components/Layout/DashboardLayout';
 import AIRecommendations from '../components/FocusAnalysis/AIRecommendations';
 import FocusDistractionsChart from '../components/FocusAnalysis/FocusDistractionsChart';
 
-// Define API base URL
+
 const API_BASE_URL = 'http://localhost:5001';
 
 const FocusAnalytics = () => {
@@ -28,15 +28,15 @@ const FocusAnalytics = () => {
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
   
-  // Enhanced alert states
+  
   const [alertMessage, setAlertMessage] = useState('');
   const [isBlockingAlert, setIsBlockingAlert] = useState(false);
-  const [alertType, setAlertType] = useState(''); // 'is50', 'is20', 'warning'
-  const [alertSeverity, setAlertSeverity] = useState('medium'); // 'low', 'medium', 'high', 'critical'
+  const [alertType, setAlertType] = useState(''); 
+  const [alertSeverity, setAlertSeverity] = useState('medium'); 
   const [alertTimer, setAlertTimer] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // Chart colors
+  
   const COLORS = {
     productive: '#22c55e',
     nonProductive: '#ef4444',
@@ -54,7 +54,7 @@ const FocusAnalytics = () => {
     try {
       console.log(`🔄 Loading analytics for ${user.email} on ${selectedDate}`);
       
-      // Fetch productivity summary from correct port (5001)
+      
       const productivityResponse = await fetch(
         `${API_BASE_URL}/api/productivity-summary?date=${selectedDate}`
       , {
@@ -66,12 +66,12 @@ const FocusAnalytics = () => {
       if (productivityResponse.ok) {
         const productivityResult = await productivityResponse.json();
         
-        // Extract the first summary if we got an array of summaries
+        
         const summary = productivityResult.summaries && productivityResult.summaries.length > 0 
           ? productivityResult.summaries[0] 
           : productivityResult;
           
-        // Process the data to ensure it has the right format
+        
         const processedData = {
           focus_score: summary.focusScore || 0,
           total_productive_time: summary.totalProductiveTime || 0,
@@ -82,14 +82,14 @@ const FocusAnalytics = () => {
           most_visited_tab: summary.mostVisitedTab || 'None',
           total_activities: Object.keys(summary.productiveContent || {}).length + 
                            Object.keys(summary.nonProductiveContent || {}).length,
-          // Convert Maps to objects if needed
+          
           productive_content: summary.productiveContent || {},
           non_productive_content: summary.nonProductiveContent || {}
         };
         
         setProductivityData(processedData);
         
-        // Check for productivity alerts based on focus score
+        
         await checkProductivityAlerts(processedData.focus_score);
         
         console.log('✅ Productivity data loaded:', processedData);
@@ -119,7 +119,7 @@ const FocusAnalytics = () => {
     return `${minutes}m`;
   };
 
-  // Clear any existing timers on component unmount
+  
   useEffect(() => {
     return () => {
       if (alertTimer) {
@@ -133,7 +133,7 @@ const FocusAnalytics = () => {
     return `${Math.round((value / total) * 100)}%`;
   };
 
-  // Enhanced function to show blocking alerts with timer
+  
   const showBlockingAlert = (message, type, severity = 'medium', suggestions = null) => {
     console.log(`🚨 Showing ${type} alert:`, message);
     
@@ -144,20 +144,20 @@ const FocusAnalytics = () => {
     const isBlocking = type === 'is50' || type === 'is20';
     setIsBlockingAlert(isBlocking);
     
-    // Set timer duration (10 seconds for blocking alerts, 5 seconds for others)
+    
     const timerDuration = isBlocking ? 10 : 5;
     setTimeRemaining(timerDuration);
     
-    // Clear any existing timer
+    
     if (alertTimer) {
       clearInterval(alertTimer);
     }
     
-    // Start countdown timer
+    
     const newTimer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
-          // Timer finished - hide alert
+          
           clearInterval(newTimer);
           setAlertMessage('');
           setIsBlockingAlert(false);
@@ -173,7 +173,7 @@ const FocusAnalytics = () => {
     setAlertTimer(newTimer);
   };
 
-  // Manual close alert function
+  
   const closeAlert = () => {
     if (alertTimer) {
       clearInterval(alertTimer);
@@ -187,7 +187,7 @@ const FocusAnalytics = () => {
     setTimeRemaining(0);
   };
 
-  // Fallback client-side alert check
+  
   const fallbackAlertCheck = (focusScore) => {
     console.log('🔄 Using fallback alert check');
     
@@ -206,14 +206,14 @@ const FocusAnalytics = () => {
     }
   };
 
-  // Enhanced productivity alerts check
+  
   const checkProductivityAlerts = async (focusScore) => {
     if (!user) return;
 
     try {
       console.log(`🔍 Checking productivity alerts for focus score: ${focusScore}`);
       
-      // Check server-side alerts with the current focus score
+      
       const response = await fetch(`${API_BASE_URL}/api/alerts/check`, {
         method: 'POST',
         headers: {
@@ -227,7 +227,7 @@ const FocusAnalytics = () => {
         const data = await response.json();
         console.log('✅ Alert check response:', data);
         
-        // Only show alert if server indicates we should
+        
         if (data.showAlert && data.alert) {
           const severity = data.alertType === 'is20' ? 'critical' : 'high';
           showBlockingAlert(data.alert, data.alertType, severity, data.suggestions);
@@ -239,18 +239,18 @@ const FocusAnalytics = () => {
         const errorData = await response.json().catch(() => ({}));
         console.error('Server error:', errorData);
         
-        // Fallback to client-side check if server fails
+        
         fallbackAlertCheck(focusScore);
       }
     } catch (error) {
       console.error('❌ Error checking productivity alerts:', error);
       
-      // Fallback to client-side check on network error
+      
       fallbackAlertCheck(focusScore);
     }
   };
 
-  // Function to get alert styling based on severity
+  
   const getAlertStyling = (severity, type) => {
     const baseClasses = "fixed top-0 left-0 right-0 z-50 w-full p-4 font-bold text-center flex justify-between items-center";
     
@@ -266,18 +266,18 @@ const FocusAnalytics = () => {
     }
   };
 
-  // Function to get alert icon based on type and severity
+  
   const getAlertIcon = (severity, type) => {
     if (type === 'is20') return <Ban className="inline-block mr-2" size={24} />;
     if (type === 'is50') return <Shield className="inline-block mr-2" size={24} />;
     return <AlertCircle className="inline-block mr-2" size={20} />;
   };
 
-  // Prepare chart data
+  
   const prepareProductivityChartData = () => {
     if (!productivityData) return { apps: [], categories: [] };
     
-    // App usage data
+    
     const allApps = {
       ...productivityData.productive_content,
       ...productivityData.non_productive_content
@@ -294,7 +294,7 @@ const FocusAnalytics = () => {
       .sort((a, b) => b.duration - a.duration)
       .slice(0, 10);
 
-    // Category data for pie chart
+    
     const categoriesData = [
       {
         name: 'Productive',
@@ -359,21 +359,21 @@ const FocusAnalytics = () => {
 
   return (
     <DashboardLayout>
-      {/* Full Screen Alert Modal with Timer */}
+      {}
       {isBlockingAlert && alertMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay */}
+          {}
           <div 
             className="absolute inset-0 bg-black bg-opacity-75"
             onClick={closeAlert}
           />
           
-          {/* Alert Content */}
+          {}
           <div className={`relative w-full max-w-2xl p-8 rounded-xl shadow-2xl ${
             alertType === 'is20' ? 'bg-red-600' : 'bg-orange-500'
           } text-white transform transition-all duration-300 scale-100`}>
             
-            {/* Timer Display */}
+            {}
             <div className="absolute top-4 right-4 flex items-center gap-2 bg-black bg-opacity-30 rounded-full px-3 py-1">
               <Clock className="h-4 w-4" />
               <span className="text-sm font-bold">{timeRemaining}s</span>
@@ -439,7 +439,7 @@ const FocusAnalytics = () => {
         </div>
       )}
       
-      {/* Top Bar Alert (for non-blocking alerts) */}
+      {}
       {alertMessage && !isBlockingAlert && (
         <div className={`fixed top-0 left-0 right-0 z-50 w-full p-4 text-center font-bold ${
           alertSeverity === 'critical' ? 'bg-red-600 text-white' :
@@ -468,7 +468,7 @@ const FocusAnalytics = () => {
       )}
 
       <div className={`p-6 space-y-6 ${isBlockingAlert ? 'pointer-events-none opacity-50' : ''}`}>
-        {/* Header */}
+        {}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -495,7 +495,7 @@ const FocusAnalytics = () => {
           </div>
         </div>
 
-        {/* Key Metrics */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className={productivityData?.focus_score <= 20 ? 'border-red-500 bg-red-50' : 
                           productivityData?.focus_score <= 50 ? 'border-orange-500 bg-orange-50' : ''}>
@@ -563,7 +563,7 @@ const FocusAnalytics = () => {
           </Card>
         </div>
 
-        {/* Main Analytics */}
+        {}
         <Tabs defaultValue="productivity" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="productivity" disabled={isBlockingAlert}>Productivity</TabsTrigger>
@@ -574,7 +574,7 @@ const FocusAnalytics = () => {
 
           <TabsContent value="productivity" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Productivity Distribution */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle>Productivity Distribution</CardTitle>
@@ -602,7 +602,7 @@ const FocusAnalytics = () => {
                       <Tooltip formatter={(value) => formatTime(value)} />
                     </PieChart>
                   </ResponsiveContainer>
-                  {/* Debug information */}
+                  {}
                   <div className="mt-4 text-xs text-muted-foreground">
                     <div>Productive time: {formatTime(productivityData?.total_productive_time || 0)}</div>
                     <div>Non-productive time: {formatTime(productivityData?.total_non_productive_time || 0)}</div>
@@ -610,7 +610,7 @@ const FocusAnalytics = () => {
                 </CardContent>
               </Card>
 
-              {/* Top Applications */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle>Top Applications</CardTitle>
@@ -650,7 +650,7 @@ const FocusAnalytics = () => {
 
           <TabsContent value="focus" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Focus vs Distraction */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle>Focus Areas Analysis</CardTitle>
@@ -673,7 +673,7 @@ const FocusAnalytics = () => {
                 </CardContent>
               </Card>
 
-              {/* Focus Summary */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle>Focus Summary</CardTitle>
@@ -730,7 +730,7 @@ const FocusAnalytics = () => {
 
           <TabsContent value="apps" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Most Productive Apps */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -763,7 +763,7 @@ const FocusAnalytics = () => {
                 </CardContent>
               </Card>
 
-              {/* Most Distracting Apps */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -800,7 +800,7 @@ const FocusAnalytics = () => {
 
           <TabsContent value="insights" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Key Insights */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -850,7 +850,7 @@ const FocusAnalytics = () => {
                 </CardContent>
               </Card>
 
-              {/* AI Recommendations */}
+              {}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -882,7 +882,7 @@ const FocusAnalytics = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Emergency Focus Action Panel - Only show for critical scores */}
+        {}
         {(productivityData?.focus_score || 0) <= 20 && (
           <Card className="border-red-500 bg-red-50">
             <CardHeader>
@@ -919,7 +919,7 @@ const FocusAnalytics = () => {
           </Card>
         )}
 
-        {/* Warning Focus Panel - For moderate scores */}
+        {}
         {(productivityData?.focus_score || 0) > 20 && (productivityData?.focus_score || 0) <= 50 && (
           <Card className="border-orange-500 bg-orange-50">
             <CardHeader>

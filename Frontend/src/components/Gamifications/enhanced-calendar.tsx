@@ -207,7 +207,7 @@ export function EnhancedCalendar({
 
   return (
     <div className="space-y-6">
-      {/* Calendar Header */}
+      {}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -340,7 +340,7 @@ export function EnhancedCalendar({
         </CardHeader>
       </Card>
 
-      {/* Calendar Grid */}
+      {}
       <Card>
         <CardContent className="p-6">
           <div className="grid grid-cols-7 gap-2 mb-4">
@@ -375,7 +375,7 @@ export function EnhancedCalendar({
                     {day.getDate()}
                   </div>
 
-                  {/* Usage indicator */}
+                  {}
                   {dayUsage && (
                     <div className="flex gap-1 mb-1">
                       <div
@@ -393,7 +393,7 @@ export function EnhancedCalendar({
                     </div>
                   )}
 
-                  {/* Events */}
+                  {}
                   <div className="space-y-1">
                     {dayEvents.slice(0, 2).map((event, eventIndex) => {
                       const category = categories.find((c) => c.value === event.category)
@@ -416,7 +416,7 @@ export function EnhancedCalendar({
         </CardContent>
       </Card>
 
-      {/* Selected Date Details */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>
@@ -430,7 +430,7 @@ export function EnhancedCalendar({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Events */}
+            {}
             <div>
               <h4 className="font-medium mb-3 flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -488,7 +488,7 @@ export function EnhancedCalendar({
               </div>
             </div>
 
-            {/* Usage */}
+            {}
             <div>
               <h4 className="font-medium mb-3 flex items-center gap-2">
                 <Monitor className="w-4 h-4" />

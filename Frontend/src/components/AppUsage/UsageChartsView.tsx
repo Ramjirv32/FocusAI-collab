@@ -44,19 +44,19 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
       setError(null);
 
       try {
-        // Get raw usage data
+        
         const rawResponse = await axios.get('http://localhost:5001/raw-usage');
         setRawData(rawResponse.data);
 
-        // Get productivity data
+        
         const focusResponse = await axios.get('http://localhost:5001/focus-data');
 
-        // Calculate productive vs unproductive time
-        // This is a simplified version - you would need to implement proper
-        // productivity classification in your real app
+        
+        
+        
         const tabs = focusResponse.data.tabs || [];
 
-        // For demo, consider domains with "github", "docs", or "stackoverflow" as productive
+        
         const productive = tabs
           .filter((tab: any) => {
             try {
@@ -95,7 +95,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
 
     fetchData();
 
-    // Refresh data every minute
+    
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -139,19 +139,19 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
     );
   }
 
-  // Prepare bar chart data for app usage
+  
   const appUsageData = Object.entries(rawData.appUsage).map(([name, duration]) => ({
     name,
     duration
   })).sort((a, b) => b.duration - a.duration);
 
-  // Prepare bar chart data for tab usage
+  
   const tabUsageData = Object.entries(rawData.tabUsage).map(([name, duration]) => ({
     name,
     duration
-  })).sort((a, b) => b.duration - a.duration).slice(0, 10); // Top 10 tabs
+  })).sort((a, b) => b.duration - a.duration).slice(0, 10); 
 
-  // Prepare productivity pie chart data
+  
   const productivityChartData = [
     { name: 'Productive', value: productivityData.productive },
     { name: 'Unproductive', value: productivityData.unproductive }
@@ -162,7 +162,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
       <h2 className="text-2xl font-bold mb-4">Activity Visualizations</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* App Usage Chart */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>App Usage</CardTitle>
@@ -194,7 +194,7 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
           </CardContent>
         </Card>
 
-        {/* Tab Usage Chart */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Top Website Usage</CardTitle>

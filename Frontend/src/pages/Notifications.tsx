@@ -144,7 +144,7 @@ const Notifications = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Notification Preferences */}
+        {}
         <Card className="mt-8">
           <CardHeader>
             <CardTitle>Alert Preferences</CardTitle>

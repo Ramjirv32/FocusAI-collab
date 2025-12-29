@@ -1,4 +1,4 @@
-/* Progress bar styling */
+
 .progress-bar {
   @apply overflow-hidden h-2 text-xs flex rounded bg-gray-200;
 }

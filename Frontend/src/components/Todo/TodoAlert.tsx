@@ -23,12 +23,12 @@ interface TodoAlertProps {
 }
 
 const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onSnooze }) => {
-  const [timeRemaining, setTimeRemaining] = useState(10); // 10 second auto-dismiss timer
+  const [timeRemaining, setTimeRemaining] = useState(10); 
   const [isVisible, setIsVisible] = useState(true);
 
   const { todo, minutesUntilDue, severity } = alert;
 
-  // Auto-dismiss timer
+  
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -108,19 +108,19 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Overlay */}
+      {}
       <div className="absolute inset-0 bg-black bg-opacity-75" />
       
-      {/* Alert Content */}
+      {}
       <div className={`relative w-full max-w-2xl p-8 rounded-xl shadow-2xl ${config.bgColor} ${config.borderColor} border-4 text-white transform transition-all duration-300 scale-100`}>
         
-        {/* Timer Display */}
+        {}
         <div className="absolute top-4 right-4 flex items-center gap-2 bg-black bg-opacity-30 rounded-full px-3 py-1">
           <Clock className="h-4 w-4" />
           <span className="text-sm font-bold">{timeRemaining}s</span>
         </div>
 
-        {/* Close Button */}
+        {}
         <button
           onClick={onDismiss}
           className="absolute top-4 right-16 p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors"
@@ -130,17 +130,17 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
         </button>
         
         <div className="text-center">
-          {/* Icon */}
+          {}
           <div className="mb-6">
             {config.icon}
           </div>
           
-          {/* Title */}
+          {}
           <h2 className="text-3xl font-bold mb-4">
             {config.title}
           </h2>
           
-          {/* Task Info */}
+          {}
           <div className="mb-6 space-y-2">
             <p className="text-xl font-semibold">"{todo.title}"</p>
             {todo.description && (
@@ -159,7 +159,7 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
             </div>
           </div>
           
-          {/* Due Date Info */}
+          {}
           <div className="mb-8 p-4 bg-black bg-opacity-20 rounded-lg">
             <div className="flex items-center justify-center gap-2 text-lg">
               <Calendar className="h-5 w-5" />
@@ -167,9 +167,9 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
             </div>
           </div>
           
-          {/* Action Buttons */}
+          {}
           <div className="flex flex-col space-y-4">
-            {/* Primary Actions */}
+            {}
             <div className="flex gap-4 justify-center">
               <button
                 onClick={handleComplete}
@@ -187,7 +187,7 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
               </button>
             </div>
             
-            {/* Snooze Options */}
+            {}
             <div className="flex gap-2 justify-center text-sm">
               <span className="opacity-80">Snooze for:</span>
               <button
@@ -213,7 +213,7 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
             </div>
           </div>
 
-          {/* Tips based on urgency */}
+          {}
           {severity === 'critical' && (
             <div className="mt-6 p-4 bg-black bg-opacity-20 rounded-lg text-sm">
               <p className="font-semibold mb-2">💡 Quick Tips:</p>

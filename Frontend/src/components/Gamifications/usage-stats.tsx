@@ -43,7 +43,7 @@ export function UsageStats({ usageData }: UsageStatsProps) {
     )
   }
 
-  const today = usageData[0] // Most recent data
+  const today = usageData[0] 
   const yesterday = usageData[1]
 
   const productiveChange =
@@ -88,7 +88,7 @@ export function UsageStats({ usageData }: UsageStatsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Today's Overview */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -145,7 +145,7 @@ export function UsageStats({ usageData }: UsageStatsProps) {
         </CardContent>
       </Card>
 
-      {/* Weekly Trend */}
+      {}
       {usageData.length > 1 && (
         <Card>
           <CardHeader>
@@ -189,7 +189,7 @@ export function UsageStats({ usageData }: UsageStatsProps) {
         </Card>
       )}
 
-      {/* Top Apps */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -232,7 +232,7 @@ export function UsageStats({ usageData }: UsageStatsProps) {
         </CardContent>
       </Card>
 
-      {/* Top Websites */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export function UsageStats({ usageData }: UsageStatsProps) {
                 try {
                   domain = new URL(`https://${tab.url}`).hostname.replace("www.", "")
                 } catch {
-                  // If URL parsing fails, use the original URL
+                  
                   domain = tab.url.replace("www.", "")
                 }
 

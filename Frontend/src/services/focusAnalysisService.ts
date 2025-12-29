@@ -1,29 +1,29 @@
 import axios from 'axios';
 
-// Base URL for the Focus AI Analysis API
+
 const AI_API_BASE_URL = 'http://localhost:8000';
 
-// Helper to get auth headers
+
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// Get user ID from local storage
+
 const getUserId = () => {
   try {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
     
     const user = JSON.parse(userStr);
-    return user._id || user.id; // Handle different user ID formats
+    return user._id || user.id; 
   } catch (error) {
     console.error('Error parsing user data:', error);
     return null;
   }
 };
 
-// Create empty analysis data structure for when no data is available
+
 const createEmptyAnalysisData = (userId: string, date: string) => {
   return {
     user_id: userId,
@@ -45,7 +45,7 @@ const createEmptyAnalysisData = (userId: string, date: string) => {
   };
 };
 
-// Create empty quick stats structure for when no data is available
+
 const createEmptyQuickStats = (userId: string, date: string) => {
   return {
     user_id: userId,
@@ -61,7 +61,7 @@ const createEmptyQuickStats = (userId: string, date: string) => {
   };
 };
 
-// Get user focus analysis for a specific date
+
 export const getFocusAnalysis = async (date: string | null = null) => {
   try {
     const userId = getUserId();
@@ -82,7 +82,7 @@ export const getFocusAnalysis = async (date: string | null = null) => {
     } catch (apiError: any) {
       console.warn(`API Error (${apiError.response?.status}): ${apiError.message}`);
       
-      // If it's a 404 or 500 with no data found, return empty structure instead of throwing
+      
       if (apiError.response?.status === 404 || 
           (apiError.response?.status === 500 && 
            apiError.response?.data?.detail?.includes('No usage data found'))) {
@@ -90,7 +90,7 @@ export const getFocusAnalysis = async (date: string | null = null) => {
         return createEmptyAnalysisData(userId, formattedDate);
       }
       
-      // Re-throw other errors
+      
       throw apiError;
     }
   } catch (error) {
@@ -99,7 +99,7 @@ export const getFocusAnalysis = async (date: string | null = null) => {
   }
 };
 
-// Get quick stats for the user
+
 export const getQuickStats = async (date: string | null = null) => {
   try {
     const userId = getUserId();
@@ -120,7 +120,7 @@ export const getQuickStats = async (date: string | null = null) => {
     } catch (apiError: any) {
       console.warn(`API Error (${apiError.response?.status}): ${apiError.message}`);
       
-      // If it's a 404 or 500 with no data found, return empty structure
+      
       if (apiError.response?.status === 404 || 
           (apiError.response?.status === 500 && 
            apiError.response?.data?.detail?.includes('No usage data found'))) {
@@ -128,7 +128,7 @@ export const getQuickStats = async (date: string | null = null) => {
         return createEmptyQuickStats(userId, formattedDate);
       }
       
-      // Re-throw other errors
+      
       throw apiError;
     }
   } catch (error) {

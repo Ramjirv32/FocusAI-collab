@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-// Use a hardcoded API_URL since process.env is causing issues in the browser
+
 const API_URL = 'http://localhost:5001/api';
 
 export const chatService = {
-  // Send a message to the AI assistant
+  
   async sendMessage(message, historyId, userData = null, signal = null) {
     try {
       console.log('🤖 Sending chat message:', message);
@@ -20,12 +20,12 @@ export const chatService = {
         {
           message,
           historyId,
-          userData // Include the user data in the request
+          userData 
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 40000, // Increase timeout to 40 seconds for AI processing
-          signal: signal // Allow cancellation
+          timeout: 40000, 
+          signal: signal 
         }
       );
 
@@ -34,7 +34,7 @@ export const chatService = {
     } catch (error) {
       console.error('❌ Chat service error:', error);
 
-      // Check for specific error types and provide appropriate responses
+      
       if (error.code === 'ECONNABORTED') {
         return {
           success: false,
@@ -45,10 +45,10 @@ export const chatService = {
       }
 
       if (error.response) {
-        // The server responded with an error status code
+        
         console.log('Server error details:', error.response.data);
 
-        // If the server sent back a specific error message, use it
+        
         if (error.response.data && error.response.data.response) {
           return {
             success: false,
@@ -59,7 +59,7 @@ export const chatService = {
         }
       }
 
-      // Default error response
+      
       return {
         success: false,
         response: "I'm having trouble connecting to the server right now. Please try again in a moment.",
@@ -69,7 +69,7 @@ export const chatService = {
     }
   },
 
-  // Get chat history list
+  
   async getChatHistories() {
     try {
       console.log('🔍 Fetching chat histories');
@@ -91,7 +91,7 @@ export const chatService = {
     }
   },
 
-  // Get specific chat history by ID
+  
   async getChatHistoryById(historyId) {
     try {
       console.log(`🔍 Fetching chat history: ${historyId}`);
@@ -117,7 +117,7 @@ export const chatService = {
     }
   },
 
-  // Create a new chat history
+  
   async createChatHistory(title) {
     try {
       console.log('📝 Creating new chat history');
@@ -140,7 +140,7 @@ export const chatService = {
     }
   },
 
-  // Delete a chat history
+  
   async deleteChatHistory(historyId) {
     try {
       console.log(`🗑️ Deleting chat history: ${historyId}`);
@@ -162,7 +162,7 @@ export const chatService = {
     }
   },
 
-  // Fetch user productivity data
+  
   async getUserProductivityData() {
     try {
       console.log('🔍 Fetching user productivity data');
@@ -171,7 +171,7 @@ export const chatService = {
         throw new Error('No authentication token found');
       }
 
-      // Get data from multiple endpoints to compile a complete picture
+      
       const [focusResponse, statsResponse] = await Promise.all([
         axios.get(`${API_URL}/focus/summary`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -181,7 +181,7 @@ export const chatService = {
         })
       ]);
 
-      // Combine data from different sources
+      
       const userData = {
         focusScore: focusResponse.data.focusScore || 0,
         productiveTime: focusResponse.data.productiveTime || 0,

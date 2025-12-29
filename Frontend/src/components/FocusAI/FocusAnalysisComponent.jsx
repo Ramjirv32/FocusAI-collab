@@ -25,7 +25,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
   
  
   const loadFocusData = async () => {
-    // Check if user is authenticated
+    
     if (!user) {
       setError('User not authenticated');
       return;
@@ -80,7 +80,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
     }
   }, [date, user]);
   
-  // Check if user is logged in
+  
   if (!user) {
     return (
       <Card className="w-full bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
@@ -102,7 +102,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
     );
   }
   
-  // If loading or error
+  
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -138,22 +138,22 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
     );
   }
   
-  // Extract data for display from the consolidated data structure
+  
   const productivityScore = focusData?.quickStats?.quick_stats?.productivity_score || 0;
   const focusTime = focusData?.quickStats?.quick_stats?.focus_time_minutes || 0;
   const distractionTime = focusData?.quickStats?.quick_stats?.distraction_time_minutes || 0;
   const totalTime = focusData?.quickStats?.quick_stats?.total_time_minutes || 0;
   
-  // Extract focus and distraction areas from the focusAnalysis data
+  
   const focusAreas = focusData?.focusAnalysis?.productive_apps?.map(app => ({
     category: app.category || "Productive",
-    total_duration: app.duration_minutes * 60, // convert to seconds for display
+    total_duration: app.duration_minutes * 60, 
     apps: [app.app_name]
   })) || [];
   
   const distractionAreas = focusData?.focusAnalysis?.distraction_apps?.map(app => ({
     category: app.category || "Distraction",
-    total_duration: app.duration_minutes * 60, // convert to seconds for display
+    total_duration: app.duration_minutes * 60, 
     apps: [app.app_name]
   })) || [];
   
@@ -182,7 +182,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
         </CardHeader>
         
         <CardContent>
-          {/* Productivity Score */}
+          {}
           <div className="mb-6">
             <div className="flex justify-between mb-2">
               <h3 className="text-sm font-medium">Productivity Score</h3>
@@ -191,7 +191,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
             <Progress value={productivityScore} className="h-2" />
           </div>
           
-          {/* Time Distribution */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="flex justify-between items-center mb-1">
@@ -218,7 +218,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
             </div>
           </div>
           
-          {/* Focus Areas */}
+          {}
           <div className="mb-4">
             <h3 className="text-sm font-medium mb-2">Focus Areas ({focusAreas.length})</h3>
             <div className="space-y-2">
@@ -248,7 +248,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
             </div>
           </div>
           
-          {/* Distraction Areas */}
+          {}
           <div>
             <h3 className="text-sm font-medium mb-2">Distraction Areas ({distractionAreas.length})</h3>
             <div className="space-y-2">
@@ -280,7 +280,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
         </CardContent>
       </Card>
       
-      {/* Most Used Apps */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Most Used Applications</CardTitle>
@@ -308,7 +308,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
         </CardContent>
       </Card>
       
-      {/* Most Visited Sites */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Most Visited Sites</CardTitle>
@@ -339,7 +339,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
   );
 };
 
-// Helper function to extract domain from URL
+
 function extractDomain(url) {
   if (!url) return 'unknown';
   

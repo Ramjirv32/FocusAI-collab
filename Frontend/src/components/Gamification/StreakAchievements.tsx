@@ -136,7 +136,7 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
       );
 
       if (response.data.success) {
-        // Show celebration modal
+        
         setCelebrationBadge({
           name: badge.label,
           days: badge.days,
@@ -145,7 +145,7 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
           points: response.data.pointsAwarded
         });
 
-        // Notify parent to refresh data
+        
         if (onBadgeClaimed) {
           onBadgeClaimed();
         }
@@ -197,25 +197,25 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                 : 'opacity-60'
                 }`}
             >
-              {/* Unlock effect */}
+              {}
               {badge.isUnlocked && (
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               )}
 
               <div className="relative z-10">
-                {/* Fire Icon */}
+                {}
                 <div className="flex justify-center mb-3">
                   <div className={`p-3 rounded-full ${badge.bgColor} border-2 ${badge.borderColor}`}>
                     <Flame className={`h-6 w-6 ${badge.color} ${badge.isUnlocked ? 'fill-current' : ''}`} />
                   </div>
                 </div>
 
-                {/* Badge content */}
+                {}
                 <div className="text-center space-y-2">
                   <h3 className="font-bold text-sm">{badge.label}</h3>
                   <p className="text-xs text-muted-foreground">{badge.description}</p>
 
-                  {/* Days counter */}
+                  {}
                   <div className="flex items-center justify-center gap-2 pt-2">
                     <span className={`text-lg font-bold ${badge.color}`}>
                       {badge.isUnlocked ? badge.days : `${currentStreak}/${badge.days}`}
@@ -223,7 +223,7 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                     <span className="text-xs text-muted-foreground">days</span>
                   </div>
 
-                  {/* Status badge or Claim button */}
+                  {}
                   <div className="pt-2 space-y-2">
                     {badge.isClaimed ? (
                       <Badge className="bg-green-500 hover:bg-green-600 text-white gap-1">
@@ -257,7 +257,7 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                     )}
                   </div>
 
-                  {/* Progress bar */}
+                  {}
                   {!badge.isUnlocked && (
                     <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2 overflow-hidden">
                       <div
@@ -271,7 +271,7 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                 </div>
               </div>
 
-              {/* Unlocked shine effect */}
+              {}
               {badge.isUnlocked && (
                 <div className="absolute top-1 right-1">
                   <div className="relative">
@@ -284,7 +284,7 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
           ))}
         </div>
 
-        {/* Info section */}
+        {}
         <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
             <span className="font-semibold">💡 Tip:</span> Keep your focus streak alive to unlock badges! Each badge represents a milestone in your productivity journey.
@@ -292,7 +292,7 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
         </div>
       </CardContent>
 
-      {/* Badge Celebration Modal */}
+      {}
       <BadgeCelebrationModal
         isOpen={celebrationBadge !== null}
         onClose={() => setCelebrationBadge(null)}

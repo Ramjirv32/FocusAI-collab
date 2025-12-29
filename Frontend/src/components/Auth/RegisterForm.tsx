@@ -18,10 +18,10 @@ const RegisterForm = () => {
   const fetchUserInfoAndSendToExtension = async () => {
     try {
 
-      const response = await axios.get('http://localhost:5001/api/user'); // adjust endpoint as needed
+      const response = await axios.get('http://localhost:5001/api/user'); 
       const user = response.data.user;
 
-      // Send login data to the Chrome extension
+      
       if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage('jjjokkpobnafkfomfojdnhgndanjihpl', {
           action: 'userInfo',
@@ -68,7 +68,7 @@ const RegisterForm = () => {
 
       const { token, user } = response.data;
 
-      // Store token and user data
+      
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       fetchUserInfoAndSendToExtension();
@@ -77,7 +77,7 @@ const RegisterForm = () => {
         description: `Welcome to FocuAI, ${name || email}!`,
       });
 
-      // Redirect to dashboard
+      
       navigate('/');
     } catch (error) {
       console.error('Registration error:', error);

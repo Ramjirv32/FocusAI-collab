@@ -19,7 +19,7 @@ const Header = ({ toggleSidebar, isMobile }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Start Voice Meeting
+  
   const startVoiceMeeting = () => {
     setShowVoiceMeetingDialog(false);
     navigate('/voice-meeting');
@@ -33,9 +33,9 @@ const Header = ({ toggleSidebar, isMobile }) => {
     };
 
     checkRestartPending();
-    // Listen for storage changes (for other tabs/manual changes)
+    
     window.addEventListener('storage', checkRestartPending);
-    // Custom event check for changes within the same tab
+    
     const interval = setInterval(checkRestartPending, 2000);
 
     return () => {
@@ -57,7 +57,7 @@ const Header = ({ toggleSidebar, isMobile }) => {
             variant="outline"
             className="h-7 text-xs border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
             onClick={() => {
-              // Usually the backend restart handles this, but for web we just need to refresh eventually
+              
               localStorage.removeItem('focusai_restart_pending');
               setRestartPending(false);
               window.location.reload();
@@ -91,7 +91,7 @@ const Header = ({ toggleSidebar, isMobile }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Voice Meeting Button */}
+          {}
           <Dialog open={showVoiceMeetingDialog} onOpenChange={setShowVoiceMeetingDialog}>
             <DialogTrigger asChild>
               <Button
@@ -137,7 +137,7 @@ const Header = ({ toggleSidebar, isMobile }) => {
             </DialogContent>
           </Dialog>
 
-          {/* Notifications */}
+          {}
           <Button
             variant="ghost"
             size="icon"
@@ -146,10 +146,10 @@ const Header = ({ toggleSidebar, isMobile }) => {
             <BellRing className="h-5 w-5" />
           </Button>
 
-          {/* AI Model Settings */}
+          {}
           <AIModelManager />
 
-          {/* User Profile Menu */}
+          {}
           <UserMenu />
         </div>
       </header>

@@ -39,10 +39,10 @@ const Statistics = () => {
   const [showFallbackData, setShowFallbackData] = useState(false);
   const [backendStatus, setBackendStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
 
-  // Colors for charts
+  
   const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4', '#f43f5e'];
 
-  // Get auth headers
+  
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -53,7 +53,7 @@ const Statistics = () => {
     return { Authorization: `Bearer ${token}` };
   };
 
-  // Check backend connection
+  
   const checkBackendConnection = async () => {
     try {
       await axios.get('http://localhost:5001/api/health', { timeout: 3000 });
@@ -66,7 +66,7 @@ const Statistics = () => {
     }
   };
 
-  // Create fallback data for demo purposes
+  
   const generateFallbackData = () => {
     const fallbackStats = {
       uniqueApps: 0,
@@ -104,20 +104,20 @@ const Statistics = () => {
     setShowFallbackData(true);
   };
 
-  // Update fetchStatistics function to use the new endpoints and handle all time periods
+  
   const fetchStatistics = async (timeFrame = selectedTimeFrame) => {
     try {
       setIsLoading(true);
       setError(null);
       setShowFallbackData(false);
 
-      // Check backend connection first
+      
       const isConnected = await checkBackendConnection();
       if (!isConnected) {
         throw new Error('Backend server is not running or cannot be reached');
       }
 
-      // Use our new enhanced statistics endpoint
+      
       console.log('Fetching stats with timeframe:', timeFrame);
       console.log('Auth headers:', getAuthHeader());
 
@@ -135,7 +135,7 @@ const Statistics = () => {
       if (response.data && Object.keys(response.data).length > 0) {
         setStatistics(response.data);
 
-        // Generate timeline data if available
+        
         if (response.data.dailyBreakdown && response.data.dailyBreakdown.length > 0) {
           setTimelineData(response.data.dailyBreakdown.map((day: any) => ({
             name: day.date,
@@ -144,11 +144,11 @@ const Statistics = () => {
             score: day.focusScore || 0
           })));
         } else {
-          // Create empty timeline data with appropriate periods
+          
           let emptyData = [];
 
           if (timeFrame === 'daily') {
-            // 24 hours
+            
             emptyData = Array.from({ length: 24 }, (_, i) => ({
               name: `${i}:00`,
               focus: 0,
@@ -156,7 +156,7 @@ const Statistics = () => {
               score: 0
             }));
           } else if (timeFrame === 'weekly') {
-            // 7 days of week
+            
             emptyData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
               name: day,
               focus: 0,
@@ -164,7 +164,7 @@ const Statistics = () => {
               score: 0
             }));
           } else if (timeFrame === 'monthly') {
-            // Days 1-31
+            
             const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
             emptyData = Array.from({ length: daysInMonth }, (_, i) => ({
               name: `${i + 1}`,
@@ -173,7 +173,7 @@ const Statistics = () => {
               score: 0
             }));
           } else if (timeFrame === 'yearly') {
-            // 12 months
+            
             emptyData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => ({
               name: month,
               focus: 0,
@@ -185,7 +185,7 @@ const Statistics = () => {
           setTimelineData(emptyData);
         }
 
-        // Generate category data if available
+        
         if (response.data.categoryBreakdown && response.data.categoryBreakdown.length > 0) {
           setCategoryData(
             response.data.categoryBreakdown.map((category: any, index: number) => ({
@@ -199,7 +199,7 @@ const Statistics = () => {
             }))
           );
         } else {
-          // Fallback category data
+          
           setCategoryData([
             { name: 'Productive', value: response.data.focusTime || 0, color: '#22c55e' },
             { name: 'Distraction', value: response.data.distractionTime || 0, color: '#ef4444' }
@@ -211,7 +211,7 @@ const Statistics = () => {
     } catch (err: any) {
       console.error('Error in statistics retrieval process:', err);
 
-      // Handle different error types
+      
       if (axios.isAxiosError(err)) {
         if (err.code === 'ECONNABORTED') {
           setError('Request timed out. The server is taking too long to respond.');
@@ -226,7 +226,7 @@ const Statistics = () => {
         setError(err.message || 'An unknown error occurred');
       }
 
-      // If all else fails, use fallback data
+      
       generateFallbackData();
 
       toast({
@@ -247,7 +247,7 @@ const Statistics = () => {
       console.log('No user detected, using fallback data');
       generateFallbackData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [user, selectedTimeFrame]);
 
   const handleRefresh = () => {
@@ -261,7 +261,7 @@ const Statistics = () => {
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = Math.round(seconds % 60);
 
-    // If less than a minute but more than 0, show 1m (or could show seconds, but 1m is cleaner for this UI)
+    
     if (hours === 0 && minutes === 0 && seconds > 0) return '1m';
 
     if (hours > 0) {
@@ -284,7 +284,7 @@ const Statistics = () => {
     );
   };
 
-  // Time series chart tooltip formatter
+  
   const formatTimeTooltip = (value: number, name: string) => {
     const formattedValue = formatTime(value);
     const formattedName = name === 'focus' ? 'Focus Time' :
@@ -294,7 +294,7 @@ const Statistics = () => {
     return [formattedValue, formattedName];
   };
 
-  // Render skeleton loader during loading state
+  
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -341,7 +341,7 @@ const Statistics = () => {
     );
   }
 
-  // If backend is disconnected but we have fallback data, show a special notice
+  
   const showConnectionError = backendStatus === 'disconnected' && showFallbackData;
 
   return (
@@ -466,7 +466,7 @@ const Statistics = () => {
           </Card>
         </div>
 
-        {/* Productivity Timeline Chart */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Productivity Timeline</CardTitle>
@@ -741,7 +741,7 @@ const Statistics = () => {
                     )}
                   </div>
 
-                  {/* App Usage Chart */}
+                  {}
                   {statistics?.topApps?.length > 0 && (
                     <div className="h-64 mt-6">
                       <ResponsiveContainer width="100%" height="100%">
@@ -806,7 +806,7 @@ const Statistics = () => {
                     </div>
                   </div>
 
-                  {/* Focus vs Distraction Donut Chart */}
+                  {}
                   <div className="h-64 mt-4">
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
@@ -873,7 +873,7 @@ const Statistics = () => {
                     )}
                   </div>
 
-                  {/* Website Usage Chart */}
+                  {}
                   {statistics?.topWebsites?.length > 0 && (
                     <div className="h-64 mt-6">
                       <ResponsiveContainer width="100%" height="100%">

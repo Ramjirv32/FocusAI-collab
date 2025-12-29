@@ -44,10 +44,10 @@ const TabUsageAnalytics: React.FC = () => {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         
-        // Fetch raw tab data
+        
         const response = await axios.get(`http://localhost:5001/tabs?timeFrame=${timeRange}`, { headers });
         
-        // Process the data
+        
         const domainsMap = new Map<string, TabUsageData>();
         
         response.data.forEach((tab: any) => {
@@ -66,12 +66,12 @@ const TabUsageAnalytics: React.FC = () => {
           domainData.visits += 1;
         });
         
-        // Calculate average durations
+        
         domainsMap.forEach(data => {
           data.averageDuration = data.visits > 0 ? Math.round(data.duration / data.visits) : 0;
         });
         
-        // Convert map to array and sort by duration
+        
         const processedData = Array.from(domainsMap.values())
           .sort((a, b) => b.duration - a.duration);
           
@@ -87,7 +87,7 @@ const TabUsageAnalytics: React.FC = () => {
     
     fetchTabUsageData();
     
-    // Refresh data every minute
+    
     const interval = setInterval(fetchTabUsageData, 60000);
     return () => clearInterval(interval);
   }, [timeRange]);

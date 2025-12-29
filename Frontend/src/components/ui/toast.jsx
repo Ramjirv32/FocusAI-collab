@@ -1,4 +1,4 @@
-// Create or update this file
+
 import React from "react";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
@@ -91,7 +91,7 @@ const ToastDescription = React.forwardRef(({ className, ...props }, ref) => (
 ));
 ToastDescription.displayName = ToastPrimitives.Description.displayName;
 
-// Simple toast state management
+
 const toastStore = {
   toasts: [],
   listeners: new Set(),
@@ -111,7 +111,7 @@ const toastStore = {
   },
 };
 
-// Simple toast hook
+
 export function useToast() {
   const [toasts, setToasts] = React.useState(toastStore.toasts);
   
@@ -129,12 +129,12 @@ export function useToast() {
   };
 }
 
-// Toast function for direct usage
+
 export function toast(props) {
   return toastStore.notify(props);
 }
 
-// ToastContainer component to use in your layout
+
 export function Toaster() {
   const { toasts, dismiss } = useToast();
   

@@ -1,8 +1,6 @@
-// Create this file if it doesn't exist
 
-/**
- * Filter tab logs based on timeframe
- */
+
+
 export const filterByTimeFrame = (tabLogs, timeFrame) => {
   if (!tabLogs || tabLogs.length === 0) return [];
   
@@ -11,16 +9,16 @@ export const filterByTimeFrame = (tabLogs, timeFrame) => {
   
   switch (timeFrame) {
     case 'daily':
-      startDate.setHours(0, 0, 0, 0); // Start of today
+      startDate.setHours(0, 0, 0, 0); 
       break;
     case 'weekly':
-      startDate.setDate(now.getDate() - 7); // 7 days ago
+      startDate.setDate(now.getDate() - 7); 
       break;
     case 'monthly':
-      startDate.setMonth(now.getMonth() - 1); // 1 month ago
+      startDate.setMonth(now.getMonth() - 1); 
       break;
     default:
-      startDate.setHours(0, 0, 0, 0); // Default to daily
+      startDate.setHours(0, 0, 0, 0); 
   }
   
   return tabLogs.filter(log => {
@@ -29,9 +27,7 @@ export const filterByTimeFrame = (tabLogs, timeFrame) => {
   });
 };
 
-/**
- * Group logs by domain
- */
+
 export const groupByDomain = (logs) => {
   const domains = {};
   
@@ -50,7 +46,7 @@ export const groupByDomain = (logs) => {
     domains[domainName].visits++;
     domains[domainName].totalTime += log.duration || 0;
     
-    // Add tab if not already in the list
+    
     const tabExists = domains[domainName].tabs.some(tab => tab.url === log.url);
     if (!tabExists) {
       domains[domainName].tabs.push({
@@ -60,7 +56,7 @@ export const groupByDomain = (logs) => {
         time: log.duration || 0
       });
     } else {
-      // Update existing tab
+      
       const tabIndex = domains[domainName].tabs.findIndex(tab => tab.url === log.url);
       domains[domainName].tabs[tabIndex].visits++;
       domains[domainName].tabs[tabIndex].time += log.duration || 0;
@@ -70,9 +66,7 @@ export const groupByDomain = (logs) => {
   return domains;
 };
 
-/**
- * Extract domain from URL
- */
+
 const extractDomain = (url) => {
   if (!url) return 'unknown';
   
@@ -84,9 +78,7 @@ const extractDomain = (url) => {
   }
 };
 
-/**
- * Generate summary statistics
- */
+
 export const generateSummary = (logs) => {
   if (!logs || logs.length === 0) {
     return {
@@ -98,10 +90,10 @@ export const generateSummary = (logs) => {
     };
   }
   
-  // Calculate total time
+  
   const totalTime = logs.reduce((acc, log) => acc + (log.duration || 0), 0);
   
-  // Create tab frequency map
+  
   const tabFrequency = {};
   const tabTimes = {};
   
@@ -120,7 +112,7 @@ export const generateSummary = (logs) => {
     tabTimes[log.url].time += log.duration || 0;
   });
   
-  // Get most visited tab
+  
   let mostVisitedUrl = '';
   let mostVisits = 0;
   Object.entries(tabFrequency).forEach(([url, count]) => {
@@ -130,7 +122,7 @@ export const generateSummary = (logs) => {
     }
   });
   
-  // Get tab where most time was spent
+  
   let mostTimeUrl = '';
   let mostTime = 0;
   Object.entries(tabTimes).forEach(([url, data]) => {
@@ -140,10 +132,10 @@ export const generateSummary = (logs) => {
     }
   });
   
-  // Calculate average session duration
+  
   const averageSessionDuration = totalTime / logs.length;
   
-  // Count unique tabs
+  
   const uniqueTabs = new Set(logs.map(log => log.url)).size;
   
   return {
@@ -155,9 +147,7 @@ export const generateSummary = (logs) => {
   };
 };
 
-/**
- * Fetch tab logs from backend
- */
+
 export const fetchTabLogs = async () => {
   try {
     const token = localStorage.getItem('token');

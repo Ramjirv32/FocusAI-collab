@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { useNavigate } from 'react-router-dom';
 
-// Declare global interface for window functions
+
 declare global {
   interface Window {
     toggleChatBot?: () => void
@@ -82,12 +82,12 @@ const ProductivityChatBot = () => {
     }
   }, [])
 
-  // Scroll to bottom when messages change
+  
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // Format time duration (seconds to readable format)
+  
   const formatDuration = (seconds: number) => {
     if (!seconds) return '0s'
     
@@ -104,7 +104,7 @@ const ProductivityChatBot = () => {
     }
   }
 
-  // Check if query should use existing flow or new API
+  
   const shouldUseExistingFlow = (query: string): boolean => {
     const lowerQuery = query.toLowerCase()
     return (
@@ -116,7 +116,7 @@ const ProductivityChatBot = () => {
     )
   }
 
-  // Mock data functions for existing flow
+  
   const getMockFocusData = () => {
     return {
       focusScore: 72,
@@ -194,7 +194,7 @@ const ProductivityChatBot = () => {
 
     setIsLoading(true)
 
-    // Add user message
+    
     const userMessage: Message = {
       id: Date.now(),
       sender: "user",
@@ -207,20 +207,20 @@ const ProductivityChatBot = () => {
     setMessages((prev) => [...prev, userMessage])
 
     try {
-      // Check if should use existing flow
+      
       if (shouldUseExistingFlow(query)) {
         processExistingFlowQuery(query)
         setIsLoading(false)
         return
       }
 
-      // For other queries, use the new API
+      
       const token = localStorage.getItem('token')
       if (!token) {
         throw new Error('No authentication token found')
       }
       
-      // Decode the JWT token to get user ID
+      
       const tokenParts = token.split('.')
       if (tokenParts.length !== 3) {
         throw new Error('Invalid token format')
@@ -229,7 +229,7 @@ const ProductivityChatBot = () => {
       const decoded = JSON.parse(atob(tokenParts[1]))
       const userId = decoded.userId
       
-      // Add a thinking message
+      
       const thinkingMessage: Message = {
         id: Date.now() + 0.5,
         sender: "bot",
@@ -240,7 +240,7 @@ const ProductivityChatBot = () => {
       }
       setMessages(prev => [...prev, thinkingMessage])
 
-      // Call the new AI server with CORS support
+      
       const aiResponse = await axios.post(
         `http://0.0.0.0:8000/api/v1/chat/ask/${userId}?question=${encodeURIComponent(query)}`,
         {},
@@ -252,7 +252,7 @@ const ProductivityChatBot = () => {
         }
       )
 
-      // Remove the thinking message and add the actual response
+      
       setMessages(prev => {
         const filtered = prev.filter(msg => msg.id !== thinkingMessage.id)
         return [
@@ -271,7 +271,7 @@ const ProductivityChatBot = () => {
     } catch (error) {
       console.error('Error processing query:', error)
       
-      // Remove thinking message if it exists
+      
       setMessages(prev => prev.filter(msg => msg.content.text !== "Thinking..."))
       
       let errorText = "Sorry, I encountered an error while processing your request."
@@ -302,7 +302,7 @@ const ProductivityChatBot = () => {
     }
   }
 
-  // Helper function to determine app category
+  
   const determineAppCategory = (appName: string): string => {
     const lowerName = appName.toLowerCase()
     
@@ -340,7 +340,7 @@ const ProductivityChatBot = () => {
     return 'neutral'
   }
   
-  // Helper function to determine website category
+  
   const determineWebsiteCategory = (domain: string): string => {
     const lowerDomain = domain.toLowerCase()
     
@@ -377,7 +377,7 @@ const ProductivityChatBot = () => {
     return 'neutral'
   }
   
-  // Get color for category
+  
   const getCategoryColor = (category?: string): string => {
     switch (category) {
       case 'productive':
@@ -399,7 +399,7 @@ const ProductivityChatBot = () => {
     await processQuery(message)
   }
 
-  // Updated suggested questions
+  
   const suggestedQuestions = [
     "Show my focus score",
     "What apps am I using most?",
@@ -408,7 +408,7 @@ const ProductivityChatBot = () => {
   ]
 
   if (!isOpen) {
-    // Collapsed chat button
+    
     return (
       <div className="fixed bottom-6 right-6 z-50">
         <Button
@@ -422,7 +422,7 @@ const ProductivityChatBot = () => {
     )
   }
 
-  // Expanded chat interface
+  
   return (
     <div
       className={`fixed z-50 transition-all duration-300 ease-in-out ${
@@ -434,7 +434,7 @@ const ProductivityChatBot = () => {
           isExpanded ? "w-full max-w-4xl mx-auto my-10 rounded-lg" : "w-full"
         }`}
       >
-        {/* Header */}
+        {}
         <div className="bg-blue-600 text-white p-4 flex items-center justify-between shrink-0">
           <div className="flex items-center">
             <Bot className="h-6 w-6 mr-2" />
@@ -460,7 +460,7 @@ const ProductivityChatBot = () => {
           </div>
         </div>
 
-        {/* Chat area */}
+        {}
         <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gradient-to-b from-blue-50 to-white">
           {messages.map((message) => (
             <div key={message.id} className="animate-fadeIn">
@@ -575,7 +575,7 @@ const ProductivityChatBot = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Suggested questions */}
+        {}
         {messages.length < 3 && (
           <div className="p-3 bg-blue-50 border-t border-blue-100">
             <p className="text-xs text-gray-500 mb-2">Try asking:</p>
@@ -596,7 +596,7 @@ const ProductivityChatBot = () => {
           </div>
         )}
 
-        {/* Input area */}
+        {}
         <div className="p-4 border-t bg-white shrink-0">
           <div className="flex items-end space-x-2">
             <div className="flex-1 relative">

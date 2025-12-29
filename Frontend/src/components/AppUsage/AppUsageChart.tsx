@@ -30,11 +30,11 @@ const AppUsageChart: React.FC<AppUsageChartProps> = ({ data }) => {
     return `${minutes}m`;
   };
 
-  // Transform object data to array format for the chart
+  
   const chartData: AppUsageData[] = Object.entries(data)
     .map(([name, duration]) => ({ name, duration }))
     .sort((a, b) => b.duration - a.duration)
-    .slice(0, 8); // Show top 8 apps
+    .slice(0, 8); 
 
   return (
     <Card className="w-full">

@@ -47,7 +47,7 @@ const Help = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header */}
+        {}
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="outline"
@@ -69,7 +69,7 @@ const Help = () => {
           </div>
         </div>
 
-        {/* Help Categories */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {helpCategories.map((category, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow">
@@ -99,7 +99,7 @@ const Help = () => {
           ))}
         </div>
 
-        {/* Quick Help */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle>Quick Help</CardTitle>
@@ -137,7 +137,7 @@ const Help = () => {
           </CardContent>
         </Card>
 
-        {/* Contact Information */}
+        {}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

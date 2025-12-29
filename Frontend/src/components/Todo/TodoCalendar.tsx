@@ -72,12 +72,12 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
 
     const days = [];
     
-    // Add empty cells for days before the first day of the month
+    
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push({ day: null, key: `empty-${i}` });
     }
 
-    // Add days of the month
+    
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({ day: i, key: `day-${i}` });
     }
@@ -86,7 +86,7 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
   };
 
   const formatDateKey = (day: number) => {
-    // Create date key in the same format as backend: YYYY-MM-DD
+    
     const year = currentDate.getFullYear();
     const month = String(currentDate.getMonth() + 1).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
@@ -127,7 +127,7 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
 
   return (
     <div className="space-y-4">
-      {/* Calendar Header */}
+      {}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5" />
@@ -148,15 +148,15 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
         </div>
       </div>
 
-      {/* Debug Info - Remove this in production */}
+      {}
       <div className="text-xs text-muted-foreground">
         Available dates: {Object.keys(calendarTodos).join(', ')}
       </div>
 
-      {/* Calendar Grid */}
+      {}
       <Card>
         <CardContent className="p-4">
-          {/* Day Headers */}
+          {}
           <div className="grid grid-cols-7 gap-2 mb-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
               <div key={day} className="text-center text-sm font-medium text-muted-foreground p-2">
@@ -165,7 +165,7 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
             ))}
           </div>
 
-          {/* Calendar Days */}
+          {}
           <div className="grid grid-cols-7 gap-2">
             {days.map(({ day, key }) => {
               if (!day) {
@@ -229,7 +229,7 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
         </CardContent>
       </Card>
 
-      {/* Selected Date Details */}
+      {}
       {selectedDate && calendarTodos[selectedDate] && (
         <Card>
           <CardHeader>

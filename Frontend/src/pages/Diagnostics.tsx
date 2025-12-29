@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 
-// Mock diagnostic data
+
 const systemData = {
   os: 'Windows 10 Pro 64-bit',
   browser: 'Chrome 119.0.6045.124',
@@ -70,7 +70,7 @@ const Diagnostics = () => {
   
   const runDiagnostics = () => {
     setIsRunningDiagnostics(true);
-    // Simulate diagnostics running
+    
     setTimeout(() => {
       setIsRunningDiagnostics(false);
     }, 2000);

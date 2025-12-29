@@ -1,6 +1,6 @@
-// Helper functions for Gamification.tsx
 
-// Function to get badge colors based on type
+
+
 export const getBadgeColor = (type) => {
   const colors = {
     bronze: 'bg-amber-200 text-amber-800',
@@ -14,7 +14,7 @@ export const getBadgeColor = (type) => {
   return colors[type] || colors.bronze;
 };
 
-// Function to get badge variants based on type
+
 export const getBadgeVariant = (type) => {
   const variants = {
     bronze: 'bg-amber-100 text-amber-800 hover:bg-amber-200',
@@ -28,7 +28,7 @@ export const getBadgeVariant = (type) => {
   return variants[type] || variants.bronze;
 };
 
-// Function to format date strings
+
 export const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);

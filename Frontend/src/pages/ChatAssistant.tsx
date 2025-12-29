@@ -60,12 +60,12 @@ const ChatAssistant: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Load chat histories when component mounts
+  
   useEffect(() => {
     loadChatHistories();
   }, []);
 
-  // Load chat histories from the server
+  
   const loadChatHistories = async () => {
     try {
       setIsLoadingHistories(true);
@@ -83,7 +83,7 @@ const ChatAssistant: React.FC = () => {
     }
   };
 
-  // Format minutes to hours and minutes
+  
   const formatMinutesToHoursAndMinutes = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
@@ -95,10 +95,10 @@ const ChatAssistant: React.FC = () => {
     }
   };
 
-  // Typewriter effect function
+  
   const startTypewriterEffect = (messageId: string, fullContent: string) => {
     let currentIndex = 0;
-    const typingSpeed = 15; // Milliseconds per character (faster speed)
+    const typingSpeed = 15; 
 
     const typewriterInterval = setInterval(() => {
       currentIndex++;
@@ -112,14 +112,14 @@ const ChatAssistant: React.FC = () => {
         )
       );
 
-      // Auto scroll during typing
+      
       scrollToBottom();
 
       if (currentIndex >= fullContent.length) {
         clearInterval(typewriterInterval);
         typewriterIntervals.current.delete(messageId);
 
-        // Mark typing as complete
+        
         setMessages(prevMessages =>
           prevMessages.map(msg =>
             msg.id === messageId
@@ -133,7 +133,7 @@ const ChatAssistant: React.FC = () => {
     typewriterIntervals.current.set(messageId, typewriterInterval);
   };
 
-  // Clean up intervals on unmount
+  
   useEffect(() => {
     return () => {
       typewriterIntervals.current.forEach(interval => clearInterval(interval));
@@ -144,20 +144,20 @@ const ChatAssistant: React.FC = () => {
   const stopResponse = () => {
     console.log('🛑 Stopping AI response...');
 
-    // 1. Abort network request if pending
+    
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
 
-    // 2. Stop all typewriter effects
+    
     typewriterIntervals.current.forEach(interval => clearInterval(interval));
     typewriterIntervals.current.clear();
 
-    // 3. Mark all messages as not typing
+    
     setMessages(prev => prev.map(msg => ({ ...msg, isTyping: false })));
 
-    // 4. Force stop loading state
+    
     setIsLoading(false);
 
     toast({
@@ -185,7 +185,7 @@ const ChatAssistant: React.FC = () => {
     try {
       console.log('🚀 Sending message to chat service:', inputMessage);
 
-      // Fetch fresh productivity data to send with the message
+      
       let userData = null;
       try {
         userData = await chatService.getUserProductivityData();
@@ -196,22 +196,22 @@ const ChatAssistant: React.FC = () => {
         }
       } catch (dataError) {
         console.error('Could not fetch user productivity data:', dataError);
-        // Continue without user data
+        
       }
 
-      // Create new AbortController for this request
+      
       abortControllerRef.current = new AbortController();
 
-      // Send message with user data and signal
+      
       const response = await chatService.sendMessage(inputMessage, currentHistoryId, userData, abortControllerRef.current.signal);
 
-      // Clear controller after success
+      
       abortControllerRef.current = null;
 
       console.log('📨 Received response from AI:', response);
 
       if (response.success) {
-        // Log successful response details
+        
         console.log('✅ Response successful, content length:', response.response.length);
         console.log('🔄 Has productivity data:', response.hasProductivityData ? 'Yes' : 'No');
 
@@ -219,11 +219,11 @@ const ChatAssistant: React.FC = () => {
           console.log('📈 Historical data points available:', response.historicalDataPoints);
         }
 
-        // Update current history ID if this is a new conversation
+        
         if (response.historyId && !currentHistoryId) {
           setCurrentHistoryId(response.historyId);
           console.log('📝 Created new chat history with ID:', response.historyId);
-          loadChatHistories(); // Refresh the chat history list
+          loadChatHistories(); 
         }
 
         const aiMessageId = (Date.now() + 1).toString();
@@ -241,16 +241,16 @@ const ChatAssistant: React.FC = () => {
           displayedContent: ''
         };
 
-        // Add the message immediately with empty displayed content
+        
         setMessages(prev => [...prev, aiMessage]);
 
-        // Start typewriter effect
+        
         setTimeout(() => {
           console.log('⌨️ Starting typewriter effect for message:', aiMessageId);
           startTypewriterEffect(aiMessageId, response.response);
         }, 100);
 
-        // Update productivity stats if available
+        
         if (response.hasProductivityData) {
           console.log('📊 Updating productivity stats:', {
             focusScore: response.focusScore,
@@ -267,7 +267,7 @@ const ChatAssistant: React.FC = () => {
           });
         }
       } else {
-        // Handle error response
+        
         console.error('❌ Error in AI response:', response.error || 'Unknown error');
 
         const errorMessage: Message = {
@@ -287,11 +287,11 @@ const ChatAssistant: React.FC = () => {
     } catch (error) {
       if (error.name === 'AbortError' || error.message === 'canceled') {
         console.log('🚫 API request was aborted by user');
-        return; // Don't show error if user cancelled
+        return; 
       }
       console.error('❌ Failed to send message:', error);
 
-      // Add error message to chat
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: "Sorry, I'm having trouble connecting right now. Please try again.",
@@ -325,10 +325,10 @@ const ChatAssistant: React.FC = () => {
 
   const startNewChat = async () => {
     try {
-      // Create a new chat history
+      
       await chatService.createChatHistory();
 
-      // Reset current state
+      
       setMessages([{
         id: '1',
         content: "Hi! I'm your FocusAI assistant 🤖 I can analyze your real productivity data and give you personalized insights! Try asking me about your focus score, productive apps, or how to improve your productivity patterns. What would you like to know?",
@@ -337,7 +337,7 @@ const ChatAssistant: React.FC = () => {
       }]);
       setCurrentHistoryId(null);
 
-      // Refresh chat histories
+      
       await loadChatHistories();
     } catch (error) {
       console.error('Failed to start new chat:', error);
@@ -349,7 +349,7 @@ const ChatAssistant: React.FC = () => {
     }
   };
 
-  // Update the loadChatHistory function
+  
   const loadChatHistory = async (historyId: string) => {
     if (loadingHistoryId) return;
 
@@ -360,7 +360,7 @@ const ChatAssistant: React.FC = () => {
       if (history && history.messages && history.messages.length > 0) {
         console.log('📜 Loading chat history with messages:', history.messages);
 
-        // Format the messages for display
+        
         const formattedMessages: Message[] = history.messages.map((msg: any) => ({
           id: msg._id || Date.now().toString() + Math.random().toString(),
           content: msg.content,
@@ -377,7 +377,7 @@ const ChatAssistant: React.FC = () => {
         setMessages(formattedMessages);
         setCurrentHistoryId(historyId);
 
-        // Set productivity stats if available in the last AI message
+        
         const lastAiMessage = [...history.messages]
           .reverse()
           .find((msg: any) => !msg.isUser && msg.productivityData?.hasProductivityData);
@@ -391,16 +391,16 @@ const ChatAssistant: React.FC = () => {
             streak: lastAiMessage.productivityData.streak
           });
         } else {
-          // Reset productivity stats if none available
+          
           setUserProductivityStats(null);
         }
 
-        // If on mobile, close sidebar after selection
+        
         if (window.innerWidth < 768) {
           setShowSidebar(false);
         }
 
-        // Notify user
+        
         toast({
           title: 'Chat history loaded',
           description: `Loaded conversation "${history.title}"`,
@@ -429,7 +429,7 @@ const ChatAssistant: React.FC = () => {
     try {
       await chatService.deleteChatHistory(historyId);
 
-      // If we deleted the current history, reset state
+      
       if (historyId === currentHistoryId) {
         setMessages([{
           id: '1',
@@ -440,7 +440,7 @@ const ChatAssistant: React.FC = () => {
         setCurrentHistoryId(null);
       }
 
-      // Refresh the histories list
+      
       await loadChatHistories();
 
       toast({
@@ -460,7 +460,7 @@ const ChatAssistant: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="flex h-[calc(100vh-4rem)]">
-        {/* Chat History Sidebar */}
+        {}
         <div
           className={`bg-gray-50 border-r border-gray-200 transition-all duration-300 overflow-hidden ${showSidebar ? 'w-72' : 'w-0'
             } md:relative fixed left-0 top-0 h-full z-20`}
@@ -525,13 +525,13 @@ const ChatAssistant: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Chat Area */}
+        {}
         <div className="flex-1 flex flex-col h-full overflow-hidden">
-          {/* Page Header with Productivity Status */}
+          {}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {/* Mobile sidebar toggle */}
+                {}
                 <button
                   className="md:hidden p-1.5 rounded hover:bg-gray-100"
                   onClick={() => setShowSidebar(!showSidebar)}
@@ -551,7 +551,7 @@ const ChatAssistant: React.FC = () => {
                 </div>
               </div>
 
-              {/* New Chat Button */}
+              {}
               <Button
                 variant="ghost"
                 size="sm"
@@ -563,7 +563,7 @@ const ChatAssistant: React.FC = () => {
               </Button>
             </div>
 
-            {/* Productivity Stats Indicator */}
+            {}
             {userProductivityStats && (
               <div className="mt-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white p-3 rounded-lg shadow-sm">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -590,7 +590,7 @@ const ChatAssistant: React.FC = () => {
             )}
           </div>
 
-          {/* Chat Messages Area */}
+          {}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((message) => (
               <div
@@ -613,7 +613,7 @@ const ChatAssistant: React.FC = () => {
                         ? message.content
                         : (message.displayedContent !== undefined ? message.displayedContent : message.content)
                       }
-                      {/* Blinking cursor for typing effect */}
+                      {}
                       {!message.isUser && message.isTyping && (
                         <span className="inline-block w-0.5 h-4 bg-blue-600 ml-1 animate-pulse"></span>
                       )}
@@ -651,7 +651,7 @@ const ChatAssistant: React.FC = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
+          {}
           <div className="border-t border-gray-200 p-4 bg-gray-50">
             <div className="max-w-4xl mx-auto flex space-x-3">
               <div className="flex-1 relative">
@@ -677,7 +677,7 @@ const ChatAssistant: React.FC = () => {
               </button>
             </div>
 
-            {/* Quick Questions */}
+            {}
             <div className="max-w-4xl mx-auto mt-3">
               <div className="flex flex-wrap gap-2 justify-center">
                 <button

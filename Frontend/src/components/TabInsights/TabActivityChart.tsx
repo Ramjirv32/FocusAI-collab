@@ -21,10 +21,10 @@ interface TabActivityChartProps {
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF6384'];
 
 const TabActivityChart: React.FC<TabActivityChartProps> = ({ data }) => {
-  // Sort data for the bar chart by duration (descending)
+  
   const sortedData = [...data].sort((a, b) => b.totalDuration - a.totalDuration).slice(0, 10);
 
-  // Format time for tooltip
+  
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);

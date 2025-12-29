@@ -104,7 +104,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
 
   const handleMenuClick = (path) => {
     navigate(path);
-    // Auto-close sidebar on mobile/small Electron windows after navigation
+    
     if (isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000)) {
       onToggle();
     }
@@ -138,16 +138,16 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
   return (
     <aside className={cn(
       "bg-background border-r transition-all duration-300 ease-in-out flex flex-col",
-      // Position and sizing
+      
       isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000)
         ? "fixed left-0 top-0 z-40 h-screen"
         : "relative h-screen",
       collapsed ? "w-16" : "w-64",
-      // Hide completely when collapsed on mobile/small screens
+      
       (isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000)) && collapsed && "translate-x-[-100%]"
     )}>
       <div className="flex h-full flex-col">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-4 border-b min-h-[73px]">
           {!collapsed && (
             <div className="flex items-center gap-2 min-w-0">
@@ -170,7 +170,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
           </Button>
         </div>
 
-        {/* User Profile */}
+        {}
         {!collapsed && user && (
           <div className="p-4 border-b">
             <div className="flex items-center gap-3 min-w-0">
@@ -192,7 +192,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
           </div>
         )}
 
-        {/* Main Navigation */}
+        {}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <div className="space-y-1">
             {menuItems.map((item) => (
@@ -205,7 +205,7 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
           </div>
         </nav>
 
-        {/* Bottom Navigation */}
+        {}
         <div className="p-4 border-t space-y-1 flex-shrink-0">
           {bottomMenuItems.map((item) => (
             <MenuItem

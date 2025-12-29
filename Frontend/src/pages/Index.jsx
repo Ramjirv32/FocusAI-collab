@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from '../components/ui/use-toast'; // Changed from '../components/ui/toast'
+import { toast } from '../components/ui/use-toast'; 
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -22,7 +22,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = 'http://localhost:5001';
-// Make sure to add this proper export statement
+
 const Index = () => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
@@ -35,25 +35,25 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [focusError, setFocusError] = useState(null);
-  const [error, setError] = useState(null); // Added missing error state
+  const [error, setError] = useState(null); 
   const [aiServerStatus, setAiServerStatus] = useState(null);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
 
-  // Enhanced alert states
+  
   const [alertMessage, setAlertMessage] = useState('');
   const [isBlockingAlert, setIsBlockingAlert] = useState(false);
-  const [alertType, setAlertType] = useState(''); // 'is50', 'is20', 'warning'
-  const [alertSeverity, setAlertSeverity] = useState('medium'); // 'low', 'medium', 'high', 'critical'
+  const [alertType, setAlertType] = useState(''); 
+  const [alertSeverity, setAlertSeverity] = useState('medium'); 
   const [alertTimer, setAlertTimer] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // Helper function to get auth headers
+  
   const getAuthHeader = () => {
     const authToken = token || localStorage.getItem('token');
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   };
 
-  // Fetch app usage data directly from app-usage endpoint
+  
   const fetchAppUsageData = async () => {
     try {
       const headers = getAuthHeader();
@@ -76,7 +76,7 @@ const Index = () => {
     }
   };
 
-  // Fetch user profile data
+  
   const fetchUserProfile = async () => {
     try {
       const headers = getAuthHeader();
@@ -87,7 +87,7 @@ const Index = () => {
     }
   };
 
-  // Fetch gamification data
+  
   const fetchGamificationData = async () => {
     try {
       const headers = getAuthHeader();
@@ -99,7 +99,7 @@ const Index = () => {
   };
 
 
-  // Manual close alert function
+  
   const closeAlert = () => {
     if (alertTimer) {
       clearInterval(alertTimer);
@@ -113,7 +113,7 @@ const Index = () => {
     setTimeRemaining(0);
   };
 
-  // Enhanced function to show blocking alerts with timer
+  
   const showBlockingAlert = (message, type, severity = 'medium') => {
     console.log(`🚨 Showing ${type} alert:`, message);
 
@@ -124,16 +124,16 @@ const Index = () => {
     const isBlocking = type === 'is50' || type === 'is20';
     setIsBlockingAlert(isBlocking);
 
-    // Set timer duration (10 seconds for blocking alerts, 5 seconds for others)
+    
     const timerDuration = isBlocking ? 10 : 5;
     setTimeRemaining(timerDuration);
 
-    // Clear any existing timer
+    
     if (alertTimer) {
       clearInterval(alertTimer);
     }
 
-    // Start countdown timer
+    
     const newTimer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -152,7 +152,7 @@ const Index = () => {
     setAlertTimer(newTimer);
   };
 
-  // Fallback client-side alert check
+  
   const fallbackAlertCheck = (focusScore) => {
     if (focusScore <= 20) {
       showBlockingAlert(
@@ -169,7 +169,7 @@ const Index = () => {
     }
   };
 
-  // Enhanced productivity alerts check
+  
   const checkProductivityAlerts = async (focusScore) => {
     if (!user || focusScore === 0) return;
 
@@ -182,7 +182,7 @@ const Index = () => {
         },
         {
           headers: getAuthHeader(),
-          timeout: 5000 // 5 second timeout
+          timeout: 5000 
         }
       );
 
@@ -192,7 +192,7 @@ const Index = () => {
         showBlockingAlert(data.alert, data.alertType, severity);
       }
     } catch (error) {
-      // Silently handle 400/404 errors - alerts endpoint may not exist
+      
       if (error.response?.status === 400 || error.response?.status === 404) {
         console.log('Alerts endpoint not available, using fallback');
         fallbackAlertCheck(focusScore);
@@ -203,7 +203,7 @@ const Index = () => {
     }
   };
 
-  // Clear any existing timers on component unmount
+  
   useEffect(() => {
     return () => {
       if (alertTimer) {
@@ -212,30 +212,30 @@ const Index = () => {
     };
   }, [alertTimer]);
 
-  // Function to load focus data
+  
   const loadFocusData = async (date = null) => {
     try {
       setFocusError(null);
       const formattedDate = date || new Date().toISOString().split('T')[0];
 
-      // First try to use the consolidated data service which has fallback logic
+      
       try {
         const consolidatedData = await getConsolidatedFocusData(formattedDate);
 
-        // Try to extract focus stats from different possible data structures
+        
         let focusStats;
         if (consolidatedData.quickStats?.quick_stats) {
-          // Data from AI server
+          
           const rawFocusTimeMinutes = consolidatedData.quickStats.quick_stats.focus_time_minutes || 0;
           const rawDistractionTimeMinutes = consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0;
 
-          // Check productivity alerts only if we have a valid focus score
+          
           const focusScore = consolidatedData.quickStats.quick_stats.focus_score;
           if (focusScore !== undefined && focusScore !== null && !isNaN(focusScore) && focusScore > 0) {
             await checkProductivityAlerts(focusScore);
           }
-          // Cap values at realistic amounts (max 24 hours)
-          const maxDailyMinutes = 24 * 60; // 24 hours in minutes
+          
+          const maxDailyMinutes = 24 * 60; 
 
           focusStats = {
             focus_score: consolidatedData.quickStats.quick_stats.focus_score ||
@@ -249,7 +249,7 @@ const Index = () => {
             date: formattedDate
           };
         } else if (consolidatedData.quickStats) {
-          // Direct stats object
+          
           focusStats = {
             focus_score: consolidatedData.quickStats.focus_score ||
               consolidatedData.quickStats.productivity_score || 0,
@@ -263,11 +263,11 @@ const Index = () => {
             date: formattedDate
           };
         } else {
-          // Fallback with app/tab data count
+          
           const appCount = consolidatedData.appUsage?.length || 0;
           const tabCount = consolidatedData.tabUsage?.length || 0;
 
-          // Calculate basic stats from available data
+          
           let totalUsageSeconds = 0;
           if (consolidatedData.appUsage) {
             if (Array.isArray(consolidatedData.appUsage)) {
@@ -281,9 +281,9 @@ const Index = () => {
           const actualTabCount = Array.isArray(consolidatedData.tabUsage) ? consolidatedData.tabUsage.length : 0;
 
           focusStats = {
-            focus_score: 0, // Don't guess score if AI is offline
+            focus_score: 0, 
             productivity_score: 0,
-            focus_time_minutes: 0, // Don't guess productive minutes
+            focus_time_minutes: 0, 
             distraction_time_minutes: 0,
             total_time_minutes: Math.round(totalUsageSeconds / 60),
             total_activities: actualAppCount + actualTabCount,
@@ -298,7 +298,7 @@ const Index = () => {
       } catch (error) {
         console.warn('Consolidated data service failed, trying direct backend:', error);
 
-        // Fallback: try to get basic data from backend
+        
         const headers = getAuthHeader();
         const appResponse = await axios.get('http://localhost:5001/focus-data', {
           headers,
@@ -308,7 +308,7 @@ const Index = () => {
         const appUsage = appResponse.data?.appUsage || [];
         const currentSession = appResponse.data?.currentSession || [];
 
-        // Calculate basic stats from backend data
+        
         let totalUsageSeconds = 0;
         if (Array.isArray(appUsage)) {
           totalUsageSeconds = appUsage.reduce((sum, app) => {
@@ -335,7 +335,7 @@ const Index = () => {
       console.error('Error in loadFocusData:', err);
       setFocusError('Could not load focus data. AI server may be offline.');
 
-      // Set minimal default stats so UI doesn't break
+      
       setFocusStats({
         focus_score: 0,
         productivity_score: 0,
@@ -348,7 +348,7 @@ const Index = () => {
     }
   };
 
-  // Manual sync button handler
+  
   const handleSyncClick = async () => {
     if (isSyncing) return;
 
@@ -358,21 +358,21 @@ const Index = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
 
-      // Try to sync focus data using the consolidated service
+      
       try {
         const consolidatedData = await getConsolidatedFocusData(today);
         console.log('Sync - Consolidated data received:', consolidatedData);
 
-        // Extract focus stats from the response
+        
         let focusStats;
 
         if (consolidatedData.quickStats?.quick_stats) {
-          // Data from AI server
+          
           const rawFocusTimeMinutes = consolidatedData.quickStats.quick_stats.focus_time_minutes || 0;
           const rawDistractionTimeMinutes = consolidatedData.quickStats.quick_stats.distraction_time_minutes || 0;
 
-          // Cap values at realistic amounts (max 24 hours)
-          const maxDailyMinutes = 24 * 60; // 24 hours in minutes
+          
+          const maxDailyMinutes = 24 * 60; 
 
           focusStats = {
             focus_score: consolidatedData.quickStats.quick_stats.focus_score ||
@@ -386,7 +386,7 @@ const Index = () => {
             date: today
           };
         } else if (consolidatedData.quickStats) {
-          // Direct stats object
+          
           focusStats = {
             focus_score: consolidatedData.quickStats.focus_score ||
               consolidatedData.quickStats.productivity_score || 0,
@@ -400,11 +400,11 @@ const Index = () => {
             date: today
           };
         } else {
-          // Fallback with app/tab data count
+          
           const appCount = consolidatedData.appUsage?.length || 0;
           const tabCount = consolidatedData.tabUsage?.length || 0;
 
-          // Calculate basic stats from available data
+          
           let totalUsageSeconds = 0;
           if (consolidatedData.appUsage && Array.isArray(consolidatedData.appUsage)) {
             totalUsageSeconds = consolidatedData.appUsage.reduce((sum, app) => {
@@ -435,7 +435,7 @@ const Index = () => {
         console.warn('Sync failed, AI server may be offline:', error);
         setFocusError('AI server is offline. Showing available data from backend.');
 
-        // Fallback: get basic data from backend
+        
         const headers = getAuthHeader();
         const appResponse = await axios.get('http://localhost:5001/focus-data', {
           headers,
@@ -445,7 +445,7 @@ const Index = () => {
         const appUsage = appResponse.data?.appUsage || [];
         const currentSession = appResponse.data?.currentSession || [];
 
-        // Calculate basic stats
+        
         let totalUsageSeconds = 0;
         if (Array.isArray(appUsage)) {
           totalUsageSeconds = appUsage.reduce((sum, app) => {
@@ -491,10 +491,10 @@ const Index = () => {
       try {
         setIsLoading(true);
 
-        // Get token from localStorage for authentication
+        
         const headers = getAuthHeader();
 
-        // Fetch all data in parallel
+        
         const [tabResponse, appResponse] = await Promise.all([
           axios.get('http://localhost:5001/tabs', { headers }),
           axios.get('http://localhost:5001/focus-data', { headers })
@@ -506,12 +506,12 @@ const Index = () => {
         setAppUsageData(appResponse.data.appUsage || {});
         setCurrentSessionData(appResponse.data.currentSession || []);
 
-        // Also load focus data, profile, and gamification data
+        
         await Promise.all([
           loadFocusData(),
           fetchUserProfile(),
           fetchGamificationData(),
-          fetchAppUsageData() // Added direct app usage data fetch
+          fetchAppUsageData() 
         ]);
 
       } catch (err) {
@@ -532,7 +532,7 @@ const Index = () => {
       }
     }, 30000);
 
-    // Add heartbeat functionality
+    
     const sendHeartbeat = async () => {
       try {
         const headers = getAuthHeader();
@@ -542,12 +542,12 @@ const Index = () => {
       }
     };
 
-    // Send heartbeat every 30 seconds
+    
     if (user) {
-      sendHeartbeat(); // Send immediately
+      sendHeartbeat(); 
       const heartbeatInterval = setInterval(sendHeartbeat, 30000);
 
-      // Clean up on component unmount
+      
       return () => {
         clearInterval(tabInterval);
         clearInterval(heartbeatInterval);
@@ -580,7 +580,7 @@ const Index = () => {
 
   return (
     <DashboardLayout>
-      {/* Full Screen Alert Modal with Timer */}
+      {}
       {isBlockingAlert && alertMessage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeAlert} />
@@ -634,7 +634,7 @@ const Index = () => {
         </div>
       )}
 
-      {/* Top Bar Alert (for non-blocking alerts) */}
+      {}
       {alertMessage && !isBlockingAlert && (
         <div className={`fixed top-0 left-0 right-0 z-[90] w-full p-4 border-b-2 shadow-lg animate-in slide-in-from-top ${alertSeverity === 'critical' ? 'bg-red-600 border-red-700' :
           alertSeverity === 'high' ? 'bg-orange-500 border-orange-600' :
@@ -719,17 +719,17 @@ const Index = () => {
               onSync={handleSyncClick}
             />
 
-            {/* LeetCode-Style Heatmap */}
+            {}
             <div className="mt-6">
               <LeetCodeStyleHeatmap
                 data={tabLogs ? (() => {
                   const dailyData = {};
 
-                  // Group logs by date and calculate daily focus score
+                  
                   tabLogs.forEach(log => {
                     try {
                       const date = new Date(log.timestamp);
-                      // Validate the date is valid
+                      
                       if (isNaN(date.getTime())) {
                         return;
                       }
@@ -742,7 +742,7 @@ const Index = () => {
                         };
                       }
 
-                      // Use individual log score or fallback to random
+                      
                       const logScore = log.score || log.focusScore || Math.floor(Math.random() * 100);
                       dailyData[dateStr].totalScore += logScore;
                       dailyData[dateStr].count += 1;
@@ -751,10 +751,10 @@ const Index = () => {
                     }
                   });
 
-                  // Convert to heatmap format
+                  
                   return Object.entries(dailyData).map(([date, data]) => ({
                     date: date,
-                    score: Math.round(data.totalScore / data.count) // Average score for the day
+                    score: Math.round(data.totalScore / data.count) 
                   }));
                 })() : []}
                 title="Focus Activity Heatmap"
@@ -772,12 +772,12 @@ const Index = () => {
               <EnhancedUsageCharts />
             </div>
 
-            {/* Add the Tab Usage Analytics component */}
+            {}
             <div className="mt-6">
               <TabUsageAnalytics />
             </div>
 
-            {/* Recent Activities Section */}
+            {}
             <div className="mt-6">
               <Card>
                 <CardHeader className="pb-3">
@@ -816,7 +816,7 @@ const Index = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {/* App Activities */}
+                      {}
                       {Object.entries(appUsageData || {}).slice(0, 3).map(([app, duration]) => (
                         <div key={`app-${app}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
                           <div className="flex items-center gap-3">
@@ -834,7 +834,7 @@ const Index = () => {
                         </div>
                       ))}
 
-                      {/* Tab Activities */}
+                      {}
                       {(tabLogs || []).slice(0, 3).map((tab) => (
                         <div key={`tab-${tab._id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
                           <div className="flex items-center gap-3">
@@ -880,5 +880,5 @@ const Index = () => {
   );
 };
 
-// Make sure to add this proper export statement
+
 export default Index;

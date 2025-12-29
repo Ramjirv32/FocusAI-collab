@@ -27,7 +27,7 @@ const titles = [
   'Amazon - Online shopping'
 ];
 
-// Generate random mock data
+
 export const generateMockTabLogs = (count: number): TabLog[] => {
   const now = new Date();
   const logs: TabLog[] = [];
@@ -36,9 +36,9 @@ export const generateMockTabLogs = (count: number): TabLog[] => {
     const randomIndex = Math.floor(Math.random() * domains.length);
     const domain = domains[randomIndex];
     const title = titles[randomIndex];
-    const randomDuration = Math.floor(Math.random() * 600) + 10; // 10-610 seconds
+    const randomDuration = Math.floor(Math.random() * 600) + 10; 
     
-    // Random time within the last 30 days
+    
     const randomTime = new Date(
       now.getTime() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)
     );
@@ -53,11 +53,11 @@ export const generateMockTabLogs = (count: number): TabLog[] => {
     });
   }
 
-  // Sort by timestamp, newest first
+  
   return logs.sort((a, b) => 
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 };
 
-// Export a set of mock data
+
 export const mockTabLogs = generateMockTabLogs(100);

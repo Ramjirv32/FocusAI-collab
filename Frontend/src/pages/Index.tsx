@@ -10,7 +10,7 @@ import TabActivityChart from '@/components/TabInsights/TabActivityChart';
 import RecentTabsList from '@/components/TabInsights/RecentTabsList';
 import AppUsageChart from '@/components/AppUsage/AppUsageChart';
 import CurrentSessionList from '@/components/AppUsage/CurrentSessionList';
-// Import the new enhanced charts component
+
 import EnhancedUsageCharts from '@/components/AppUsage/EnhancedUsageCharts';
 import TabUsageAnalytics from '@/components/TabInsights/TabUsageAnalytics';
 import FocusScoreCard from '@/components/FocusAI/FocusScoreCard';
@@ -26,9 +26,9 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState<TimeFrame>('daily');
-  const [showExtendedVisualizations, setShowExtendedVisualizations] = useState(true); // Set to true by default
+  const [showExtendedVisualizations, setShowExtendedVisualizations] = useState(true); 
 
-  // Helper function to get auth headers
+  
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -39,17 +39,17 @@ const Index = () => {
       try {
         setIsLoading(true);
 
-        // Get token from localStorage for authentication
+        
         const headers = getAuthHeader();
 
-        // Fetch tab logs with authorization header
+        
         const tabResponse = await axios.get(`${API_BASE_URL}/tabs`, { headers });
         setTabLogs(tabResponse.data);
 
-        // Fetch app usage data with authorization header
+        
         const appResponse = await axios.get(`${API_BASE_URL}/focus-data`, { headers });
 
-        // Debug the response
+        
         console.log('App usage response:', appResponse.data);
 
         setAppUsageData(appResponse.data.appUsage || {});
@@ -69,7 +69,7 @@ const Index = () => {
       fetchData();
     }, 30000);
 
-    // Add heartbeat functionality
+    
     const sendHeartbeat = async () => {
       try {
         const headers = getAuthHeader();
@@ -79,11 +79,11 @@ const Index = () => {
       }
     };
 
-    // Send heartbeat every 30 seconds
-    sendHeartbeat(); // Send immediately
+    
+    sendHeartbeat(); 
     const heartbeatInterval = setInterval(sendHeartbeat, 30000);
 
-    // Clean up on component unmount
+    
     return () => {
       clearInterval(tabInterval);
       clearInterval(heartbeatInterval);
@@ -157,7 +157,7 @@ const Index = () => {
               timeFrame={timeFrameDisplays[selectedTimeFrame]}
             />
 
-            {/* Add AI Focus Analysis */}
+            {}
             <div className="mt-6">
               <FocusScoreCard />
             </div>
@@ -166,63 +166,13 @@ const Index = () => {
               <EnhancedUsageCharts />
             </div>
 
-            {/* Add the new Tab Usage Analytics component */}
+            {}
             <div className="mt-6">
               <TabUsageAnalytics />
             </div>
 
-            {/* You can keep the original components for reference, but they're not needed */}
-            {/*
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              {chartData.length > 0 ? (
-                <TabActivityChart data={chartData} />
-              ) : (
-                <Card className="bg-muted/30">
-                  <CardHeader>
-                    <CardTitle>Tab Activity</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-64 grid place-items-center">
-                    <p className="text-muted-foreground text-center">
-                      No tab data available for the selected time frame
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {Object.keys(appUsageData).length > 0 ? (
-                <AppUsageChart data={appUsageData} />
-              ) : (
-                <Card className="bg-muted/30">
-                  <CardHeader>
-                    <CardTitle>App Usage</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-64 grid place-items-center">
-                    <p className="text-muted-foreground text-center">
-                      No app usage data available for today
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              {filteredLogs.length > 0 ? (
-                <RecentTabsList tabs={filteredLogs.slice(0, 10)} />
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Tab Activity</CardTitle>
-                  </CardHeader>
-                  <CardContent className="h-64 grid place-items-center">
-                    <p className="text-muted-foreground">No recent tab activity</p>
-                  </CardContent>
-                </Card>
-              )}
-              
-              <CurrentSessionList data={currentSessionData} />
-            </div>
-
-            */}
+            {}
+            {}
           </>
         )}
       </div>

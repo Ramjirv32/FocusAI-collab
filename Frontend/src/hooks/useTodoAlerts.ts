@@ -6,13 +6,13 @@ export const useTodoAlerts = () => {
   const [currentAlert, setCurrentAlert] = useState<TodoAlert | null>(null);
   const [isMonitoring, setIsMonitoring] = useState(false);
 
-  // Handle new alert
+  
   const handleAlert = useCallback((alert: TodoAlert) => {
     console.log('📋 New todo alert received:', alert.todo.title, 'due in', alert.minutesUntilDue, 'minutes');
     setCurrentAlert(alert);
   }, []);
 
-  // Dismiss current alert
+  
   const dismissAlert = useCallback(() => {
     if (currentAlert) {
       todoAlertService.clearAlert(currentAlert.todo._id);
@@ -20,7 +20,7 @@ export const useTodoAlerts = () => {
     setCurrentAlert(null);
   }, [currentAlert]);
 
-  // Complete task and dismiss alert
+  
   const completeTask = useCallback(async () => {
     if (currentAlert) {
       todoAlertService.clearAlert(currentAlert.todo._id);
@@ -28,11 +28,11 @@ export const useTodoAlerts = () => {
     }
   }, [currentAlert]);
 
-  // Snooze alert
+  
   const snoozeAlert = useCallback(async (minutes: number) => {
     if (currentAlert) {
       try {
-        // Update the due date by adding snooze minutes
+        
         const newDueDate = new Date(currentAlert.todo.dueDate!);
         newDueDate.setMinutes(newDueDate.getMinutes() + minutes);
         
@@ -40,7 +40,7 @@ export const useTodoAlerts = () => {
           dueDate: newDueDate.toISOString()
         });
         
-        // Clear the alert
+        
         todoAlertService.clearAlert(currentAlert.todo._id);
         setCurrentAlert(null);
         
@@ -51,7 +51,7 @@ export const useTodoAlerts = () => {
     }
   }, [currentAlert]);
 
-  // Start monitoring
+  
   const startMonitoring = useCallback(() => {
     if (!isMonitoring) {
       todoAlertService.subscribe(handleAlert);
@@ -61,7 +61,7 @@ export const useTodoAlerts = () => {
     }
   }, [isMonitoring, handleAlert]);
 
-  // Stop monitoring
+  
   const stopMonitoring = useCallback(() => {
     if (isMonitoring) {
       todoAlertService.unsubscribe(handleAlert);
@@ -72,16 +72,16 @@ export const useTodoAlerts = () => {
     }
   }, [isMonitoring, handleAlert]);
 
-  // Manual trigger (for testing)
+  
   const triggerCheck = useCallback(async () => {
     await todoAlertService.triggerCheck();
   }, []);
 
-  // Auto-start monitoring when hook is used
+  
   useEffect(() => {
     startMonitoring();
     
-    // Cleanup on unmount
+    
     return () => {
       stopMonitoring();
     };

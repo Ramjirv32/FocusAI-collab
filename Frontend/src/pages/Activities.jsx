@@ -47,16 +47,16 @@ const Activities = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activities, setActivities] = useState([]);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
-  const [filter, setFilter] = useState('all'); // 'all', 'apps', 'tabs'
-  const [sortBy, setSortBy] = useState('time'); // 'time', 'name', 'recent'
+  const [filter, setFilter] = useState('all'); 
+  const [sortBy, setSortBy] = useState('time'); 
   
-  // Helper function to get auth headers
+  
   const getAuthHeader = () => {
     const authToken = token || localStorage.getItem('token');
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   };
 
-  // Format duration from seconds to human readable time
+  
   const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -67,25 +67,25 @@ const Activities = () => {
     return `${minutes}m`;
   };
 
-  // Format timestamp to readable time
+  
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Get activities data from backend
+  
   const fetchActivities = async () => {
     try {
       setIsLoading(true);
       const headers = getAuthHeader();
       
-      // Get apps usage data
+      
       const appResponse = await axios.get('http://localhost:5001/api/user-data', {
         headers,
         params: { timeFrame: selectedTimeFrame }
       });
       
-      // Process app usage data
+      
       const appActivities = (appResponse.data.appUsage || []).map(app => ({
         id: `app-${app._id || Math.random().toString(36)}`,
         type: 'App',
@@ -96,7 +96,7 @@ const Activities = () => {
         formattedTime: formatTime(app.lastUpdated || new Date())
       }));
       
-      // Process tab usage data
+      
       const tabActivities = (appResponse.data.tabUsage || []).map(tab => ({
         id: `tab-${tab._id || Math.random().toString(36)}`,
         type: 'Tab',
@@ -109,10 +109,10 @@ const Activities = () => {
         formattedTime: formatTime(tab.timestamp || tab.lastUpdated || new Date())
       }));
       
-      // Combine and sort activities
+      
       const allActivities = [...appActivities, ...tabActivities];
       
-      // Apply sorting
+      
       sortActivities(allActivities, sortBy);
       
       setActivities(allActivities);
@@ -134,7 +134,7 @@ const Activities = () => {
     }
   };
 
-  // Sort activities by the selected method
+  
   const sortActivities = (activitiesArray, sortMethod) => {
     switch (sortMethod) {
       case 'time':
@@ -150,7 +150,7 @@ const Activities = () => {
     }
   };
 
-  // Filter activities by type
+  
   const getFilteredActivities = () => {
     if (filter === 'apps') {
       return activities.filter(activity => activity.type === 'App');
@@ -160,7 +160,7 @@ const Activities = () => {
     return activities;
   };
 
-  // Apply new sorting
+  
   const handleSort = (newSortBy) => {
     setSortBy(newSortBy);
     const sorted = [...activities];
@@ -168,26 +168,26 @@ const Activities = () => {
     setActivities(sorted);
   };
 
-  // Effect to fetch data on initial load and when time frame changes
+  
   useEffect(() => {
     if (user) {
       fetchActivities();
     }
   }, [user, selectedTimeFrame]);
 
-  // Return to dashboard
+  
   const handleBackClick = () => {
     navigate('/');
   };
 
-  // Handle refresh button click
+  
   const handleRefresh = () => {
     fetchActivities();
   };
 
   const filteredActivities = getFilteredActivities();
   
-  // Format time frame for display
+  
   const timeFrameDisplays = {
     'daily': 'Today',
     'weekly': 'This Week',
@@ -332,7 +332,7 @@ const Activities = () => {
           </CardContent>
         </Card>
         
-        {/* Stats Card */}
+        {}
         {!isLoading && filteredActivities.length > 0 && (
           <Card>
             <CardHeader>

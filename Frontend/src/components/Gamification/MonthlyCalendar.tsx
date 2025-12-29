@@ -13,17 +13,17 @@ interface CalendarProps {
 const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Get number of days in month
+  
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
 
-  // Get first day of month (0 = Sunday, 1 = Monday, etc.)
+  
   const getFirstDayOfMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
   };
 
-  // Check if year is leap year
+  
   const isLeapYear = (year: number) => {
     return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
   };
@@ -33,14 +33,14 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
 
-  // Get score for a specific date
+  
   const getScoreForDate = (day: number) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const dayData = data.find(d => d.date === dateStr);
     return dayData ? dayData.score : 0;
   };
 
-  // Get color based on score
+  
   const getColorClass = (score: number) => {
     if (score === 0) return 'bg-muted/30 text-muted-foreground';
     if (score < 30) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-200';
@@ -61,7 +61,7 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
   const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  // Calculate stats for current month
+  
   const totalActive = days.filter(day => getScoreForDate(day) > 0).length;
   const avgScore = data.length > 0 
     ? Math.round(days.reduce((sum, day) => sum + getScoreForDate(day), 0) / days.length)
@@ -98,7 +98,7 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Day headers */}
+          {}
           <div className="grid grid-cols-7 gap-1">
             {dayNames.map(day => (
               <div
@@ -110,14 +110,14 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
             ))}
           </div>
 
-          {/* Calendar grid */}
+          {}
           <div className="grid grid-cols-7 gap-1">
-            {/* Empty days before month starts */}
+            {}
             {emptyDays.map(i => (
               <div key={`empty-${i}`} className="aspect-square" />
             ))}
 
-            {/* Days of month */}
+            {}
             {days.map(day => {
               const score = getScoreForDate(day);
               return (
@@ -135,7 +135,7 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
             })}
           </div>
 
-          {/* Legend and Stats */}
+          {}
           <div className="space-y-3 pt-4 border-t">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="flex items-center gap-2">
@@ -156,7 +156,7 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
               </div>
             </div>
 
-            {/* Month Stats */}
+            {}
             <div className="grid grid-cols-3 gap-2 text-center p-2 bg-muted/50 rounded-lg">
               <div>
                 <div className="text-xl font-bold text-primary">{daysInMonth}</div>

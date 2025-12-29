@@ -211,7 +211,7 @@ const SaleAnalytics = () => (
     </CardHeader>
     <CardContent>
       <div className="h-64 flex items-end justify-between gap-2">
-        {/* Simple bar chart representation */}
+        {}
         {[30, 45, 35, 50, 40, 60, 55, 70, 45, 65, 50, 75].map((height, index) => (
           <div key={index} className="flex-1 flex flex-col items-center gap-1">
             <div 
@@ -228,7 +228,7 @@ const SaleAnalytics = () => (
 const DashboardCards = ({ focusStats, summary }) => {
   return (
     <div className="space-y-6">
-      {/* Main Metrics Grid */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total Focus Time"
@@ -268,14 +268,14 @@ const DashboardCards = ({ focusStats, summary }) => {
         />
       </div>
 
-      {/* Secondary Grid */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <SessionChannelChart />
         <RecentEvents />
         <DeviceStats />
       </div>
 
-      {/* Analytics Chart */}
+      {}
       <SaleAnalytics />
     </div>
   );

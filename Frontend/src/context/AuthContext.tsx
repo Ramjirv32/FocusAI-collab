@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
+    
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
 
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
 
-      // Set axios default header
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
     }
 
@@ -56,10 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(newToken);
       setUser(userData);
 
-      // Set axios default header
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
 
-      // Force navigation to home page after successful login
+      
       setTimeout(() => navigate('/'), 100);
 
     } catch (error) {
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(newToken);
       setUser(userData);
 
-      // Set axios default header
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
 
       navigate('/');
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setUser(null);
 
-    // Remove axios default header
+    
     delete axios.defaults.headers.common['Authorization'];
 
     navigate('/login');

@@ -21,7 +21,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
   const [useDemoData, setUseDemoData] = useState(false);
   const { toast } = useToast();
   
-  // Handle external time frame changes
+  
   const handleTimeFrameChange = (newTimeFrame) => {
     setTimeFrame(newTimeFrame);
     if (onTimeFrameChange) {
@@ -29,11 +29,11 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
     }
   };
   
-  // Demo data for testing when no real data is available
+  
   const demoData = {
     timeFrame: 'daily',
     dateRange: { start: new Date().toISOString().split('T')[0], end: new Date().toISOString().split('T')[0] },
-    totalTime: 15001, // 5 hours in seconds
+    totalTime: 15001, 
     totalApps: 5,
     mostUsedApp: 'Visual Studio Code',
     appUsage: [
@@ -49,7 +49,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
     appVsWebComparison: { applications: 65, web: 35 }
   };
 
-  // Use initialData if provided
+  
   useEffect(() => {
     if (initialData && !useDemoData) {
       console.log('Using provided initialData:', initialData);
@@ -77,7 +77,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
 
       console.log('App usage data response:', response.data);
       
-      // Check if response is properly formatted
+      
       if (response.data && response.data.success) {
         setAppUsageData(response.data);
         console.log('Data successfully loaded');
@@ -91,10 +91,10 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
         });
       }
       
-      // Check if we received data but it's empty
+      
       if (!response.data.appUsage || response.data.appUsage.length === 0) {
         console.log('No app usage data found');
-        // Still set the data to show empty state UI
+        
       }
       
       setLoading(false);
@@ -110,7 +110,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
     }
   };
 
-  // Format time from seconds to hours/minutes
+  
   const formatTime = (seconds) => {
     if (!seconds) return '0m';
     const hours = Math.floor(seconds / 3600);
@@ -128,7 +128,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
       .slice(0, limit)
       .map(app => ({
         name: app.name.length > 15 ? app.name.substring(0, 15) + '...' : app.name,
-        duration: Math.floor(app.totalDuration / 60), // Convert seconds to minutes for display
+        duration: Math.floor(app.totalDuration / 60), 
         fullName: app.name
       }));
   };
@@ -136,7 +136,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
   const formatDataForPieChart = () => {
     if (!appUsageData || !appUsageData.appUsage) return [];
     
-    // Take top 5 apps
+    
     const topApps = appUsageData.appUsage
       .slice(0, limit)
       .map(app => ({
@@ -144,7 +144,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
         value: app.totalDuration
       }));
     
-    // Add an "Others" segment if there are more than 5 apps
+    
     if (appUsageData.appUsage.length > limit) {
       const othersValue = appUsageData.appUsage
         .slice(limit)

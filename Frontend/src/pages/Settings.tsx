@@ -66,13 +66,13 @@ const Settings = () => {
     }
   });
 
-  // Get auth headers
+  
   const getAuthHeader = useCallback(() => {
     const authToken = token || localStorage.getItem('token');
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   }, [token]);
 
-  // Fetch user settings
+  
   const fetchSettings = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -82,7 +82,7 @@ const Settings = () => {
         headers
       });
 
-      // Merge backend settings with default settings
+      
       setSettings(prevSettings => ({
         ...prevSettings,
         notifications: {
@@ -110,7 +110,7 @@ const Settings = () => {
     }
   }, [getAuthHeader, toast]);
 
-  // Save settings
+  
   const saveSettings = async () => {
     try {
       setIsSaving(true);
@@ -137,7 +137,7 @@ const Settings = () => {
     }
   };
 
-  // Export settings data
+  
   const exportData = async () => {
     try {
       const headers = getAuthHeader();
@@ -168,7 +168,7 @@ const Settings = () => {
     }
   };
 
-  // Reset data
+  
   const resetData = async (type: string) => {
     if (!confirm(`Are you sure you want to reset all your ${type} data? This cannot be undone.`)) return;
 
@@ -237,7 +237,7 @@ const Settings = () => {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
+        {}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
@@ -272,7 +272,7 @@ const Settings = () => {
             <TabsTrigger value="data" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Data & Storage</TabsTrigger>
           </TabsList>
 
-          {/* Tracking Settings */}
+          {}
           <TabsContent value="tracking" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
               <CardHeader>
@@ -344,7 +344,7 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
-          {/* Notifications Settings */}
+          {}
           <TabsContent value="notifications" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
               <CardHeader>
@@ -381,7 +381,7 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
-          {/* Gamification Settings */}
+          {}
           <TabsContent value="gamification" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
               <CardHeader>
@@ -425,7 +425,7 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
-          {/* Data Control Settings */}
+          {}
           <TabsContent value="data" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
               <CardHeader>

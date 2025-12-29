@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { useAuth } from '@/context/AuthContext'; 
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -13,15 +13,15 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login } = useAuth(); // Use the login function from context
+  const { login } = useAuth(); 
   
   const fetchUserInfoAndSendToExtension = async () => {
     try {
   
-      const response = await axios.get('http://localhost:5001/api/user'); // adjust endpoint as needed
+      const response = await axios.get('http://localhost:5001/api/user'); 
       const user = response.data.user;
   
-      // Send login data to the Chrome extension
+      
       if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage('jjjokkpobnafkfomfojdnhgndanjihpl', {
           action: 'userInfo',
@@ -42,10 +42,10 @@ const LoginForm = () => {
     setIsLoading(true);
     
     try {
-      // Use the context login function instead of handling it here
+      
       await login(email, password);
       
-      // The navigation is now handled in the context
+      
       fetchUserInfoAndSendToExtension();
       toast({
         title: "Login successful",

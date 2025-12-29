@@ -21,7 +21,7 @@ const FocusApps: React.FC<FocusAppsProps> = ({
   distractionAreas,
   timeFrame = 'Today'
 }) => {
-  // Format minutes to hours and minutes
+  
   const formatDuration = (seconds: number) => {
     const minutes = seconds / 60;
     if (minutes < 60) {
@@ -35,7 +35,7 @@ const FocusApps: React.FC<FocusAppsProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Focused Apps */}
+      {}
       <Card className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2">
@@ -72,7 +72,7 @@ const FocusApps: React.FC<FocusAppsProps> = ({
         </CardContent>
       </Card>
       
-      {/* Distracted Apps */}
+      {}
       <Card className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-l-red-500">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2">

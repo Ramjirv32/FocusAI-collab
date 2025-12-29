@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = 'http://localhost:5001';
 
 export const chatService = {
-  // Send a message to the chat service with optional productivity data
+  
   sendMessage: async (message, historyId = null, userData = null) => {
     try {
       console.log('🤖 Sending chat message:', message);
@@ -32,12 +32,12 @@ export const chatService = {
     }
   },
   
-  // Get user productivity data from the server for enhanced chat responses
+  
   getUserProductivityData: async () => {
     try {
       console.log('📊 Fetching user productivity data for chat');
       
-      // First try to get a comprehensive productivity overview
+      
       try {
         const response = await axios.get(`${API_URL}/api/statistics/overview`, {
           headers: {
@@ -53,18 +53,18 @@ export const chatService = {
         console.log('⚠️ Could not get overview stats, trying alternative endpoint');
       }
       
-      // If that fails, try the fallback endpoint for all productivity summaries
+      
       const response = await axios.get(`${API_URL}/ch`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
       
-      // Process the productivity summaries
+      
       if (response.data && Array.isArray(response.data) && response.data.length > 0) {
         console.log(`✅ Got ${response.data.length} productivity summaries`);
         
-        // Get the most recent summary
+        
         const sortedSummaries = [...response.data].sort((a, b) => 
           new Date(b.date).getTime() - new Date(a.date).getTime()
         );
@@ -86,7 +86,7 @@ export const chatService = {
     }
   },
   
-  // Get chat histories for the user
+  
   getChatHistories: async () => {
     try {
       console.log('🔍 Fetching chat histories');
@@ -105,7 +105,7 @@ export const chatService = {
     }
   },
   
-  // Get a specific chat history by ID
+  
   getChatHistoryById: async (historyId) => {
     try {
       console.log(`🔍 Fetching chat history: ${historyId}`);
@@ -124,7 +124,7 @@ export const chatService = {
     }
   },
   
-  // Create a new empty chat history
+  
   createChatHistory: async () => {
     try {
       const response = await axios.post(`${API_URL}/api/chat/history`, {}, {
@@ -140,7 +140,7 @@ export const chatService = {
     }
   },
   
-  // Delete a chat history by ID
+  
   deleteChatHistory: async (historyId) => {
     try {
       const response = await axios.delete(`${API_URL}/api/chat/history/${historyId}`, {

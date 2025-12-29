@@ -44,7 +44,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
   const [hasSampleData, setHasSampleData] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   
-  // Helper function to get auth headers
+  
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -59,7 +59,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     try {
       const headers = getAuthHeader();
       
-      // Get raw usage data with timeFrame parameter
+      
       const response = await axios.get('http://localhost:5001/raw-usage', { 
         headers,
         params: { timeFrame }
@@ -67,7 +67,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       
       console.log(`Raw usage data for ${timeFrame} timeframe:`, response.data);
       
-      // Check if the data likely contains sample entries
+      
       const appData = response.data.appUsage || {};
       const tabData = response.data.tabUsage || {};
       
@@ -95,7 +95,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     }
   };
 
-  // Format time duration (seconds to readable format)
+  
   const formatDuration = (seconds: number) => {
     if (!seconds) return '0s';
     
@@ -112,12 +112,12 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     }
   };
   
-  // Transform app usage data for chart
+  
   const appChartData = Object.entries(usageData.appUsage || {})
-    // Filter out sample data if the toggle is off
+    
     .filter(([name, duration]) => {
       if (!includeSampleData) {
-        // These are the exact durations of sample data
+        
         const isSampleData = 
           (name === 'VS Code' && Number(duration) === 1800) || 
           (name === 'Chrome' && Number(duration) === 1200) ||
@@ -138,12 +138,12 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     }))
     .sort((a, b) => b.duration - a.duration);
   
-  // Transform tab usage data for chart
+  
   const tabChartData = Object.entries(usageData.tabUsage || {})
-    // Filter out sample data if the toggle is off
+    
     .filter(([name, duration]) => {
       if (!includeSampleData) {
-        // These are the domains of sample data
+        
         const isSampleDomain = 
           name === 'github.com' || 
           name === 'stackoverflow.com' || 
@@ -162,10 +162,10 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     }))
     .sort((a, b) => b.duration - a.duration);
   
-  // Colors for charts
+  
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a05195', '#d45087', '#f95d6a', '#ff7c43', '#ffa600'];
   
-  // Combined data for treemap
+  
   const combinedData = [
     ...appChartData.map(app => ({
       ...app,
@@ -181,7 +181,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     }))
   ];
 
-  // Create aggregated data for app vs web comparison
+  
   const appTotal = Object.values(usageData.appUsage || {})
     .map(val => Number(val))
     .reduce((sum: number, val: number) => sum + val, 0);
@@ -195,7 +195,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     { name: 'Websites', value: webTotal }
   ];
 
-  // Pie chart custom active shape
+  
   const renderActiveShape = (props: any) => {
     const RADIAN = Math.PI / 180;
     const {
@@ -309,7 +309,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       const headers = getAuthHeader();
       const response = await axios.post('http://localhost:5001/api/clear-sample-data', {}, { headers });
       
-      // Refresh data after clearing samples
+      
       setIncludeSampleData(false);
       
       alert(`Sample data cleared successfully. Removed:
@@ -374,7 +374,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
         </div>
       )}
       
-      {/* Application Usage Chart */}
+      {}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Application Usage - {timeFrameDisplay[timeFrame]}</CardTitle>
@@ -422,7 +422,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
         </CardContent>
       </Card>
     
-      {/* Only show Website Usage card if there's data */}
+      {}
       {hasTabData && (
         <Card className="mb-6">
           <CardHeader>
@@ -479,7 +479,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
               <div className="border p-4 rounded-md">
                 <h4 className="font-medium mb-3">App Usage Forecast</h4>
                 
-                {/* Forecast style chart inspired by the reference image */}
+                {}
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
@@ -525,7 +525,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                 </div>
               </div>
 
-              {/* Moderate Buy style chart inspired by the reference image */}
+              {}
               <div className="border p-4 rounded-md mt-4">
                 <div className="flex justify-between mb-3">
                   <h4 className="font-medium text-xl">
@@ -596,7 +596,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
               <div className="border p-4 rounded-md">
                 <h4 className="font-medium mb-2">12 Hour Activity Forecast</h4>
                 
-                {/* Create a 12-hour forecast chart similar to the stock price chart */}
+                {}
                 <div className="h-64 relative">
                   <div className="absolute right-0 top-0 flex flex-col space-y-1 text-xs">
                     <div className="text-green-500">High<br/>{formatDuration(Math.max(...appChartData.map(d => d.duration)))}</div>
@@ -607,20 +607,20 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={
-                        // Generate synthetic time series data for a 12-hour forecast
+                        
                         [...Array(12)].map((_, i) => {
                           const baseValue = (appTotal + webTotal) / (appChartData.length + tabChartData.length);
                           const hour = new Date();
                           hour.setHours(hour.getHours() + i);
                           const hourStr = hour.getHours() + ':00';
                           
-                          // Create variation for past and future values
+                          
                           let value;
                           if (i < 4) {
-                            // Past hours - actual data with small variations
+                            
                             value = baseValue * (0.8 + (i * 0.1));
                           } else {
-                            // Future hours - forecast with more variation
+                            
                             value = baseValue * (1 + ((Math.sin(i) * 0.3) + (Math.random() * 0.2 - 0.1)));
                           }
                           
@@ -671,7 +671,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                         activeDot={{ r: 6 }}
                       />
                       
-                      {/* Add a vertical line at the current time */}
+                      {}
                       <ReferenceLine 
                         x="3:00" 
                         stroke="#718096" 
@@ -679,7 +679,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                         label={{ value: 'Current', position: 'insideTopRight', fill: '#718096' }} 
                       />
                       
-                      {/* Add a custom dots for current and forecast points */}
+                      {}
                       {[...Array(12)].map((_, i) => {
                         const hour = new Date();
                         hour.setHours(hour.getHours() + i);
@@ -699,7 +699,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   </ResponsiveContainer>
                 </div>
                 
-                {/* Add a legend for the forecast chart */}
+                {}
                 <div className="flex justify-center mt-2 space-x-6 text-sm">
                   <div className="flex items-center">
                     <div className="w-3 h-3 mr-1 rounded-full bg-blue-500"></div>
@@ -712,7 +712,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                 </div>
               </div>
               
-              {/* Detailed List of Activity Forecasts */}
+              {}
               <div className="border p-4 rounded-md mt-4">
                 <h4 className="font-medium mb-4">Detailed Activity Forecast</h4>
                 

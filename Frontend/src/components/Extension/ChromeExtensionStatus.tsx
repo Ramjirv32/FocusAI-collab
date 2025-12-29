@@ -27,15 +27,15 @@ const ChromeExtensionStatus = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
-  // Check extension status
+  
   const checkExtensionStatus = async () => {
     setIsLoading(true);
     try {
-      // Check if Chrome extension API is available
+      
       if (typeof window !== 'undefined' && window.chrome && window.chrome.runtime) {
-        const extensionId = 'jjjokkpobnafkfomfojdnhgndanjihpl'; // Your extension ID
+        const extensionId = 'jjjokkpobnafkfomfojdnhgndanjihpl'; 
         
-        // Try to send a message to the extension
+        
         try {
           await new Promise((resolve, reject) => {
             window.chrome.runtime.sendMessage(extensionId, 
@@ -79,7 +79,7 @@ const ChromeExtensionStatus = () => {
     }
   };
 
-  // Send user info to extension
+  
   const syncUserWithExtension = async () => {
     if (!user || !extensionStatus.connected) return;
     
@@ -108,7 +108,7 @@ const ChromeExtensionStatus = () => {
 
   useEffect(() => {
     checkExtensionStatus();
-    // Check status every 30 seconds
+    
     const interval = setInterval(checkExtensionStatus, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -117,7 +117,7 @@ const ChromeExtensionStatus = () => {
     if (extensionStatus.connected && user) {
       syncUserWithExtension();
     }
-  }, [extensionStatus.connected, user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [extensionStatus.connected, user]); 
 
   if (!isVisible) {
     return (
@@ -161,7 +161,7 @@ const ChromeExtensionStatus = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Status Indicators */}
+        {}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Installation</span>
@@ -200,14 +200,14 @@ const ChromeExtensionStatus = () => {
           </div>
         </div>
 
-        {/* Last Sync */}
+        {}
         {extensionStatus.lastSync && (
           <div className="text-xs text-muted-foreground">
             Last sync: {new Date(extensionStatus.lastSync).toLocaleString()}
           </div>
         )}
 
-        {/* Actions */}
+        {}
         <div className="space-y-2">
           {!extensionStatus.installed && (
             <Alert>
@@ -248,7 +248,7 @@ const ChromeExtensionStatus = () => {
           )}
         </div>
 
-        {/* Quick Stats */}
+        {}
         {extensionStatus.tracking && (
           <div className="pt-2 border-t text-xs text-muted-foreground">
             <div className="grid grid-cols-2 gap-2">

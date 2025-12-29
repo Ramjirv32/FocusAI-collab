@@ -24,7 +24,7 @@ const AIModelManager = () => {
     const [showKey, setShowKey] = useState(false);
     const [status, setStatus] = useState({ type: 'idle', message: '' });
 
-    // Load configuration
+    
     useEffect(() => {
         if (isOpen) {
             fetchConfig();
@@ -43,7 +43,7 @@ const AIModelManager = () => {
                 const data = await response.json();
                 setConfig(data);
 
-                // If provider is ollama, fetch models
+                
                 if (data.provider === 'ollama') {
                     fetchOllamaModels();
                 }
@@ -74,7 +74,7 @@ const AIModelManager = () => {
     };
 
     const handleSave = async () => {
-        // Validate based on provider
+        
         if (config.provider === 'groq' && !config.groqKey) {
             setStatus({ type: 'error', message: 'Please enter a Groq API key' });
             return;
@@ -89,7 +89,7 @@ const AIModelManager = () => {
         setStatus({ type: 'loading', message: 'Saving configuration...' });
 
         try {
-            // Only send relevant config based on provider
+            
             const configToSave = {
                 provider: config.provider,
                 groqKey: config.provider === 'groq' ? config.groqKey : '',

@@ -2,8 +2,8 @@ export interface TabLog {
   id: string;
   title: string;
   url: string;
-  duration: number; // duration in seconds
-  timestamp: string; // ISO date string
+  duration: number; 
+  timestamp: string; 
   favicon?: string;
 }
 
@@ -16,7 +16,7 @@ export interface GroupedTabData {
 }
 
 export interface TabSummary {
-  totalTime: number; // Total time in seconds
+  totalTime: number; 
   mostVisitedTab: string;
   mostTimeSpentTab: string;
   averageSessionDuration: number;

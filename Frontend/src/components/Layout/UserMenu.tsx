@@ -21,13 +21,13 @@ const UserMenu = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Get auth headers
+  
   const getAuthHeader = () => {
     const authToken = token || localStorage.getItem('token');
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   };
 
-  // Fetch user profile data
+  
   const fetchUserProfile = React.useCallback(async () => {
     try {
       const authToken = token || localStorage.getItem('token');
@@ -44,31 +44,31 @@ const UserMenu = () => {
     }
   }, [token]);
 
-  // Load profile when dialog opens
+  
   useEffect(() => {
     if (isProfileOpen) {
       fetchUserProfile();
     }
   }, [isProfileOpen, fetchUserProfile]);
 
-  // Load profile data on component mount
+  
   useEffect(() => {
     fetchUserProfile();
   }, [fetchUserProfile]);
 
   if (!user) return null;
 
-  // Handle profile photo upload
+  
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file type
+      
       if (!file.type.startsWith('image/')) {
         setError('Please select a valid image file.');
         return;
       }
 
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      if (file.size > 2 * 1024 * 1024) { 
         setError('Profile photo must be less than 2MB');
         return;
       }
@@ -81,7 +81,7 @@ const UserMenu = () => {
             ...prev,
             profilePhoto: result
           }));
-          setError(''); // Clear any previous errors
+          setError(''); 
         }
       };
       reader.onerror = () => {
@@ -92,7 +92,7 @@ const UserMenu = () => {
   };
 
   
-  // Save profile data
+  
   const handleSaveProfile = async () => {
     try {
       setIsLoading(true);
@@ -106,7 +106,7 @@ const UserMenu = () => {
         return;
       }
 
-      // Validate that at least displayName is provided
+      
       if (!userProfile.displayName || userProfile.displayName.trim() === '') {
         setError('Display name is required.');
         setIsLoading(false);
@@ -120,7 +120,7 @@ const UserMenu = () => {
 
       const response = await axios.put('http://localhost:5001/api/profile', profileData, { headers });
 
-      // Update local state with the response to ensure data is synced
+      
       if (response.data) {
         setUserProfile({
           displayName: response.data.displayName || '',
@@ -213,7 +213,7 @@ const UserMenu = () => {
                 </div>
               )}
 
-              {/* Profile Photo Section */}
+              {}
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative group">
                   <Avatar className="h-24 w-24 border-2 border-primary/20 transition-all group-hover:border-primary/50">
@@ -242,7 +242,7 @@ const UserMenu = () => {
                 </div>
               </div>
 
-              {/* Basic Information */}
+              {}
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="displayName" className="text-sm font-semibold">Username / Nickname</Label>
@@ -259,7 +259,7 @@ const UserMenu = () => {
                 </p>
               </div>
 
-              {/* Save Button */}
+              {}
               <div className="flex justify-end space-x-3 pt-2">
                 <Button
                   variant="ghost"

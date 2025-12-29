@@ -13,10 +13,10 @@ const COLORS = {
 };
 
 const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
-  // Process data to get top 5-6 apps
+  
   const { chartData, focusTotal, distractionTotal } = useMemo(() => {
     if (isDemo || !data.productiveContent || !data.nonProductiveContent) {
-      // Fallback to demo data if no data provided
+      
       const demoData = [
         { name: "VS Code", duration: 3600, type: "Focused" },
         { name: "Chrome - DSA Tutorial", duration: 1800, type: "Focused" },
@@ -37,23 +37,23 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
       return { chartData: demoData, focusTotal, distractionTotal };
     }
 
-    // Process real data
+    
     const productiveApps = Object.entries(data.productiveContent || {}).map(([name, duration]) => ({
       name: name || 'Unknown App',
-      duration: Math.round(duration / 60), // Convert to minutes
+      duration: Math.round(duration / 60), 
       type: 'Focused'
     }));
 
     const distractingApps = Object.entries(data.nonProductiveContent || {}).map(([name, duration]) => ({
       name: name || 'Unknown App',
-      duration: Math.round(duration / 60), // Convert to minutes
+      duration: Math.round(duration / 60), 
       type: 'Distracted'
     }));
 
-    // Combine and sort by duration
+    
     const allApps = [...productiveApps, ...distractingApps]
       .sort((a, b) => b.duration - a.duration)
-      .slice(0, 6); // Get top 6 apps
+      .slice(0, 6); 
 
     const focusTotal = productiveApps.reduce((sum, item) => sum + item.duration, 0);
     const distractionTotal = distractingApps.reduce((sum, item) => sum + item.duration, 0);
@@ -61,13 +61,13 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
     return { chartData: allApps, focusTotal, distractionTotal };
   }, [data, isDemo]);
 
-  // Prepare data for pie chart
+  
   const pieData = [
     { name: 'Focused', value: focusTotal, color: COLORS.focused },
     { name: 'Distracted', value: distractionTotal, color: COLORS.distracted }
   ];
 
-  // Format time from minutes to hours/minutes
+  
   const formatTime = (minutes) => {
     if (!minutes) return '0m';
     const hours = Math.floor(minutes / 60);
@@ -78,7 +78,7 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
     return `${mins}m`;
   };
 
-  // Focus to distraction ratio percentage
+  
   const totalTime = focusTotal + distractionTotal;
   const focusPercentage = totalTime > 0 ? Math.round((focusTotal / totalTime) * 100) : 0;
 

@@ -46,7 +46,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
   const [internalLoading, setInternalLoading] = useState(true);
   const [internalError, setInternalError] = useState<string | null>(null);
 
-  // Use props if available, otherwise use internal state
+  
   const isLoading = propIsLoading || internalLoading;
   const error = propError || internalError;
 
@@ -60,7 +60,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
       const today = new Date().toISOString().slice(0, 10);
       console.log(`🔄 Fetching focus score for ${user.email} on ${today}`);
 
-      // Fetch productivity summary (same as Focus Analytics)
+      
       const productivityResponse = await fetch(
         `http://localhost:8000/user/${user.id}/productivity-summary?date=${today}&email=${user.email}`
       );
@@ -71,7 +71,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
         console.log('✅ Productivity data loaded:', productivityResult);
       }
 
-      // Fetch focus analysis (same as Focus Analytics)
+      
       const focusResponse = await fetch(
         `http://localhost:8000/user/${user.id}/productivity-analysis?date=${today}&email=${user.email}`
       );
@@ -91,17 +91,17 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
   }, [user]);
 
   useEffect(() => {
-    // Only fetch data internally if no props are provided
+    
     if (!propStats) {
       fetchFocusScore();
       
-      // Refresh every 30 seconds only if not using props
+      
       const interval = setInterval(fetchFocusScore, 30000);
       return () => clearInterval(interval);
     }
   }, [fetchFocusScore, propStats]);
 
-  // Format time duration (minutes to readable format)
+  
   const formatTime = (minutes: number) => {
     if (!minutes) return '0m';
     
@@ -126,7 +126,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
     return 'Needs Improvement';
   };
 
-  // Extract data from props or internal state
+  
   let focusScore = 0;
   let totalTime = 0;
   let productiveTime = 0;
@@ -135,7 +135,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
   let mostUsedApp = 'None';
 
   if (propStats) {
-    // Use props data (from Dashboard) - convert productivity score to focus score
+    
     focusScore = propStats.focus_score || propStats.productivity_score || 0;
     productiveTime = propStats.focus_time_minutes || 0;
     distractedTime = propStats.distraction_time_minutes || 0;
@@ -143,7 +143,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
     totalActivities = propStats.total_activities || 0;
     mostUsedApp = propStats.most_productive_app || 'None';
   } else if (focusData || productivityData) {
-    // Use internal data - prioritize focus_score over productivity_score
+    
     focusScore = productivityData?.focus_score || focusData?.summary?.focus_percentage || 
                 focusData?.summary?.productivity_score || 0;
     totalTime = focusData?.summary?.total_duration_minutes || 
@@ -152,7 +152,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
       Math.round((productivityData?.total_productive_time || 0) / 60);
     distractedTime = focusData?.summary?.distracted_duration_minutes || 
       Math.round((productivityData?.total_non_productive_time || 0) / 60);
-    totalActivities = 0; // Will be set from propStats if available
+    totalActivities = 0; 
     mostUsedApp = focusData?.summary?.most_focused_app || 
       productivityData?.most_used_app || 'None';
   }
@@ -228,9 +228,9 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Main Stats Grid */}
+        {}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Focus Score */}
+          {}
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-1">
               <Target className="h-5 w-5 text-blue-600" />
@@ -244,7 +244,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
             </p>
           </div>
 
-          {/* Total Usage Time */}
+          {}
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-1">
               <Clock className="h-5 w-5 text-blue-600" />
@@ -254,7 +254,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
             <p className="text-xs text-muted-foreground">Total usage today</p>
           </div>
 
-          {/* Total Activities */}
+          {}
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="flex items-center justify-between mb-1">
               <Activity className="h-5 w-5 text-green-600" />
@@ -265,7 +265,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
           </div>
         </div>
 
-        {/* Summary Stats */}
+        {}
         <div className="bg-white p-4 rounded-lg shadow-sm">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -279,7 +279,7 @@ const FocusScoreCard: React.FC<FocusScoreCardProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {}
         <div className="flex justify-between items-center pt-2">
           {onSync && (
             <Button 

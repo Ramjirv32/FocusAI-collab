@@ -18,7 +18,7 @@ const FocusAnalyticsPage = () => {
       setIsLoading(true);
       
       try {
-        // Replace with your actual API endpoint
+        
         const response = await fetch(`http://localhost:5000/api/focus/analytics?timeFrame=${timeFrame}&userId=${user.id}`);
         
         if (response.ok) {
@@ -39,10 +39,10 @@ const FocusAnalyticsPage = () => {
     fetchFocusData();
   }, [user, timeFrame]);
   
-  // Check if we have actual focus data
+  
   const hasData = focusData && focusData.focusPercentage !== undefined;
   
-  // Sample data for demonstration
+  
   const demoFocusData = {
     focusPercentage: 65,
     productiveApps: ['VS Code', 'Microsoft Word', 'Figma'],
@@ -63,9 +63,9 @@ const FocusAnalyticsPage = () => {
         </Tabs>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Focus metrics and charts would go here */}
+          {}
           
-          {/* AI Recommendations */}
+          {}
           <div className="md:col-span-1">
             <AIRecommendations
               focusPercentage={hasData ? focusData.focusPercentage : demoFocusData.focusPercentage}

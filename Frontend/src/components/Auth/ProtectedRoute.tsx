@@ -11,7 +11,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Check authentication status whenever component renders
+    
     if (!isLoading && !token) {
       navigate('/login');
     }
@@ -25,7 +25,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
   
-  // Add console logging to debug authentication state
+  
   console.log('ProtectedRoute - Auth State:', { 
     isAuthenticated: !!token, 
     hasUser: !!user,

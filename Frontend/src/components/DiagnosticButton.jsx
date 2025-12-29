@@ -30,7 +30,7 @@ const DiagnosticButton = () => {
       
       const results = await runDiagnostics();
       
-      // Format results for toast
+      
       let messages = [];
       
       if (results.aiServer.success) {

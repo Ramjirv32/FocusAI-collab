@@ -24,26 +24,26 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
   const [isLoadingTimeFrame, setIsLoadingTimeFrame] = useState(false);
   const [timeFrameError, setTimeFrameError] = useState(null);
 
-  // Dialog state for detailed app/tab usage
+  
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState('productive'); // 'productive' or 'distraction'
+  const [dialogType, setDialogType] = useState('productive'); 
   const [detailedUsageData, setDetailedUsageData] = useState([]);
   const [dialogTitle, setDialogTitle] = useState('');
 
-  // Get auth headers
+  
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  // Format seconds as hours and minutes
+  
   const formatTime = (seconds) => {
     if (!seconds || seconds < 0) return '0m';
 
-    // Round to nearest integer
+    
     const roundedSeconds = Math.round(seconds);
 
-    // If less than a minute but more than 0, show 1m
+    
     if (roundedSeconds > 0 && roundedSeconds < 60) return '1m';
 
     const hours = Math.floor(roundedSeconds / 3600);
@@ -53,19 +53,19 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
     return `${hours}h ${mins}m`;
   };
 
-  // Calculate percentage change between two values
+  
   const calculatePercentageChange = (current, previous) => {
     if (!previous || previous === 0) return 0;
     return ((current - previous) / previous) * 100;
   };
 
-  // Fetch detailed app/tab usage data for the dialog
+  
   const fetchDetailedUsageData = async (type, timeFrame) => {
     try {
       setIsLoadingTimeFrame(true);
       const headers = getAuthHeader();
 
-      // Calculate date range based on timeFrame
+      
       const endDate = new Date();
       let startDate = new Date();
 
@@ -74,14 +74,14 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
       } else if (timeFrame === 'monthly') {
         startDate.setMonth(startDate.getMonth() - 1);
       } else {
-        // Daily - today only
+        
         startDate.setHours(0, 0, 0, 0);
       }
 
       const startDateStr = startDate.toISOString().slice(0, 10);
       const endDateStr = endDate.toISOString().slice(0, 10);
 
-      // Get productivity summary data
+      
       const summaryResponse = await axios.get('http://localhost:5001/api/productivity-summary', {
         headers,
         params: { timeFrame }
@@ -93,16 +93,16 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
 
       const summaries = summaryResponse.data.summaries || [];
 
-      // Process the data based on type (productive or distraction)
+      
       let detailedData = [];
 
       summaries.forEach(summary => {
         const date = summary.date;
 
         if (type === 'productive' && summary.productiveContent) {
-          // For productive content
+          
           Object.entries(summary.productiveContent).forEach(([app, duration]) => {
-            // Include almost all activities (threshold of 1 second)
+            
             if (duration < 1) return;
 
             const existingIndex = detailedData.findIndex(item => item.name === app);
@@ -123,9 +123,9 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
             }
           });
         } else if (type === 'distraction' && summary.nonProductiveContent) {
-          // For distraction content
+          
           Object.entries(summary.nonProductiveContent).forEach(([app, duration]) => {
-            // Include almost all activities (threshold of 1 second)
+            
             if (duration < 1) return;
 
             const existingIndex = detailedData.findIndex(item => item.name === app);
@@ -148,12 +148,12 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         }
       });
 
-      // Sort by duration (highest first)
+      
       detailedData.sort((a, b) => b.duration - a.duration);
 
       setDetailedUsageData(detailedData);
 
-      // Set dialog title based on type and timeframe
+      
       setDialogTitle(
         `${type === 'productive' ? 'Productive' : 'Distraction'} Time - ` +
         `${timeFrame.charAt(0).toUpperCase() + timeFrame.slice(1)}`
@@ -168,14 +168,14 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
     }
   };
 
-  // Handle showing detailed usage dialog
+  
   const showDetailedUsage = async (type) => {
     setDialogType(type);
     await fetchDetailedUsageData(type, selectedTimeFrame);
     setDialogOpen(true);
   };
 
-  // Fetch data for different time frames
+  
   const fetchTimeFrameData = async (timeFrame) => {
     if (!user) return;
 
@@ -185,7 +185,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
 
       const headers = getAuthHeader();
 
-      // Calculate date range based on timeFrame
+      
       const endDate = new Date();
       let startDate = new Date();
 
@@ -194,23 +194,23 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
       } else if (timeFrame === 'monthly') {
         startDate.setMonth(startDate.getMonth() - 1);
       } else {
-        // Daily - today only
+        
         startDate.setHours(0, 0, 0, 0);
       }
 
-      // Fetch app usage data
+      
       const appResponse = await axios.get('http://localhost:5001/usage', {
         headers,
         params: { timeFrame }
       });
 
-      // Fetch tab usage data
+      
       const tabResponse = await axios.get('http://localhost:5001/tabs', {
         headers,
         params: { timeFrame }
       });
 
-      // Try to get productivity summary from API
+      
       let productivityData = null;
       try {
         const productivityResponse = await axios.get('http://localhost:5001/api/productivity-summary', {
@@ -225,16 +225,16 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         console.warn('Productivity API unavailable:', apiError.message);
       }
 
-      // Process the data
+      
       const appUsage = appResponse.data || {};
       const tabUsage = tabResponse.data || [];
 
-      // Calculate aggregated statistics
+      
       let totalAppTime = 0;
       let appCount = 0;
       const appStats = {};
 
-      // Process app usage data
+      
       Object.entries(appUsage).forEach(([date, apps]) => {
         Object.entries(apps).forEach(([appName, duration]) => {
           totalAppTime += duration;
@@ -246,12 +246,12 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         });
       });
 
-      // Get top apps
+      
       const topApps = Object.entries(appStats)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 5);
 
-      // Calculate tab statistics
+      
       const tabStats = {};
       let totalTabTime = 0;
 
@@ -265,18 +265,18 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         tabStats[domain].duration += tab.duration || 0;
       });
 
-      // Get top websites
+      
       const topWebsites = Object.entries(tabStats)
         .sort(([, a], [, b]) => b.duration - a.duration)
         .slice(0, 5);
 
-      // Calculate focus metrics from productivity data if available
+      
       let focusScore = 0;
       let focusTime = 0;
       let distractionTime = 0;
 
       if (productivityData && productivityData.summaries && productivityData.summaries.length > 0) {
-        // Calculate averages from all summaries
+        
         const summaries = productivityData.summaries;
 
         let totalFocusScore = 0;
@@ -285,16 +285,16 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
 
         summaries.forEach(summary => {
           totalFocusScore += summary.focusScore || 0;
-          totalFocusTimeSeconds += (summary.totalProductiveTime || 0); // Keep in seconds
-          totalDistractionTimeSeconds += (summary.totalNonProductiveTime || 0); // Keep in seconds
+          totalFocusTimeSeconds += (summary.totalProductiveTime || 0); 
+          totalDistractionTimeSeconds += (summary.totalNonProductiveTime || 0); 
         });
 
         focusScore = summaries.length > 0 ? totalFocusScore / summaries.length : 0;
         focusTime = totalFocusTimeSeconds;
         distractionTime = totalDistractionTimeSeconds;
       } else {
-        // Calculate from raw app/tab data as fallback
-        const totalTimeSeconds = Math.max(totalAppTime, totalTabTime); // Keep in seconds
+        
+        const totalTimeSeconds = Math.max(totalAppTime, totalTabTime); 
         focusScore = totalTimeSeconds > 0 ? Math.min(85, Math.max(15, 50 + (appCount * 2))) : 0;
         focusTime = totalTimeSeconds * 0.7;
         distractionTime = totalTimeSeconds * 0.3;
@@ -308,11 +308,11 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         totalActivities: appCount + tabUsage.length,
         topApps: topApps.map(([name, duration]) => ({
           name,
-          duration: duration // Keep in seconds
+          duration: duration 
         })),
         topWebsites: topWebsites.map(([domain, data]) => ({
           domain,
-          duration: data.duration, // Keep in seconds
+          duration: data.duration, 
           visits: data.count
         })),
         appCount,
@@ -333,7 +333,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
     }
   };
 
-  // Load data for all time frames when component mounts
+  
   useEffect(() => {
     if (user) {
       Promise.all([
@@ -344,22 +344,22 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
     }
   }, [user]);
 
-  // Get current timeframe data
+  
   const currentData = timeFrameData[selectedTimeFrame] || {};
   const dailyData = timeFrameData.daily || {};
   const weeklyData = timeFrameData.weekly || {};
   const monthlyData = timeFrameData.monthly || {};
 
-  // Handle sync
+  
   const handleSync = async () => {
     if (onSync) {
       await onSync();
     }
-    // Refresh time frame data after sync
+    
     await fetchTimeFrameData(selectedTimeFrame);
   };
 
-  // Check if user is logged in
+  
   if (!user) {
     return (
       <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
@@ -381,28 +381,28 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
     );
   }
 
-  // Use stats prop if available, otherwise use fetched timeframe data
-  // Standardize everything to seconds for our new formatTime function
+  
+  
   const focusTime = stats?.totalProductiveTime || (stats?.focus_time_minutes ? stats.focus_time_minutes * 60 : 0) || currentData.focusTime || 0;
   const distractionTime = stats?.totalNonProductiveTime || (stats?.distraction_time_minutes ? stats.distraction_time_minutes * 60 : 0) || currentData.distractionTime || 0;
   const totalTime = focusTime + distractionTime;
 
   const focusScore = stats?.focus_score || stats?.productivity_score || currentData.focusScore || 0;
 
-  // Calculate total activities from available data
+  
   let totalActivities = stats?.total_activities || currentData.totalActivities || 0;
 
-  // If total_activities is not available, try to calculate from other sources
+  
   if (totalActivities === 0 && stats) {
-    // Try to get from quick_stats if available
+    
     if (stats.quick_stats) {
       totalActivities = stats.quick_stats.total_activities || 0;
     }
 
-    // If still 0, try to estimate from available time data
+    
     if (totalActivities === 0 && totalTime > 0) {
-      // Don't guess activity count if we don't know it. 
-      // Better to show the actual sum of apps/tabs if available.
+      
+      
       totalActivities = currentData.totalActivities || 0;
     }
   }
@@ -452,7 +452,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
             </TabsList>
 
             <TabsContent value={selectedTimeFrame} className="mt-0">
-              {/* Main Stats Grid */}
+              {}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <p className="text-sm text-muted-foreground mb-1">Focus Score</p>
@@ -509,7 +509,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
                 </div>
               </div>
 
-              {/* Productive vs Distraction Time - CLICKABLE */}
+              {}
               {((currentData.focusTime > 0 || currentData.distractionTime > 0) || (focusTime > 0 || distractionTime > 0)) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div
@@ -546,10 +546,10 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
                 </div>
               )}
 
-              {/* Top Apps and Websites for current timeframe */}
+              {}
               {(currentData.topApps?.length > 0 || currentData.topWebsites?.length > 0) && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                  {/* Top Apps */}
+                  {}
                   {currentData.topApps?.length > 0 && (
                     <div className="bg-white p-4 rounded-lg shadow-sm">
                       <h4 className="text-sm font-medium text-muted-foreground mb-3">
@@ -573,7 +573,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
                     </div>
                   )}
 
-                  {/* Top Websites */}
+                  {}
                   {currentData.topWebsites?.length > 0 && (
                     <div className="bg-white p-4 rounded-lg shadow-sm">
                       <h4 className="text-sm font-medium text-muted-foreground mb-3">
@@ -621,7 +621,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
         </CardContent>
       </Card>
 
-      {/* Dialog for detailed app/tab usage */}
+      {}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
@@ -678,7 +678,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
                             {item.type === 'app' ? 'App' : 'Web'}
                           </Badge>
                           <h4 className="text-sm font-medium truncate">
-                            {/* Clean up the name for display */}
+                            {}
                             {item.name.replace('Browser - ', '').replace(/_/g, '.')}
                           </h4>
                         </div>
@@ -686,7 +686,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
                         <div className="flex items-center gap-2 mt-2">
                           <Timer className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-sm">
-                            {formatTime(item.duration)} {/* Input is in seconds */}
+                            {formatTime(item.duration)} {}
                           </span>
 
                           <Clock3 className="h-3.5 w-3.5 ml-2 text-muted-foreground" />
@@ -696,7 +696,7 @@ const FocusStatusCard = ({ stats, isLoading, error, onSync }) => {
                         </div>
                       </div>
 
-                      {/* Progress bar showing proportion of total time */}
+                      {}
                       <div className="w-24">
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div

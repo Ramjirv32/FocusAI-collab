@@ -53,7 +53,7 @@ const getAuthHeaders = () => {
 };
 
 export const todoService = {
-  // Get all todos
+  
   async getTodos(params?: { 
     completed?: boolean; 
     category?: string; 
@@ -83,7 +83,7 @@ export const todoService = {
     return data.data;
   },
 
-  // Create new todo
+  
   async createTodo(todoData: CreateTodoData): Promise<Todo> {
     const response = await fetch(`${API_URL}/api/todos`, {
       method: 'POST',
@@ -100,7 +100,7 @@ export const todoService = {
     return data.data;
   },
 
-  // Update todo
+  
   async updateTodo(id: string, updates: UpdateTodoData): Promise<Todo> {
     const response = await fetch(`${API_URL}/api/todos/${id}`, {
       method: 'PUT',
@@ -117,7 +117,7 @@ export const todoService = {
     return data.data;
   },
 
-  // Delete todo
+  
   async deleteTodo(id: string): Promise<void> {
     const response = await fetch(`${API_URL}/api/todos/${id}`, {
       method: 'DELETE',
@@ -130,7 +130,7 @@ export const todoService = {
     }
   },
 
-  // Get todo statistics
+  
   async getTodoStats(): Promise<TodoStats> {
     const response = await fetch(`${API_URL}/api/todos/stats`, {
       headers: getAuthHeaders()
@@ -145,7 +145,7 @@ export const todoService = {
     return data.data;
   },
 
-  // Get todos for calendar view
+  
   async getTodosForCalendar(year?: number, month?: number): Promise<CalendarTodos> {
     const queryParams = new URLSearchParams();
     if (year !== undefined) queryParams.append('year', year.toString());
@@ -164,7 +164,7 @@ export const todoService = {
     return data.data;
   },
 
-  // Get upcoming todos (next 7 days)
+  
   async getUpcomingTodos(): Promise<Todo[]> {
     const response = await fetch(`${API_URL}/api/todos/upcoming`, {
       headers: getAuthHeaders()

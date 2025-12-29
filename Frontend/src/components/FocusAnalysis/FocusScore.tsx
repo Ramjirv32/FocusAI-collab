@@ -15,7 +15,7 @@ const FocusScore: React.FC<FocusScoreProps> = ({
   distractedMinutes,
   totalMinutes
 }) => {
-  // Helper function to format time
+  
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = Math.floor(minutes % 60);
@@ -27,7 +27,7 @@ const FocusScore: React.FC<FocusScoreProps> = ({
     return `${hours}h ${mins}m`;
   };
   
-  // Determine color based on score
+  
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'text-green-500';
     if (score >= 50) return 'text-yellow-500';

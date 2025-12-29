@@ -1,40 +1,32 @@
 import axios from 'axios';
 
-// Get API URLs from environment variables with fallback to localhost
-const AI_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; // Python AI server
-const MODEL_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; // Model AI Train server
-const BACKEND_API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'; // Your app backend
 
-/**
- * Get authentication headers with the JWT token
- */
+const AI_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; 
+const MODEL_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; 
+const BACKEND_API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'; 
+
+
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-/**
- * Debug log with timestamp
- */
+
 const logDebug = (message, data) => {
   const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
   console.log(`[${timestamp}] 🔍 ${message}`, data || '');
 };
 
-/**
- * Error log with timestamp
- */
+
 const logError = (message, error) => {
   const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
   console.error(`[${timestamp}] ❌ ${message}`, error);
 };
 
-/**
- * Get user ID from local storage or JWT
- */
+
 const getUserId = () => {
   try {
-    // First try from user object in localStorage
+    
     const userStr = localStorage.getItem('user');
     if (userStr) {
       const user = JSON.parse(userStr);
@@ -43,7 +35,7 @@ const getUserId = () => {
       }
     }
 
-    // If not found, try from JWT token
+    
     const token = localStorage.getItem('token');
     if (token) {
       const base64Url = token.split('.')[1];
@@ -58,8 +50,8 @@ const getUserId = () => {
       }
     }
 
-    // Hard-coded test user ID if all else fails - only for development
-    // Remove in production!
+    
+    
     if (process.env.NODE_ENV === 'development') {
       return '6885b9202e0e815cf52a94a7';
     }
@@ -72,15 +64,13 @@ const getUserId = () => {
   }
 };
 
-// Keep track of which server is working - ALWAYS RESET TO ENSURE PORT 8000
-let activeModelServerUrl = AI_API_URL; // Force to use correct port 8000
 
-/**
- * Test connection to the Focus AI backend
- */
+let activeModelServerUrl = AI_API_URL; 
+
+
 export const testAiServerConnection = async () => {
   try {
-    // If we've already found a working server, try that first
+    
     if (activeModelServerUrl) {
       try {
         const response = await axios.get(`${activeModelServerUrl}/`);
@@ -90,13 +80,13 @@ export const testAiServerConnection = async () => {
           timestamp: new Date().toISOString()
         };
       } catch (cachedError) {
-        // If cached server fails, reset and try others
+        
         activeModelServerUrl = null;
         logDebug('Cached server no longer responding, trying alternatives');
       }
     }
 
-    // Try the main AI_API_URL first
+    
     try {
       const response = await axios.get(`${AI_API_URL}/`);
       activeModelServerUrl = AI_API_URL;
@@ -106,7 +96,7 @@ export const testAiServerConnection = async () => {
         timestamp: new Date().toISOString()
       };
     } catch (firstError) {
-      // Try the MODEL_API_URL as fallback
+      
       try {
         logDebug('Main AI server failed, trying model server');
         const modelResponse = await axios.get(`${MODEL_API_URL}/`);
@@ -117,7 +107,7 @@ export const testAiServerConnection = async () => {
           timestamp: new Date().toISOString()
         };
       } catch (secondError) {
-        // Finally try the health endpoints
+        
         try {
           const healthResponse = await axios.get(`${AI_API_URL}/health`);
           activeModelServerUrl = AI_API_URL;
@@ -141,9 +131,7 @@ export const testAiServerConnection = async () => {
   }
 };
 
-/**
- * Fetch app usage data from the backend
- */
+
 export const fetchAppUsageData = async (date = null) => {
   try {
     const headers = getAuthHeader();
@@ -165,9 +153,7 @@ export const fetchAppUsageData = async (date = null) => {
   }
 };
 
-/**
- * Sync focus data with the AI server
- */
+
 export const syncFocusData = async (date = null) => {
   try {
     const userId = getUserId();
@@ -177,7 +163,7 @@ export const syncFocusData = async (date = null) => {
 
     logDebug(`Starting focus data sync for user ${userId}`);
 
-    // First test the connection
+    
     const connectionTest = await testAiServerConnection();
     if (!connectionTest.status) {
       throw new Error(`Cannot connect to AI server: ${connectionTest.message}`);
@@ -186,21 +172,21 @@ export const syncFocusData = async (date = null) => {
     const headers = getAuthHeader();
     const formattedDate = date || new Date().toISOString().split('T')[0];
 
-    // 1. Get the app usage data from backend
+    
     logDebug('Fetching app usage data from backend...');
     const appResponse = await axios.get(`${BACKEND_API_URL}/focus-data`, {
       headers,
       params: { date: formattedDate }
     });
 
-    // 2. Get the tab data from backend
+    
     logDebug('Fetching tab data from backend...');
     const tabResponse = await axios.get(`${BACKEND_API_URL}/tabs`, {
       headers,
       params: { date: formattedDate }
     });
 
-    // 3. Prepare data for the AI model
+    
     const combinedData = {
       userId: userId,
       date: formattedDate,
@@ -211,7 +197,7 @@ export const syncFocusData = async (date = null) => {
 
     logDebug(`Sending ${combinedData.appUsage.length} app records and ${combinedData.tabUsage.length} tab records for AI analysis`);
 
-    // 4. Send to AI server for processing
+    
     const serverUrl = activeModelServerUrl || MODEL_API_URL;
     const response = await axios.post(
       `${serverUrl}/sync-user-data/${userId}`,
@@ -221,7 +207,7 @@ export const syncFocusData = async (date = null) => {
 
     logDebug('Focus data sync successful:', response.data);
 
-    // 5. Get the updated quick stats
+    
     const statsResponse = await getQuickStats(formattedDate);
 
     return statsResponse;
@@ -231,9 +217,7 @@ export const syncFocusData = async (date = null) => {
   }
 };
 
-/**
- * Get quick productivity stats
- */
+
 export const getQuickStats = async (date = null) => {
   try {
     const userId = getUserId();
@@ -246,7 +230,7 @@ export const getQuickStats = async (date = null) => {
 
     logDebug(`Fetching quick stats for user ${userId} on ${formattedDate}`);
 
-    // Make the API call
+    
     const serverUrl = activeModelServerUrl || MODEL_API_URL;
     const response = await axios.get(
       `${serverUrl}/user/${userId}/quick-stats`,
@@ -266,7 +250,7 @@ export const getQuickStats = async (date = null) => {
   } catch (error) {
     logError('Error getting quick stats:', error);
 
-    // Return a default object so UI doesn't crash
+    
     return {
       user_id: getUserId(),
       date: date || new Date().toISOString().split('T')[0],
@@ -281,9 +265,7 @@ export const getQuickStats = async (date = null) => {
   }
 };
 
-/**
- * Get detailed focus analysis data
- */
+
 export const getFocusAnalysis = async (date = null) => {
   try {
     const userId = getUserId();
@@ -315,7 +297,7 @@ export const getFocusAnalysis = async (date = null) => {
   } catch (error) {
     logError('Error getting focus analysis:', error);
 
-    // Return a default object so UI doesn't crash
+    
     return {
       user_id: getUserId(),
       date: date || new Date().toISOString().split('T')[0],
@@ -328,10 +310,7 @@ export const getFocusAnalysis = async (date = null) => {
   }
 };
 
-/**
- * Get consolidated focus data from both backend and AI systems
- * This includes app usage, tab usage, and AI analysis in one call
- */
+
 export const getConsolidatedFocusData = async (date = null) => {
   try {
     const userId = getUserId();
@@ -343,7 +322,7 @@ export const getConsolidatedFocusData = async (date = null) => {
 
     const formattedDate = date || new Date().toISOString().split('T')[0];
 
-    // Run these requests in parallel for better performance
+    
     const [appData, tabData, quickStats, focusAnalysis] = await Promise.all([
       fetchAppUsageData(formattedDate),
       axios.get(`${BACKEND_API_URL}/tabs`, {
@@ -357,8 +336,8 @@ export const getConsolidatedFocusData = async (date = null) => {
       getFocusAnalysis(formattedDate)
     ]);
 
-    // Check if we need to sync data with AI server
-    // This happens if we have app/tab data but no analysis results
+    
+    
     const needsSync = (
       (appData?.appUsage?.length > 0 || tabData?.length > 0) &&
       (!quickStats?.quick_stats?.productivity_score || quickStats.quick_stats.productivity_score === 0)
