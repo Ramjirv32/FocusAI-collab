@@ -9,7 +9,7 @@ const debugChatData = async () => {
     await mongoose.connect('mongodb://localhost:27017/focuai');
     console.log('✅ Connected to MongoDB\n');
     
-    // 1. Check Users
+    
     console.log('=== CHECKING USERS ===');
     const users = await User.find().limit(5);
     console.log(`👥 Total users: ${users.length}`);
@@ -27,7 +27,7 @@ const debugChatData = async () => {
       
       console.log(`\n🔍 Testing with User ID: ${testUserId}, Email: ${testEmail}`);
       
-      // 2. Check ProductivitySummary
+      
       console.log('\n=== CHECKING PRODUCTIVITY SUMMARY ===');
       const summaryByEmail = await ProductivitySummary.find({ email: testEmail }).limit(3);
       const summaryByUserId = await ProductivitySummary.find({ userId: testUserId }).limit(3);
@@ -48,7 +48,7 @@ const debugChatData = async () => {
         });
       }
       
-      // 3. Check AppUsage
+      
       console.log('\n=== CHECKING APP USAGE ===');
       const appByEmail = await AppUsage.find({ email: testEmail }).limit(3);
       const appByUserId = await AppUsage.find({ 
@@ -73,7 +73,7 @@ const debugChatData = async () => {
         });
       }
       
-      // 4. Check TabUsage
+      
       console.log('\n=== CHECKING TAB USAGE ===');
       const tabByEmail = await TabUsage.find({ email: testEmail }).limit(3);
       const tabByUserId = await TabUsage.find({ 
@@ -99,12 +99,12 @@ const debugChatData = async () => {
         });
       }
       
-      // 5. Test the exact same query as chatController
+      
       console.log('\n=== TESTING EXACT CHAT CONTROLLER QUERY ===');
       const today = new Date().toISOString().slice(0, 10);
       console.log(`📅 Testing date: ${today}`);
       
-      // Try the exact same query as chatController
+      
       const exactQuery = await ProductivitySummary.findOne({
         userId: testUserId,
         email: testEmail,
@@ -114,7 +114,7 @@ const debugChatData = async () => {
       console.log(`🎯 Exact chatController query result: ${!!exactQuery}`);
       
       if (!exactQuery) {
-        // Try latest
+        
         const latestQuery = await ProductivitySummary.findOne({
           userId: testUserId,
           email: testEmail
@@ -127,7 +127,7 @@ const debugChatData = async () => {
         }
       }
       
-      // 6. Test date range query for AppUsage (fallback logic)
+      
       console.log('\n=== TESTING FALLBACK APP USAGE QUERY ===');
       const endDate = new Date(today);
       endDate.setHours(23, 59, 59, 999);
@@ -162,7 +162,7 @@ const debugChatData = async () => {
       console.log('❌ No users found in database!');
     }
     
-    // 7. Check all collections count
+    
     console.log('\n=== COLLECTION COUNTS ===');
     console.log(`👥 Users: ${await User.countDocuments()}`);
     console.log(`📊 ProductivitySummary: ${await ProductivitySummary.countDocuments()}`);

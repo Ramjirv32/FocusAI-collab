@@ -1,9 +1,9 @@
-// MongoDB Models for Focus AI Gamification System
-// Add these to your existing MongoDB schema file
+
+
 
 const mongoose = require("mongoose")
 
-// Gamification Schema
+
 const gamificationSchema = new mongoose.Schema(
   {
     userId: {
@@ -151,7 +151,7 @@ const gamificationSchema = new mongoose.Schema(
   },
 )
 
-// Calendar Event Schema
+
 const calendarEventSchema = new mongoose.Schema(
   {
     userId: {
@@ -202,7 +202,7 @@ const calendarEventSchema = new mongoose.Schema(
       apps: [
         {
           name: String,
-          duration: Number, // in minutes
+          duration: Number, 
           category: String,
         },
       ],
@@ -210,7 +210,7 @@ const calendarEventSchema = new mongoose.Schema(
         {
           url: String,
           title: String,
-          duration: Number, // in minutes
+          duration: Number, 
           category: String,
         },
       ],
@@ -265,7 +265,7 @@ const calendarEventSchema = new mongoose.Schema(
   },
 )
 
-// Enhanced Usage Data Schema
+
 const usageDataSchema = new mongoose.Schema(
   {
     userId: {
@@ -273,7 +273,7 @@ const usageDataSchema = new mongoose.Schema(
       required: true,
     },
     date: {
-      type: String, // YYYY-MM-DD format
+      type: String, 
       required: true,
     },
     apps: [
@@ -283,7 +283,7 @@ const usageDataSchema = new mongoose.Schema(
           required: true,
         },
         duration: {
-          type: Number, // in minutes
+          type: Number, 
           required: true,
         },
         category: {
@@ -313,7 +313,7 @@ const usageDataSchema = new mongoose.Schema(
           required: true,
         },
         duration: {
-          type: Number, // in minutes
+          type: Number, 
           required: true,
         },
         category: {
@@ -413,7 +413,7 @@ const usageDataSchema = new mongoose.Schema(
   },
 )
 
-// User Preferences Schema
+
 const userPreferencesSchema = new mongoose.Schema(
   {
     userId: {
@@ -518,19 +518,19 @@ const userPreferencesSchema = new mongoose.Schema(
   },
 )
 
-// Indexes for better performance
+
 gamificationSchema.index({ userId: 1 })
 calendarEventSchema.index({ userId: 1, startTime: 1 })
 usageDataSchema.index({ userId: 1, date: 1 })
 userPreferencesSchema.index({ userId: 1 })
 
-// Create models
+
 const GamificationModel = mongoose.model("Gamification", gamificationSchema)
 const CalendarEventModel = mongoose.model("CalendarEvent", calendarEventSchema)
 const UsageModel = mongoose.model("UsageData", usageDataSchema)
 const UserPreferencesModel = mongoose.model("UserPreferences", userPreferencesSchema)
 
-// Export models
+
 module.exports = {
   GamificationModel,
   CalendarEventModel,
@@ -538,16 +538,16 @@ module.exports = {
   UserPreferencesModel,
 }
 
-// Example usage and helper functions
 
-// Helper function to calculate focus score
+
+
 function calculateFocusScore(productiveHours, distractionHours) {
   const totalHours = productiveHours + distractionHours
   if (totalHours === 0) return 0
   return Math.round((productiveHours / totalHours) * 100)
 }
 
-// Helper function to categorize apps/tabs
+
 function categorizeItem(name, userPreferences) {
   if (userPreferences.tracking.categories.productive.includes(name)) {
     return "productive"
@@ -558,11 +558,11 @@ function categorizeItem(name, userPreferences) {
   return "neutral"
 }
 
-// Helper function to generate challenges
+
 function generateWeeklyChallenges(userId, userStats) {
   const challenges = []
 
-  // Focus Master Challenge
+  
   challenges.push({
     id: `focus_master_${Date.now()}`,
     name: "Focus Master",
@@ -571,10 +571,10 @@ function generateWeeklyChallenges(userId, userStats) {
     target: 5,
     reward: 150,
     completed: false,
-    expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week
+    expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 
   })
 
-  // Distraction Slayer Challenge
+  
   if (userStats.averageDistractionHours > 2) {
     challenges.push({
       id: `distraction_slayer_${Date.now()}`,
@@ -588,7 +588,7 @@ function generateWeeklyChallenges(userId, userStats) {
     })
   }
 
-  // Early Bird Challenge
+  
   challenges.push({
     id: `early_bird_${Date.now()}`,
     name: "Early Bird",
@@ -603,7 +603,7 @@ function generateWeeklyChallenges(userId, userStats) {
   return challenges
 }
 
-// Helper function to update user streaks
+
 async function updateUserStreak(userId, wasProductiveToday) {
   try {
     const gamificationData = await GamificationModel.findOne({ userId })
@@ -616,7 +616,7 @@ async function updateUserStreak(userId, wasProductiveToday) {
 
     if (wasProductiveToday) {
       if (lastActiveDate === today) {
-        // Already counted today
+        
         return
       }
 
@@ -625,21 +625,21 @@ async function updateUserStreak(userId, wasProductiveToday) {
       const yesterdayStr = yesterday.toISOString().split("T")[0]
 
       if (lastActiveDate === yesterdayStr) {
-        // Continue streak
+        
         gamificationData.streaks.current += 1
       } else {
-        // Start new streak
+        
         gamificationData.streaks.current = 1
       }
 
-      // Update longest streak
+      
       if (gamificationData.streaks.current > gamificationData.streaks.longest) {
         gamificationData.streaks.longest = gamificationData.streaks.current
       }
 
       gamificationData.streaks.lastActiveDate = new Date()
     } else {
-      // Reset current streak if not productive
+      
       gamificationData.streaks.current = 0
     }
 
@@ -649,7 +649,7 @@ async function updateUserStreak(userId, wasProductiveToday) {
   }
 }
 
-// Helper function to check and award badges
+
 async function checkAndAwardBadges(userId, usageData) {
   try {
     const gamificationData = await GamificationModel.findOne({ userId })
@@ -657,7 +657,7 @@ async function checkAndAwardBadges(userId, usageData) {
 
     const newBadges = []
 
-    // Focus Master Badge (5+ hours productive in a day)
+    
     if (
       usageData.summary.productiveHours >= 5 &&
       !gamificationData.badges.some((b) => b.badgeName === "Focus Master")
@@ -670,7 +670,7 @@ async function checkAndAwardBadges(userId, usageData) {
       })
     }
 
-    // Distraction Slayer Badge (less than 30 min distractions with 2+ hours work)
+    
     if (
       usageData.summary.distractionHours <= 0.5 &&
       usageData.summary.productiveHours >= 2 &&
@@ -684,7 +684,7 @@ async function checkAndAwardBadges(userId, usageData) {
       })
     }
 
-    // Early Bird Badge (2+ hours before 10 AM)
+    
     const morningHours = usageData.hourlyBreakdown.filter((h) => h.hour < 10).reduce((sum, h) => sum + h.productive, 0)
 
     if (morningHours >= 2 && !gamificationData.badges.some((b) => b.badgeName === "Early Bird")) {
@@ -696,7 +696,7 @@ async function checkAndAwardBadges(userId, usageData) {
       })
     }
 
-    // Streak Champion Badge (7+ day streak)
+    
     if (
       gamificationData.streaks.current >= 7 &&
       !gamificationData.badges.some((b) => b.badgeName === "Streak Champion")
@@ -709,7 +709,7 @@ async function checkAndAwardBadges(userId, usageData) {
       })
     }
 
-    // Time Optimizer Badge (90%+ focus score)
+    
     if (usageData.summary.focusScore >= 90 && !gamificationData.badges.some((b) => b.badgeName === "Time Optimizer")) {
       newBadges.push({
         badgeName: "Time Optimizer",
@@ -723,10 +723,10 @@ async function checkAndAwardBadges(userId, usageData) {
       gamificationData.badges.push(...newBadges)
       await gamificationData.save()
 
-      // Send notifications for new badges
+      
       newBadges.forEach((badge) => {
         console.log(`🏆 New badge earned: ${badge.badgeName} for user ${userId}`)
-        // Here you could send push notifications, emails, etc.
+        
       })
     }
 
@@ -737,7 +737,7 @@ async function checkAndAwardBadges(userId, usageData) {
   }
 }
 
-// Export helper functions
+
 module.exports.helpers = {
   calculateFocusScore,
   categorizeItem,

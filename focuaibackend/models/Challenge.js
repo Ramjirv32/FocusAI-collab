@@ -41,7 +41,7 @@ const ChallengeSchema = new mongoose.Schema({
   },
   endDate: {
     type: Date,
-    default: () => new Date(+new Date() + 7*24*60*60*1000) // Default 1 week from now
+    default: () => new Date(+new Date() + 7*24*60*60*1000) 
   },
   isActive: {
     type: Boolean,

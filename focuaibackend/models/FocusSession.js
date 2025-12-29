@@ -16,7 +16,7 @@ const focusSessionSchema = new Schema({
     type: Date
   },
   duration: {
-    type: Number, // in minutes
+    type: Number, 
     default: 0
   },
   completed: {
@@ -35,7 +35,7 @@ const focusSessionSchema = new Schema({
     details: [{
       timestamp: Date,
       source: String,
-      duration: Number // in seconds
+      duration: Number 
     }]
   },
   taskId: {
@@ -55,7 +55,7 @@ const focusSessionSchema = new Schema({
   }
 }, { timestamps: true });
 
-// Add indexes for performance
+
 focusSessionSchema.index({ userId: 1 });
 focusSessionSchema.index({ startTime: -1 });
 

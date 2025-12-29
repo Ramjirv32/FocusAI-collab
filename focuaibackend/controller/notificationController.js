@@ -1,7 +1,7 @@
 const Notification = require('../models/Notification');
 
 const notificationController = {
-  // Get user notifications
+  
   async getNotifications(req, res) {
     try {
       const { limit = 20, type, unreadOnly = false } = req.query;
@@ -36,7 +36,7 @@ const notificationController = {
     }
   },
 
-  // Mark notification as read
+  
   async markAsRead(req, res) {
     try {
       const { notificationId } = req.params;
@@ -58,7 +58,7 @@ const notificationController = {
     }
   },
 
-  // Mark all notifications as read
+  
   async markAllAsRead(req, res) {
     try {
       await Notification.updateMany(
@@ -73,7 +73,7 @@ const notificationController = {
     }
   },
 
-  // Delete notification
+  
   async deleteNotification(req, res) {
     try {
       const { notificationId } = req.params;
@@ -94,7 +94,7 @@ const notificationController = {
     }
   },
 
-  // Create notification
+  
   async createNotification(req, res) {
     try {
       const {
@@ -130,7 +130,7 @@ const notificationController = {
     }
   },
 
-  // Get notification statistics
+  
   async getNotificationStats(req, res) {
     try {
       const stats = await Notification.aggregate([
@@ -164,7 +164,7 @@ const notificationController = {
   }
 };
 
-// Helper function to create system notifications
+
 const createSystemNotification = async (userId, email, type, title, message, data = {}) => {
   try {
     const notification = new Notification({
@@ -184,7 +184,7 @@ const createSystemNotification = async (userId, email, type, title, message, dat
   }
 };
 
-// Helper function to create achievement notification
+
 const createAchievementNotification = async (userId, email, badgeName, points) => {
   return createSystemNotification(
     userId,
@@ -196,7 +196,7 @@ const createAchievementNotification = async (userId, email, badgeName, points) =
   );
 };
 
-// Helper function to create focus reminder
+
 const createFocusReminder = async (userId, email, focusScore) => {
   let message = 'Time for a focus session! Let\'s boost your productivity.';
   

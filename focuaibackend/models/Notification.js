@@ -15,7 +15,7 @@ const notificationSchema = new mongoose.Schema({
     enum: ['achievement', 'challenge', 'focus', 'system', 'reminder', 'weekly_report'],
     required: true
   },
-  // ,
+  
   title: {
     type: String,
     required: true
@@ -57,7 +57,7 @@ const notificationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for efficient queries
+
 notificationSchema.index({ userId: 1, createdAt: -1 });
 notificationSchema.index({ email: 1, read: 1 });
 notificationSchema.index({ type: 1, createdAt: -1 });

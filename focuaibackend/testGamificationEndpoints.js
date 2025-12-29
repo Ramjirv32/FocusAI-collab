@@ -1,26 +1,23 @@
 const axios = require('axios');
 
-/**
- * Test script to verify Gamification API endpoints
- * Run this with: node testGamificationEndpoints.js
- */
+
 
 const API_BASE_URL = 'http://localhost:5001';
-const TEST_TOKEN = ''; // Insert a valid JWT token here for authentication
+const TEST_TOKEN = ''; 
 
 const runTests = async () => {
   console.log('🧪 Testing Gamification API endpoints...');
   console.log(`🔗 API URL: ${API_BASE_URL}`);
   console.log('-----------------------------------');
   
-  // Headers for authenticated requests
+  
   const headers = {
     'Authorization': `Bearer ${TEST_TOKEN}`,
     'Content-Type': 'application/json'
   };
   
   try {
-    // 1. Test server health
+    
     console.log('1️⃣ Testing server health...');
     try {
       const rootResponse = await axios.get(API_BASE_URL + '/');
@@ -31,7 +28,7 @@ const runTests = async () => {
       return;
     }
     
-    // If no token is provided, skip authenticated endpoints
+    
     if (!TEST_TOKEN) {
       console.log('\n⚠️ No authentication token provided. Skipping authenticated endpoints.');
       console.log('To test authenticated endpoints:');
@@ -41,7 +38,7 @@ const runTests = async () => {
       return;
     }
 
-    // 2. Test gamification stats endpoint
+    
     console.log('\n2️⃣ Testing gamification stats endpoint...');
     try {
       const statsResponse = await axios.get(`${API_BASE_URL}/api/gamification/stats`, { headers });
@@ -55,7 +52,7 @@ const runTests = async () => {
       }
     }
     
-    // 3. Test achievements endpoint
+    
     console.log('\n3️⃣ Testing achievements endpoint...');
     try {
       const achievementsResponse = await axios.get(`${API_BASE_URL}/api/gamification/achievements`, { headers });
@@ -69,7 +66,7 @@ const runTests = async () => {
       }
     }
     
-    // 4. Test challenges endpoint
+    
     console.log('\n4️⃣ Testing challenges endpoint...');
     try {
       const challengesResponse = await axios.get(`${API_BASE_URL}/api/gamification/challenges`, { headers });
@@ -83,7 +80,7 @@ const runTests = async () => {
       }
     }
     
-    // 5. Test leaderboard endpoint
+    
     console.log('\n5️⃣ Testing leaderboard endpoint...');
     try {
       const leaderboardResponse = await axios.get(`${API_BASE_URL}/api/gamification/leaderboard`, { headers });
@@ -97,7 +94,7 @@ const runTests = async () => {
       }
     }
     
-    // 6. Test sync-productivity endpoint (POST)
+    
     console.log('\n6️⃣ Testing sync-productivity endpoint...');
     try {
       const syncResponse = await axios.post(`${API_BASE_URL}/api/gamification/sync-productivity`, {}, { headers });

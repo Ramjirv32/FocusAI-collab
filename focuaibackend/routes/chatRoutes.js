@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const ChatHistory = require('../models/ChatHistory');
 const chatController = require('../controller/chatController');
 
-// Get all chat histories for the logged-in user
+
 router.get('/history', auth, async (req, res) => {
   try {
     const histories = await ChatHistory.find({ 
@@ -12,7 +12,7 @@ router.get('/history', auth, async (req, res) => {
     }).select('title createdAt updatedAt messages._id messages.isUser messages.timestamp')
       .sort({ updatedAt: -1 });
     
-    // Format the response to include only necessary data
+    
     const formattedHistories = histories.map(history => ({
       id: history._id,
       title: history.title,
@@ -31,7 +31,7 @@ router.get('/history', auth, async (req, res) => {
   }
 });
 
-// Get a specific chat history by ID
+
 router.get('/history/:id', auth, async (req, res) => {
   try {
     const history = await ChatHistory.findOne({ 
@@ -43,7 +43,7 @@ router.get('/history/:id', auth, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Chat history not found' });
     }
     
-    // Make sure we're returning full message data
+    
     res.json({ 
       success: true, 
       history: {
@@ -68,7 +68,7 @@ router.get('/history/:id', auth, async (req, res) => {
   }
 });
 
-// Create a new chat history
+
 router.post('/history', auth, async (req, res) => {
   try {
     const { title, messages } = req.body;
@@ -98,7 +98,7 @@ router.post('/history', auth, async (req, res) => {
   }
 });
 
-// Add message to existing chat history
+
 router.post('/history/:id/message', auth, async (req, res) => {
   try {
     const { content, isUser, productivityData } = req.body;
@@ -132,7 +132,7 @@ router.post('/history/:id/message', auth, async (req, res) => {
   }
 });
 
-// Delete a chat history
+
 router.delete('/history/:id', auth, async (req, res) => {
   try {
     const result = await ChatHistory.deleteOne({ 
@@ -151,7 +151,7 @@ router.delete('/history/:id', auth, async (req, res) => {
   }
 });
 
-// IMPORTANT: The main chat endpoint that receives messages uses the chatController
+
 router.post('/', auth, chatController.sendMessage);
 
 module.exports = router;

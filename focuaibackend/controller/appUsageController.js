@@ -1,21 +1,18 @@
 const AppUsage = require('../models/AppUsage');
 const TabUsage = require('../models/TabUsage');
 
-/**
- * Get application usage statistics
- * Supports filtering by timeframe (daily, weekly, monthly)
- */
+
 exports.getAppUsageStats = async (req, res) => {
   try {
     const { userId, email } = req.user;
     const { timeFrame = 'daily', timeframe } = req.query;
     
-    // Support both parameter formats (camelCase and lowercase)
+    
     const selectedTimeFrame = timeFrame || timeframe || 'daily';
     
     console.log(`Fetching app usage stats for ${email} with timeFrame: ${selectedTimeFrame}`);
     
-    // Calculate date range based on timeFrame
+    
     const endDate = new Date();
     let startDate = new Date();
     
@@ -32,7 +29,7 @@ exports.getAppUsageStats = async (req, res) => {
     
     console.log(`Date range: ${startDateStr} to ${endDateStr}`);
     
-    // Find all app usage for the date range
+    
     const appUsages = await AppUsage.find({
       userId,
       email,
@@ -41,7 +38,7 @@ exports.getAppUsageStats = async (req, res) => {
     
     console.log(`Found ${appUsages.length} app usage records`);
     
-    // Group app usage by app name and calculate total duration
+    
     const appUsageByName = appUsages.reduce((acc, item) => {
       const appName = item.appName || 'Unknown';
       
@@ -57,7 +54,7 @@ exports.getAppUsageStats = async (req, res) => {
       acc[appName].totalDuration += item.duration || 0;
       acc[appName].sessions += 1;
       
-      // Track the most recent usage
+      
       const itemDate = item.lastUpdated || item.date;
       if (!acc[appName].lastUsed || new Date(itemDate) > new Date(acc[appName].lastUsed)) {
         acc[appName].lastUsed = itemDate;
@@ -66,20 +63,20 @@ exports.getAppUsageStats = async (req, res) => {
       return acc;
     }, {});
     
-    // Convert to array and sort by duration
+    
     const appUsageList = Object.values(appUsageByName).sort((a, b) => b.totalDuration - a.totalDuration);
     
-    // Calculate application usage stats
+    
     const totalAppTime = appUsageList.reduce((sum, app) => sum + app.totalDuration, 0);
     const mostUsedApp = appUsageList.length > 0 ? appUsageList[0].name : 'None';
     const totalApps = appUsageList.length;
     
-    // Find most productive vs. distraction apps
-    // This is a simplistic categorization - would be better with a machine learning model
+    
+    
     const productiveApps = ['code', 'vscode', 'visual studio', 'intellij', 'pycharm', 'excel', 'word', 'powerpoint', 'outlook'];
     const distractionApps = ['youtube', 'netflix', 'facebook', 'twitter', 'instagram', 'games'];
     
-    // Categorize apps
+    
     const categorizedApps = appUsageList.map(app => {
       let category = 'neutral';
       const appNameLower = app.name.toLowerCase();
@@ -104,7 +101,7 @@ exports.getAppUsageStats = async (req, res) => {
       .filter(app => app.category === 'distraction')
       .reduce((sum, app) => sum + app.totalDuration, 0);
     
-    // Get top productive and distraction apps
+    
     const topProductiveApps = categorizedApps
       .filter(app => app.category === 'productive')
       .sort((a, b) => b.totalDuration - a.totalDuration)
@@ -115,7 +112,7 @@ exports.getAppUsageStats = async (req, res) => {
       .sort((a, b) => b.totalDuration - a.totalDuration)
       .slice(0, 5);
     
-    // Prepare comparison with tab usage
+    
     const tabUsages = await TabUsage.find({
       userId,
       email,
@@ -145,10 +142,10 @@ exports.getAppUsageStats = async (req, res) => {
       web: totalTabTime > 0 ? Math.round((totalTabTime / (totalAppTime + totalTabTime)) * 100) : 0
     };
     
-    // Log data for debugging
+    
     console.log(`App usage request for ${email}: Found ${appUsages.length} records, ${appUsageList.length} unique apps`);
     
-    // Return the aggregated data
+    
     res.json({
       success: true,
       timeFrame: selectedTimeFrame,
@@ -172,20 +169,18 @@ exports.getAppUsageStats = async (req, res) => {
   }
 };
 
-/**
- * Get comparison between app usage and web browsing
- */
+
 exports.getAppVsWebUsage = async (req, res) => {
   try {
     const { userId, email } = req.user;
     const { timeFrame = 'daily', timeframe } = req.query;
     
-    // Support both parameter formats (camelCase and lowercase)
+    
     const selectedTimeFrame = timeFrame || timeframe || 'daily';
     
     console.log(`Fetching app vs web comparison for ${email} with timeFrame: ${selectedTimeFrame}`);
     
-    // Calculate date range based on timeFrame
+    
     const endDate = new Date();
     let startDate = new Date();
     
@@ -199,7 +194,7 @@ exports.getAppVsWebUsage = async (req, res) => {
     
     const startDateStr = startDate.toISOString().slice(0, 10);
     
-    // Find all app and tab usage for the date range
+    
     const [appUsages, tabUsages] = await Promise.all([
       AppUsage.find({
         userId,
@@ -213,15 +208,15 @@ exports.getAppVsWebUsage = async (req, res) => {
       })
     ]);
     
-    // Calculate total time spent in apps vs web
+    
     const totalAppTime = appUsages.reduce((sum, app) => sum + (app.duration || 0), 0);
     const totalTabTime = tabUsages.reduce((sum, tab) => sum + (tab.duration || 0), 0);
     const totalTime = totalAppTime + totalTabTime;
     
-    // Calculate daily distribution
+    
     const dailyDistribution = {};
     
-    // Process app usage by day
+    
     appUsages.forEach(app => {
       const date = app.date;
       if (!dailyDistribution[date]) {
@@ -231,7 +226,7 @@ exports.getAppVsWebUsage = async (req, res) => {
       dailyDistribution[date].total += app.duration || 0;
     });
     
-    // Process tab usage by day
+    
     tabUsages.forEach(tab => {
       const date = new Date(tab.timestamp).toISOString().slice(0, 10);
       if (!dailyDistribution[date]) {
@@ -241,19 +236,19 @@ exports.getAppVsWebUsage = async (req, res) => {
       dailyDistribution[date].total += tab.duration || 0;
     });
     
-    // Format the daily distribution for chart display
+    
     const formattedDailyData = Object.entries(dailyDistribution).map(([date, data]) => ({
       date,
-      appTime: Math.round(data.apps / 60), // Convert seconds to minutes
-      webTime: Math.round(data.web / 60), // Convert seconds to minutes
-      total: Math.round(data.total / 60) // Convert seconds to minutes
+      appTime: Math.round(data.apps / 60), 
+      webTime: Math.round(data.web / 60), 
+      total: Math.round(data.total / 60) 
     })).sort((a, b) => new Date(a.date) - new Date(b.date));
     
     res.json({
       timeFrame: selectedTimeFrame,
-      appTime: Math.round(totalAppTime / 60), // Convert seconds to minutes
-      webTime: Math.round(totalTabTime / 60), // Convert seconds to minutes
-      totalTime: Math.round(totalTime / 60), // Convert seconds to minutes
+      appTime: Math.round(totalAppTime / 60), 
+      webTime: Math.round(totalTabTime / 60), 
+      totalTime: Math.round(totalTime / 60), 
       appPercentage: totalTime > 0 ? Math.round((totalAppTime / totalTime) * 100) : 0,
       webPercentage: totalTime > 0 ? Math.round((totalTabTime / totalTime) * 100) : 0,
       dailyDistribution: formattedDailyData
@@ -265,39 +260,37 @@ exports.getAppVsWebUsage = async (req, res) => {
   }
 };
 
-/**
- * Get app usage trends over time
- */
+
 exports.getAppUsageTrends = async (req, res) => {
   try {
     const { userId, email } = req.user;
     const { timeFrame = 'weekly', timeframe, appName } = req.query;
     
-    // Support both parameter formats (camelCase and lowercase)
+    
     const selectedTimeFrame = timeFrame || timeframe || 'weekly';
     
     console.log(`Fetching app usage trends for ${email} with timeFrame: ${selectedTimeFrame}`);
     
-    // Calculate date range based on timeFrame
+    
     const endDate = new Date();
     let startDate = new Date();
     let groupByFormat;
     
     if (selectedTimeFrame === 'daily') {
       startDate.setHours(0, 0, 0, 0);
-      groupByFormat = '%Y-%m-%d %H:00'; // Group by hour
+      groupByFormat = '%Y-%m-%d %H:00'; 
     } else if (selectedTimeFrame === 'weekly') {
       startDate.setDate(startDate.getDate() - 7);
-      groupByFormat = '%Y-%m-%d'; // Group by day
+      groupByFormat = '%Y-%m-%d'; 
     } else if (selectedTimeFrame === 'monthly') {
       startDate.setMonth(startDate.getMonth() - 1);
-      groupByFormat = '%Y-%m-%d'; // Group by day
+      groupByFormat = '%Y-%m-%d'; 
     } else if (selectedTimeFrame === 'yearly') {
       startDate.setFullYear(startDate.getFullYear() - 1);
-      groupByFormat = '%Y-%m'; // Group by month
+      groupByFormat = '%Y-%m'; 
     }
     
-    // Build match criteria
+    
     const matchCriteria = {
       userId,
       email,
@@ -308,7 +301,7 @@ exports.getAppUsageTrends = async (req, res) => {
       matchCriteria.appName = appName;
     }
     
-    // Use aggregation to group by time period
+    
     const appUsageTrends = await AppUsage.aggregate([
       {
         $match: matchCriteria
@@ -344,23 +337,23 @@ exports.getAppUsageTrends = async (req, res) => {
       }
     ]);
     
-    // Process the trend data
+    
     const formattedTrends = appUsageTrends.map(day => {
       const date = day._id;
       
-      // Get top apps for each day
+      
       const topApps = day.apps
         .sort((a, b) => b.duration - a.duration)
         .slice(0, 5)
         .map(app => ({
           name: app.name || 'Unknown',
-          duration: Math.round(app.duration / 60), // Convert to minutes
+          duration: Math.round(app.duration / 60), 
           percentage: Math.round((app.duration / day.totalDuration) * 100)
         }));
       
       return {
         date,
-        totalDuration: Math.round(day.totalDuration / 60), // Convert to minutes
+        totalDuration: Math.round(day.totalDuration / 60), 
         topApps
       };
     });

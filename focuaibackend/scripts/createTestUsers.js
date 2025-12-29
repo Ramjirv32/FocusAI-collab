@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
-// Connect to MongoDB
+
 mongoose.connect('mongodb://localhost:27017/focusai', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -19,11 +19,11 @@ db.once('open', async () => {
 
 async function createTestUsers() {
   try {
-    // Clear existing users (optional)
-    // await User.deleteMany({});
-    // console.log('Cleared existing users');
+    
+    
+    
 
-    // Create a test user
+    
     const saltRounds = 10;
     const password = await bcrypt.hash('password123', saltRounds);
 
@@ -40,7 +40,7 @@ async function createTestUsers() {
     await testUser.save();
     console.log('Created test user: test@example.com / password123');
 
-    // Create more test users if needed
+    
     const testUser2 = new User({
       username: 'admin',
       email: 'admin@example.com',

@@ -1,13 +1,13 @@
-// Load environment variables first
+
 require('dotenv').config();
 
-// Load user configuration
+
 require('./loadConfig');
 
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-// Handle active-win for Docker compatibility
+
 let activeWindow;
 try {
   activeWindow = require('active-win');
@@ -47,13 +47,13 @@ const todoRoutes = require('./routes/todoRoutes');
 
 
 const app = express();
-const PORT = process.env.PORT || 5001; // Make sure this is 5001
+const PORT = process.env.PORT || 5001; 
 
 
-const activeUsers = new Map(); // userId -> {timestamp, email}
+const activeUsers = new Map(); 
 
 
-// Use environment variable for MongoDB connection
+
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/focusai';
 
 if (!process.env.MONGODB_URI) {
@@ -65,7 +65,7 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ MongoDB connected successfully'))
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);
-    process.exit(1); // Exit if database connection fails
+    process.exit(1); 
   });
 
 
@@ -84,7 +84,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/chat', chatRoutes);
 app.use('/api', profileRoutes);
-app.use('/api/gamification', gamificationRoutes); // Make sure this is using gamificationRoutes.js, not gamificationRoutess.js
+app.use('/api/gamification', gamificationRoutes); 
 app.use('/api/settings', settingsRoutes);
 app.use('/api', newRoutes);
 app.use('/api/app-usage', appUsageRoutes);
@@ -98,7 +98,7 @@ app.use('/api/system', systemRoutes);
 app.use('/api/todos', todoRoutes);
 
 
-// Register todo routes (this line should already be there)
+
 app.use('/api/todos', todoRoutes);
 
 
@@ -109,8 +109,8 @@ console.log('Routes registered: profileRoutes, gamificationRoutes, settingsRoute
 
 app.get('/ch', auth, async (req, res) => {
   try {
-    const email = req.user.email; // Get email from authenticated user
-    const data = await ProductivitySummary.find({ email: email }); // Use find() not findAll()
+    const email = req.user.email; 
+    const data = await ProductivitySummary.find({ email: email }); 
     res.json(data);
   } catch (error) {
     console.error('Error fetching productivity summary:', error);
@@ -144,13 +144,13 @@ app.post('/api/register', async (req, res) => {
 
     const { email, password, name } = req.body;
 
-    // Validation
+    
     if (!email || !password || !name) {
       console.log('Validation failed: missing fields');
       return res.status(400).json({ error: 'Email, password, and name are required' });
     }
 
-    // Password length validation
+    
     if (password.length < 6) {
       console.log('Validation failed: password too short');
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
@@ -421,13 +421,13 @@ app.post('/log-tab', async (req, res) => {
     });
 
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const todayStr = now.toISOString().split('T')[0]; 
 
     if (tabUsage) {
       tabUsage.duration += parseFloat(data.duration) || 0;
       tabUsage.title = data.title || tabUsage.title;
       tabUsage.domain = domain;
-      tabUsage.email = userEmail; // Ensure email is set
+      tabUsage.email = userEmail; 
       tabUsage.lastUpdated = now;
       await tabUsage.save();
       console.log(`Updated tab record for ${domain}: total duration ${tabUsage.duration}s`);
@@ -495,7 +495,7 @@ let startTime = Date.now();
 async function getActiveWindowTitle() {
   try {
     if (!activeWindow) {
-      // Return mock data for Docker environment
+      
       return {
         title: 'FocusAI Web App',
         app: 'Browser',
@@ -676,7 +676,7 @@ app.get('/raw-usage', auth, async (req, res) => {
     console.log('User requesting raw usage data:', req.user.email);
     const { timeFrame } = req.query;
 
-    // Calculate the correct date range based on timeFrame
+    
     const today = new Date();
     const endDate = new Date(today);
     endDate.setHours(23, 59, 59, 999);
@@ -738,7 +738,7 @@ app.get('/raw-usage', auth, async (req, res) => {
   }
 });
 
-// Redundant reset-data removed. Use /api/settings/reset-data instead.
+
 
 app.post('/api/heartbeat', auth, (req, res) => {
   activeUsers.set(req.user._id.toString(), {
@@ -801,7 +801,7 @@ app.get('/api/leaderboard', auth, async (req, res) => {
   try {
     const { timeFrame = 'weekly', limit = 10 } = req.query;
 
-    // Calculate date range based on timeFrame
+    
     const endDate = new Date();
     let startDate = new Date();
 
@@ -818,7 +818,7 @@ app.get('/api/leaderboard', auth, async (req, res) => {
 
     console.log(`📊 Fetching leaderboard for ${timeFrame} (${startDateStr} to ${endDateStr})`);
 
-    // Aggregate productivity data by user
+    
     const leaderboardData = await ProductivitySummary.aggregate([
       {
         $match: {
@@ -934,7 +934,7 @@ app.get('/api/user-stats', auth, async (req, res) => {
       streak: calculateCurrentStreak(userSummaries)
     };
 
-    // Get top apps
+    
     const allApps = new Map();
     const allNonProductiveApps = new Map();
 
@@ -961,14 +961,14 @@ app.get('/api/user-stats', auth, async (req, res) => {
       .slice(0, 5)
       .map(([app, time]) => ({ app: app.replace(/_/g, '.'), time: Math.round(time / 60) }));
 
-    // Calculate achievements and level
+    
     const experiencePoints = Math.round(stats.avgFocusScore * 10 + stats.totalDays * 50 + stats.streak * 25);
     const level = Math.floor(experiencePoints / 500) + 1;
     const xpToNextLevel = (level * 500) - experiencePoints;
 
     const achievements = calculateAchievements(stats, userSummaries);
 
-    // Get user rank in leaderboard
+    
     const userRank = await getUserRankInLeaderboard(userId, timeFrame);
 
     const formattedStats = {
@@ -1005,11 +1005,11 @@ app.get('/api/user-stats', auth, async (req, res) => {
   }
 });
 
-// Helper function to calculate current streak
+
 function calculateCurrentStreak(summaries) {
   if (summaries.length === 0) return 0;
 
-  // Sort by date descending
+  
   const sortedSummaries = summaries.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   let streak = 0;
@@ -1017,9 +1017,9 @@ function calculateCurrentStreak(summaries) {
   let checkDate = today;
 
   for (const summary of sortedSummaries) {
-    if (summary.date === checkDate && summary.focusScore >= 30) { // Minimum score for streak
+    if (summary.date === checkDate && summary.focusScore >= 30) { 
       streak++;
-      // Move to previous day
+      
       const prevDate = new Date(checkDate);
       prevDate.setDate(prevDate.getDate() - 1);
       checkDate = prevDate.toISOString().slice(0, 10);
@@ -1031,11 +1031,11 @@ function calculateCurrentStreak(summaries) {
   return streak;
 }
 
-// Helper function to calculate achievements
+
 function calculateAchievements(stats, summaries) {
   const achievements = [];
 
-  // Focus Master Achievement
+  
   if (stats.avgFocusScore >= 85) {
     achievements.push({
       id: 'focus_master',
@@ -1047,7 +1047,7 @@ function calculateAchievements(stats, summaries) {
     });
   }
 
-  // Consistency Champion
+  
   if (stats.streak >= 7) {
     achievements.push({
       id: 'consistency_champion',
@@ -1059,8 +1059,8 @@ function calculateAchievements(stats, summaries) {
     });
   }
 
-  // Productivity Wizard
-  if (stats.totalProductiveTime >= 144000) { // 40+ hours
+  
+  if (stats.totalProductiveTime >= 144000) { 
     achievements.push({
       id: 'productivity_wizard',
       name: 'Productivity Wizard',
@@ -1071,7 +1071,7 @@ function calculateAchievements(stats, summaries) {
     });
   }
 
-  // Early Bird (placeholder - would need time tracking)
+  
   if (summaries.length >= 5) {
     achievements.push({
       id: 'dedicated_user',
@@ -1086,7 +1086,7 @@ function calculateAchievements(stats, summaries) {
   return achievements;
 }
 
-// Helper function to get user rank in leaderboard
+
 async function getUserRankInLeaderboard(userId, timeFrame = 'weekly') {
   try {
     const endDate = new Date();
@@ -1130,20 +1130,20 @@ async function getUserRankInLeaderboard(userId, timeFrame = 'weekly') {
   }
 }
 
-// ========== ALERT ENDPOINTS ==========
 
-// ========== PRODUCTIVITY SUMMARY ENDPOINTS ==========
 
-// Helper function to classify apps as productive or non-productive
+
+
+
 const classifyApp = (nameOrUrl) => {
   const inputLower = (nameOrUrl || '').toLowerCase();
 
-  // Rule 1: Direct matches for our own apps or high-confidence productive keywords
+  
   if (inputLower.includes('ai') || inputLower.includes('antigravity') || inputLower.includes('focus') || inputLower.includes('focuai') || inputLower.includes('cursor')) {
     return 'productive';
   }
 
-  // Rule 2: Development and productivity tools
+  
   const productiveApps = [
     'code', 'vscode', 'visual studio', 'terminal', 'gnome-terminal', 'powershell', 'cmd',
     'iterm', 'konsole', 'xterm', 'mysql', 'postman', 'slack', 'eclipse', 'intellij',
@@ -1153,7 +1153,7 @@ const classifyApp = (nameOrUrl) => {
     'bitbucket', 'stackoverflow', 'dev.to', 'medium', 'w3schools', 'mdn'
   ];
 
-  // Rule 3: Known distractions
+  
   const nonProductiveApps = [
     'netflix', 'spotify', 'youtube', 'twitter', 'instagram', 'facebook',
     'tiktok', 'reddit', 'gaming', 'steam', 'discord', 'whatsapp',
@@ -1166,7 +1166,7 @@ const classifyApp = (nameOrUrl) => {
     return 'non-productive';
   }
 
-  // Rule 4: Browsers - generally productive as they are tools, though specific sites might not be
+  
   const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi'];
   if (browsers.some(b => inputLower.includes(b))) {
     return 'productive';
@@ -1175,7 +1175,7 @@ const classifyApp = (nameOrUrl) => {
   return 'neutral';
 };
 
-// Create or update productivity summary
+
 app.post('/api/productivity-summary', auth, async (req, res) => {
   try {
     const { date, appUsageData, tabUsageData } = req.body;
@@ -1183,7 +1183,7 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
 
     console.log(`📊 Updating productivity summary for ${req.user.email} on ${currentDate}`);
 
-    // Find existing summary or create new one
+    
     let summary = await ProductivitySummary.findOne({
       userId: req.user._id,
       email: req.user.email,
@@ -1198,7 +1198,7 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
       });
     }
 
-    // Process app usage data
+    
     const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi', 'google-chrome'];
     if (appUsageData && Array.isArray(appUsageData)) {
       for (const app of appUsageData) {
@@ -1215,18 +1215,18 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
       }
     }
 
-    // Process tab usage data
+    
     if (tabUsageData && Array.isArray(tabUsageData)) {
       for (const tab of tabUsageData) {
         const domain = tab.domain || tab.title || 'Browser';
         const duration = parseInt(tab.duration) || 0;
 
         if (duration > 0) {
-          // Classify based on domain
+          
           const classification = classifyApp(domain);
           summary.updateProductivityData(`Browser - ${domain}`, duration, classification === 'productive');
 
-          // Update most visited tab
+          
           if (!summary.mostVisitedTab || duration > (summary.nonProductiveContent.get(summary.mostVisitedTab) || 0)) {
             summary.mostVisitedTab = domain;
           }
@@ -1261,11 +1261,16 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
   }
 });
 
-// Internal endpoint for AI server to update productivity summary (no auth required)
-// This endpoint is called by the AI server after analyzing user data
+
+
 app.post('/api/internal/productivity-summary', async (req, res) => {
   try {
-    const { userId, email, date, appUsageData, tabUsageData } = req.body;
+    const {
+      userId, email, date,
+      productiveContent, nonProductiveContent, neutralContent,
+      totalProductiveTime, totalNonProductiveTime, totalNeutralTime,
+      overallTotalUsage, focusScore, mostUsedApp, maxProductiveApp
+    } = req.body;
 
     if (!userId || !email) {
       return res.status(400).json({ error: 'userId and email are required' });
@@ -1275,7 +1280,7 @@ app.post('/api/internal/productivity-summary', async (req, res) => {
 
     console.log(`📊 [AI Server] Updating productivity summary for ${email} on ${currentDate}`);
 
-    // Find existing summary or create new one
+    
     let summary = await ProductivitySummary.findOne({
       userId: new mongoose.Types.ObjectId(userId),
       email: email,
@@ -1290,35 +1295,67 @@ app.post('/api/internal/productivity-summary', async (req, res) => {
       });
     }
 
-    // Process app usage data
-    const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi', 'google-chrome'];
-    if (appUsageData && Array.isArray(appUsageData)) {
-      for (const app of appUsageData) {
-        const appName = app.appName || app.name || 'Unknown';
-        const duration = parseInt(app.duration) || 0;
+    
+    if (productiveContent || nonProductiveContent) {
+      console.log('✅ [AI Server] Using pre-processed content maps');
 
-        const appLower = appName.toLowerCase();
-        const isBrowser = browsers.some(b => appLower.includes(b));
-
-        if (duration > 0 && !isBrowser) {
-          const classification = classifyApp(appName);
-          summary.updateProductivityData(appName, duration, classification === 'productive');
+      if (productiveContent) {
+        summary.productiveContent = new Map();
+        for (const [app, time] of Object.entries(productiveContent)) {
+          const sanitized = app.replace(/\./g, '_');
+          summary.productiveContent.set(sanitized, time);
         }
       }
-    }
 
-    // Process tab usage data
-    if (tabUsageData && Array.isArray(tabUsageData)) {
-      for (const tab of tabUsageData) {
-        const domain = tab.domain || tab.title || 'Browser';
-        const duration = parseInt(tab.duration) || 0;
+      if (nonProductiveContent) {
+        summary.nonProductiveContent = new Map();
+        for (const [app, time] of Object.entries(nonProductiveContent)) {
+          const sanitized = app.replace(/\./g, '_');
+          summary.nonProductiveContent.set(sanitized, time);
+        }
+      }
 
-        if (duration > 0) {
-          const classification = classifyApp(domain);
-          summary.updateProductivityData(`Browser - ${domain}`, duration, classification === 'productive');
+      
+      if (neutralContent) {
+        
+        
+        summary.neutralContent = neutralContent; 
+      }
 
-          if (!summary.mostVisitedTab || duration > (summary.nonProductiveContent.get(summary.mostVisitedTab) || 0)) {
-            summary.mostVisitedTab = domain;
+      if (totalProductiveTime !== undefined) summary.totalProductiveTime = totalProductiveTime;
+      if (totalNonProductiveTime !== undefined) summary.totalNonProductiveTime = totalNonProductiveTime;
+      if (overallTotalUsage !== undefined) summary.overallTotalUsage = overallTotalUsage;
+      if (focusScore !== undefined) summary.focusScore = focusScore;
+      if (mostUsedApp !== undefined) summary.mostUsedApp = mostUsedApp;
+      if (maxProductiveApp !== undefined) summary.maxProductiveApp = maxProductiveApp;
+
+    } else {
+      
+      const { appUsageData, tabUsageData } = req.body;
+
+      
+      const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi', 'google-chrome'];
+      if (appUsageData && Array.isArray(appUsageData)) {
+        for (const app of appUsageData) {
+          const appName = app.appName || app.name || 'Unknown';
+          const duration = parseInt(app.duration) || 0;
+          const appLower = appName.toLowerCase();
+          const isBrowser = browsers.some(b => appLower.includes(b));
+          if (duration > 0 && !isBrowser) {
+            const classification = classifyApp(appName);
+            summary.updateProductivityData(appName, duration, classification === 'productive');
+          }
+        }
+      }
+
+      
+      if (tabUsageData && Array.isArray(tabUsageData)) {
+        for (const tab of tabUsageData) {
+          const domain = tab.domain || tab.url || tab.title || 'Browser';
+          const duration = parseInt(tab.duration) || 0;
+          if (duration > 0) {
+            const classification = classifyApp(domain);
+            summary.updateProductivityData(`Browser - ${domain}`, duration, classification === 'productive');
           }
         }
       }
@@ -1355,7 +1392,7 @@ app.post('/api/internal/productivity-summary', async (req, res) => {
 
 
 
-// Get productivity summary for a user
+
 app.get('/api/productivity-summary', auth, async (req, res) => {
   try {
     const { date, timeFrame } = req.query;
@@ -1380,7 +1417,7 @@ app.get('/api/productivity-summary', auth, async (req, res) => {
     }).sort({ date: -1 });
 
     if (summaries.length === 0) {
-      // Create a default summary with current app/tab data
+      
       const appUsage = await AppUsage.find({
         userId: req.user._id,
         email: req.user.email,
@@ -1393,7 +1430,7 @@ app.get('/api/productivity-summary', auth, async (req, res) => {
         date: currentDate
       });
 
-      // Auto-generate summary from existing data
+      
       if (appUsage.length > 0 || tabUsage.length > 0) {
         const summary = new ProductivitySummary({
           userId: req.user._id,
@@ -1401,13 +1438,13 @@ app.get('/api/productivity-summary', auth, async (req, res) => {
           date: currentDate
         });
 
-        // Process existing app usage
+        
         for (const app of appUsage) {
           const classification = classifyApp(app.appName);
           summary.updateProductivityData(app.appName, app.duration, classification === 'productive');
         }
 
-        // Process existing tab usage
+        
         for (const tab of tabUsage) {
           const domain = tab.domain || tab.title || 'Browser';
           const classification = classifyApp(domain);
@@ -1448,7 +1485,7 @@ app.get('/api/productivity-summary', auth, async (req, res) => {
   }
 });
 
-// Update the window tracking interval to track both app usage and browser tabs
+
 setInterval(async () => {
   try {
     const windowInfo = await getActiveWindowTitle();
@@ -1460,13 +1497,13 @@ setInterval(async () => {
 
         const appName = lastWindow.app;
 
-        // Find the most recently active user
+        
         let activeUserId = null;
         let activeUserEmail = null;
         let mostRecentTime = 0;
 
         for (const [userId, data] of activeUsers.entries()) {
-          if (data.timestamp > mostRecentTime && Date.now() - data.timestamp < 5 * 60 * 1000) { // Active in last 5 minutes
+          if (data.timestamp > mostRecentTime && Date.now() - data.timestamp < 5 * 60 * 1000) { 
             mostRecentTime = data.timestamp;
             activeUserId = userId;
             activeUserEmail = data.email;
@@ -1474,9 +1511,9 @@ setInterval(async () => {
         }
 
         if (activeUserId && activeUserEmail) {
-          // Update app usage in database
+          
           try {
-            // Find existing app usage record or create new one
+            
             let appUsage = await AppUsage.findOne({
               userId: activeUserId,
               email: activeUserEmail,
@@ -1485,12 +1522,12 @@ setInterval(async () => {
             });
 
             if (appUsage) {
-              // Update existing record
+              
               appUsage.duration += duration;
               appUsage.lastUpdated = new Date();
               await appUsage.save();
             } else {
-              // Create new record
+              
               appUsage = new AppUsage({
                 userId: activeUserId,
                 email: activeUserEmail,
@@ -1502,17 +1539,17 @@ setInterval(async () => {
               await appUsage.save();
             }
 
-            // Auto-update productivity summary after app usage is recorded
+            
             await updateProductivitySummaryForUser(activeUserId, activeUserEmail, today);
 
-            // DETECT AND TRACK BROWSER TABS
-            // Check if this is a browser app
+            
+            
             const browsers = ['Google-chrome', 'firefox_firefox', 'Firefox', 'Safari', 'Edge', 'Opera'];
             if (browsers.includes(appName) && lastWindow.title) {
-              // Extract the tab name from the title (usually format is "Website - Browser")
+              
               let tabName = lastWindow.title;
 
-              // Remove browser name from the end if present
+              
               browsers.forEach(browser => {
                 if (tabName.endsWith(` - ${browser}`)) {
                   tabName = tabName.replace(` - ${browser}`, '');
@@ -1522,14 +1559,14 @@ setInterval(async () => {
                 }
               });
 
-              // Check for common browser title patterns and extract the website name
+              
               const titleParts = tabName.split(' - ');
               if (titleParts.length > 1) {
-                // Usually the website name is the first or last part
+                
                 tabName = titleParts[0].trim();
               }
 
-              // Find existing tab record or create a new one
+              
               let tabUsage = await TabUsage.findOne({
                 userId: activeUserId,
                 email: activeUserEmail,
@@ -1538,19 +1575,19 @@ setInterval(async () => {
               });
 
               if (tabUsage) {
-                // Update existing tab record
+                
                 tabUsage.duration += duration;
                 tabUsage.lastUpdated = new Date();
                 await tabUsage.save();
                 console.log(`Updated tab record: ${tabName} for ${activeUserEmail}, total: ${tabUsage.duration}s`);
               } else {
-                // Create new tab record with simplified data
+                
                 tabUsage = new TabUsage({
                   userId: activeUserId,
                   email: activeUserEmail,
                   date: today,
                   title: tabName,
-                  domain: tabName.toLowerCase(), // Just use the tab name as the domain for simplicity
+                  domain: tabName.toLowerCase(), 
                   duration: duration,
                   lastUpdated: new Date()
                 });
@@ -1562,7 +1599,7 @@ setInterval(async () => {
             console.error('Database error when tracking usage:', dbError);
           }
 
-          // Add to current session data (in memory)
+          
           currentSessionData.push({
             userId: activeUserId.toString(),
             email: activeUserEmail,
@@ -1591,23 +1628,23 @@ setInterval(async () => {
   }
 }, 1000);
 
-// Helper function to update productivity summary
+
 async function updateProductivitySummaryForUser(userId, email, date) {
   try {
-    // Get all app usage for the user on this date
+    
     const appUsage = await AppUsage.find({ userId, email, date });
     const tabUsage = await TabUsage.find({ userId, email, date });
 
     if (appUsage.length === 0 && tabUsage.length === 0) return;
 
-    // Find or create productivity summary
+    
     let summary = await ProductivitySummary.findOne({ userId, email, date });
 
     if (!summary) {
       summary = new ProductivitySummary({ userId, email, date });
     }
 
-    // Reset the summary to recalculate from scratch
+    
     summary.productiveContent.clear();
     summary.nonProductiveContent.clear();
     summary.distractionApps.clear();
@@ -1615,14 +1652,14 @@ async function updateProductivitySummaryForUser(userId, email, date) {
     summary.totalNonProductiveTime = 0;
     summary.overallTotalUsage = 0;
 
-    // Process app usage (skipping browsers to avoid double counting with tabs)
+    
     const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi', 'google-chrome'];
     for (const app of appUsage) {
       const appLower = app.appName.toLowerCase();
       const isBrowser = browsers.some(b => appLower.includes(b));
 
-      // If it's a browser, we'll rely on tabUsage for more accurate productivity tracking
-      // Otherwise, we'll count the app
+      
+      
       if (!isBrowser) {
         const classification = classifyApp(app.appName);
         summary.updateProductivityData(app.appName, app.duration, classification === 'productive');
@@ -1631,15 +1668,15 @@ async function updateProductivitySummaryForUser(userId, email, date) {
       }
     }
 
-    // Process tab usage
+    
     for (const tab of tabUsage) {
       const domain = tab.domain || tab.title || 'Browser';
-      // Use full URL or title for better classification context
+      
       const context = tab.url || tab.title || domain;
       const classification = classifyApp(context);
       summary.updateProductivityData(`Browser - ${domain}`, tab.duration, classification === 'productive');
 
-      // Update most visited tab
+      
       if (!summary.mostVisitedTab || tab.duration > (summary.nonProductiveContent.get(summary.mostVisitedTab) || 0)) {
         summary.mostVisitedTab = domain;
       }
@@ -1654,16 +1691,16 @@ async function updateProductivitySummaryForUser(userId, email, date) {
 }
 
 
-// POST /api/alerts/check - Main alert checking route
+
 app.post('/api/alerts/check', auth, async (req, res) => {
   try {
     const { focusScore } = req.body;
-    const userId = req.user._id || req.user.id; // Handle both possible formats
+    const userId = req.user._id || req.user.id; 
     const date = new Date().toISOString().slice(0, 10);
 
     console.log(`🔍 Checking alerts for user ${userId} with focus score ${focusScore} on ${date}`);
 
-    // Validate input
+    
     if (typeof focusScore !== 'number' || focusScore < 0 || focusScore > 100) {
       return res.status(400).json({
         success: false,
@@ -1671,13 +1708,13 @@ app.post('/api/alerts/check', auth, async (req, res) => {
       });
     }
 
-    // Find existing alert document for today
+    
     let alertDoc = await Alert.findOne({
       userId: new mongoose.Types.ObjectId(userId),
       date
     });
 
-    // Create new alert document if none exists for today
+    
     if (!alertDoc) {
       console.log('📝 Creating new alert document');
       alertDoc = new Alert({
@@ -1689,7 +1726,7 @@ app.post('/api/alerts/check', auth, async (req, res) => {
         lastTriggered: new Date()
       });
     } else {
-      // Update focus score
+      
       alertDoc.focusScore = focusScore;
       alertDoc.lastTriggered = new Date();
     }
@@ -1699,7 +1736,7 @@ app.post('/api/alerts/check', auth, async (req, res) => {
     let alertType = '';
     let suggestions = [];
 
-    // Check for 20% threshold (critical alert)
+    
     if (focusScore <= 20 && !alertDoc.is20) {
       console.log('🚨 Triggering critical alert (20%)');
       alertDoc.is20 = true;
@@ -1714,7 +1751,7 @@ app.post('/api/alerts/check', auth, async (req, res) => {
         'Move to a quieter workspace if possible'
       ];
     }
-    // Check for 50% threshold (warning alert)
+    
     else if (focusScore <= 50 && !alertDoc.is50) {
       console.log('⚠️ Triggering warning alert (50%)');
       alertDoc.is50 = true;
@@ -1729,23 +1766,23 @@ app.post('/api/alerts/check', auth, async (req, res) => {
         'Take a short walk to clear your mind'
       ];
     }
-    // No alert needed or already shown today
+    
     else if (focusScore > 50) {
       console.log('✅ No alert needed - focus score is good');
     } else {
       console.log('ℹ️ Alert already shown today for this threshold');
     }
 
-    // Save the alert document
+    
     try {
       await alertDoc.save();
       console.log('💾 Alert document saved successfully');
     } catch (saveError) {
       console.error('❌ Error saving alert document:', saveError);
-      // Continue execution even if save fails
+      
     }
 
-    // Return response
+    
     const response = {
       success: true,
       showAlert,
@@ -1773,7 +1810,7 @@ app.post('/api/alerts/check', auth, async (req, res) => {
 });
 
 try {
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)); // Changed from 5001 to PORT
+  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)); 
 } catch (error) {
   console.error('Failed to start server:', error);
 }

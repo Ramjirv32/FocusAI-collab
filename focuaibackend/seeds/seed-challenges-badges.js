@@ -5,7 +5,7 @@ const Challenge = require('../models/Challenge');
 const Gamification = require('../models/Gamification');
 require('dotenv').config();
 
-// Challenge definitions with detailed metadata
+
 const CHALLENGES = [
   {
     title: 'Focus Master',
@@ -46,7 +46,7 @@ const CHALLENGES = [
     category: 'distraction',
     isActive: true,
     startDate: new Date(),
-    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
     icon: 'Zap'
   },
   {
@@ -60,7 +60,7 @@ const CHALLENGES = [
     category: 'time',
     isActive: true,
     startDate: new Date(),
-    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 
     icon: 'Clock'
   },
   {
@@ -74,7 +74,7 @@ const CHALLENGES = [
     category: 'focus',
     isActive: true,
     startDate: new Date(),
-    endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
+    endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), 
     icon: 'BookOpen'
   },
   {
@@ -88,7 +88,7 @@ const CHALLENGES = [
     category: 'consistency',
     isActive: true,
     startDate: new Date(),
-    endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
+    endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), 
     icon: 'Calendar'
   },
   {
@@ -102,7 +102,7 @@ const CHALLENGES = [
     category: 'time',
     isActive: true,
     startDate: new Date(),
-    endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+    endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), 
     icon: 'Moon'
   }
 ];
@@ -118,10 +118,10 @@ mongoose.connect('mongodb+srv://ramji:vikas2311@cluster0.ln4g5.mongodb.net/focua
 
 async function seedChallenges() {
   try {
-    // Delete existing challenges
+    
     await Challenge.deleteMany({});
     
-    // Create new challenges
+    
     const challenges = await Challenge.insertMany(CHALLENGES);
     
     console.log(`Created ${challenges.length} challenges`);
@@ -132,7 +132,7 @@ async function seedChallenges() {
   }
 }
 
-// Function to assign challenges to a user
+
 async function assignChallenges(email, challenges) {
   try {
     if (!email) {
@@ -140,14 +140,14 @@ async function assignChallenges(email, challenges) {
       return;
     }
     
-    // Find user by email
+    
     const user = await User.findOne({ email });
     if (!user) {
       console.log(`User with email ${email} not found`);
       return;
     }
     
-    // Find or create gamification data for user
+    
     let gamification = await Gamification.findOne({ userId: user._id });
     if (!gamification) {
       gamification = new Gamification({
@@ -161,9 +161,9 @@ async function assignChallenges(email, challenges) {
       });
     }
     
-    // Add user to each challenge's userProgress
+    
     for (const challenge of challenges) {
-      // Check if user is already in the challenge
+      
       const userInProgress = challenge.userProgress.some(p => p.email === email);
       
       if (!userInProgress) {
@@ -184,12 +184,12 @@ async function assignChallenges(email, challenges) {
   }
 }
 
-// Main function
+
 async function main() {
   try {
     const challenges = await seedChallenges();
     
-    // Check if email is provided as command line argument
+    
     const userEmail = process.argv[2];
     if (userEmail) {
       await assignChallenges(userEmail, challenges);
@@ -203,5 +203,5 @@ async function main() {
   }
 }
 
-// Run the script
+
 main();

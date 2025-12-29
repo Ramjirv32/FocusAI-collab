@@ -6,10 +6,10 @@ const os = require('os');
 
 const CONFIG_PATH = path.join(os.homedir(), '.focusia', 'config.json');
 
-// Middleware to check authentication
+
 const auth = require('../middleware/auth');
 
-// Models
+
 const ProductivitySummary = require('../models/ProductivitySummary');
 const AppUsage = require('../models/AppUsage');
 const TabUsage = require('../models/TabUsage');
@@ -22,8 +22,8 @@ const Notification = require('../models/Notification');
 const FocusSession = require('../models/FocusSession');
 const FocusResult = require('../models/FocusResult');
 
-// Get current Groq API key
-// Get current AI configuration
+
+
 router.get('/ai-config', auth, async (req, res) => {
   try {
     let config = {};
@@ -31,7 +31,7 @@ router.get('/ai-config', auth, async (req, res) => {
       const configData = await fs.readFile(CONFIG_PATH, 'utf8');
       config = JSON.parse(configData);
     } catch (error) {
-      // Fallback to environment variables
+      
     }
 
     res.json({
@@ -46,12 +46,12 @@ router.get('/ai-config', auth, async (req, res) => {
   }
 });
 
-// Update AI configuration
+
 router.put('/ai-config', auth, async (req, res) => {
   try {
     const { provider, groqKey, ollamaModel, ollamaUrl } = req.body;
 
-    // Ensure config directory exists
+    
     const configDir = path.dirname(CONFIG_PATH);
     try {
       await fs.access(configDir);
@@ -59,14 +59,14 @@ router.put('/ai-config', auth, async (req, res) => {
       await fs.mkdir(configDir, { recursive: true });
     }
 
-    // Read existing config or create new one
+    
     let config = {};
     try {
       const configData = await fs.readFile(CONFIG_PATH, 'utf8');
       config = JSON.parse(configData);
     } catch (error) { }
 
-    // Update fields if provided
+    
     if (provider) config.AI_PROVIDER = provider;
     if (groqKey) {
       config.GROQ_API_KEY = groqKey;
@@ -75,10 +75,10 @@ router.put('/ai-config', auth, async (req, res) => {
     if (ollamaModel) config.OLLAMA_MODEL = ollamaModel;
     if (ollamaUrl) config.OLLAMA_URL = ollamaUrl;
 
-    // Write config file
+    
     await fs.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
 
-    // Update .env files
+    
     const envFiles = [
       path.join(__dirname, '../.env'),
       path.join(__dirname, '../../Frontend/.env'),
@@ -102,7 +102,7 @@ router.put('/ai-config', auth, async (req, res) => {
         const lines = envContent.split('\n');
 
         for (const [key, value] of Object.entries(updates)) {
-          // Use empty string if value is null/undefined to effectively clear it
+          
           const valToSet = value === undefined || value === null ? '' : value;
 
           let found = false;
@@ -130,7 +130,7 @@ router.put('/ai-config', auth, async (req, res) => {
       }
     }
 
-    // Attempt automatic restart based on platform
+    
     const { exec } = require('child_process');
     const util = require('util');
     const execPromise = util.promisify(exec);
@@ -171,7 +171,7 @@ router.put('/ai-config', auth, async (req, res) => {
   }
 });
 
-// List available Ollama models
+
 router.get('/ollama-models', auth, async (req, res) => {
   try {
     const aiProvider = require('../utils/aiProvider');
@@ -185,7 +185,7 @@ router.get('/ollama-models', auth, async (req, res) => {
 
 router.get('/groq-api-key', auth, async (req, res) => {
   try {
-    // Try to read from config file
+    
     try {
       const configData = await fs.readFile(CONFIG_PATH, 'utf8');
       const config = JSON.parse(configData);
@@ -194,7 +194,7 @@ router.get('/groq-api-key', auth, async (req, res) => {
         apiKey: config.GROQ_API_KEY || process.env.GROQ_API_KEY || ''
       });
     } catch (error) {
-      // If config file doesn't exist, return from env
+      
       res.json({
         apiKey: process.env.GROQ_API_KEY || ''
       });
@@ -205,7 +205,7 @@ router.get('/groq-api-key', auth, async (req, res) => {
   }
 });
 
-// Test Groq API key
+
 router.post('/test-groq-api-key', auth, async (req, res) => {
   try {
     const { apiKey } = req.body;
@@ -214,12 +214,12 @@ router.post('/test-groq-api-key', auth, async (req, res) => {
       return res.status(400).json({ error: 'API key is required' });
     }
 
-    // Test the API key by making a simple request to Groq
+    
     const Groq = require('groq-sdk');
     const groq = new Groq({ apiKey });
 
     try {
-      // Make a minimal test request
+      
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: 'user', content: 'test' }],
         model: 'llama-3.3-70b-versatile',
@@ -250,7 +250,7 @@ router.post('/test-groq-api-key', auth, async (req, res) => {
   }
 });
 
-// Update Groq API key
+
 router.put('/groq-api-key', auth, async (req, res) => {
   try {
     const { apiKey } = req.body;
@@ -259,7 +259,7 @@ router.put('/groq-api-key', auth, async (req, res) => {
       return res.status(400).json({ error: 'API key is required' });
     }
 
-    // Ensure config directory exists
+    
     const configDir = path.dirname(CONFIG_PATH);
     try {
       await fs.access(configDir);
@@ -267,26 +267,26 @@ router.put('/groq-api-key', auth, async (req, res) => {
       await fs.mkdir(configDir, { recursive: true });
     }
 
-    // Read existing config or create new one
+    
     let config = {};
     try {
       const configData = await fs.readFile(CONFIG_PATH, 'utf8');
       config = JSON.parse(configData);
     } catch (error) {
-      // Config file doesn't exist, will create new one
+      
     }
 
-    // Update API key
+    
     config.GROQ_API_KEY = apiKey;
 
-    // Write config file
+    
     await fs.writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf8');
 
-    // Update environment variable for current process IMMEDIATELY
+    
     process.env.GROQ_API_KEY = apiKey;
     process.env.VITE_GROQ_API_KEY = apiKey;
 
-    // Update .env files
+    
     const envFiles = [
       path.join(__dirname, '../.env'),
       path.join(__dirname, '../../Frontend/.env'),
@@ -299,10 +299,10 @@ router.put('/groq-api-key', auth, async (req, res) => {
         try {
           envContent = await fs.readFile(envFile, 'utf8');
         } catch {
-          // File doesn't exist, will create new one
+          
         }
 
-        // Update or add GROQ_API_KEY and VITE_GROQ_API_KEY
+        
         const lines = envContent.split('\n');
         let foundGroq = false;
         let foundVite = false;
@@ -330,7 +330,7 @@ router.put('/groq-api-key', auth, async (req, res) => {
       }
     }
 
-    // Restart services to pick up new API key
+    
     const { exec } = require('child_process');
     const util = require('util');
     const execPromise = util.promisify(exec);
@@ -341,27 +341,27 @@ router.put('/groq-api-key', auth, async (req, res) => {
 
     try {
       if (platform === 'win32') {
-        // Windows: Automatically restart services (no sudo needed)
+        
         console.log('Windows detected - attempting automatic restart...');
 
         try {
-          // Kill existing Node.js and Python processes
+          
           await execPromise('taskkill /F /IM node.exe /T').catch(() => { });
           await execPromise('taskkill /F /IM python.exe /T').catch(() => { });
 
-          // Wait a moment for processes to terminate
+          
           await new Promise(resolve => setTimeout(resolve, 2000));
 
-          // Restart services
+          
           const backendPath = path.join(__dirname, '..');
           const aiPath = path.join(__dirname, '../../ai');
 
-          // Start backend
+          
           exec(`cd "${backendPath}" && start /B node server.js`, (error) => {
             if (error) console.error('Error starting backend:', error);
           });
 
-          // Start AI service
+          
           exec(`cd "${aiPath}" && start /B venv\\Scripts\\activate && python main.py`, (error) => {
             if (error) console.error('Error starting AI:', error);
           });
@@ -373,14 +373,14 @@ router.put('/groq-api-key', auth, async (req, res) => {
           restartMessage = 'API key updated! Please restart FocusAI manually.';
         }
       } else {
-        // Linux/Mac: Check if running as systemd service
+        
         try {
           await execPromise('systemctl is-active focusai-backend.service').catch(() => null);
-          // Running as systemd service - user needs to restart manually (requires sudo)
+          
           restartMessage = 'API key updated! Please restart services: sudo systemctl restart focusai-backend focusai-ai';
           console.log('Linux/systemd detected - manual restart required');
         } catch {
-          // Not running as systemd - might be development mode
+          
           restartMessage = 'API key updated! Please restart the backend and AI services manually.';
           console.log('Development mode detected - manual restart required');
         }
@@ -402,20 +402,20 @@ router.put('/groq-api-key', auth, async (req, res) => {
   }
 });
 
-// Export productivity summaries as JSON
+
 router.get('/export-data', auth, async (req, res) => {
   try {
     const userId = req.user._id;
     console.log(`Starting data export for user: ${userId}`);
 
-    // Fetch all productivity summaries for the user
+    
     const summaries = await ProductivitySummary.find({ userId: userId }).lean();
 
     if (!summaries || summaries.length === 0) {
-      return res.status(200).json([]); // Return empty array if no data
+      return res.status(200).json([]); 
     }
 
-    // Set headers for file download
+    
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename=productivity-summaries-${new Date().toISOString().split('T')[0]}.json`);
 
@@ -426,7 +426,7 @@ router.get('/export-data', auth, async (req, res) => {
   }
 });
 
-// Purge all user activity data except user collection
+
 router.post('/reset-data', auth, async (req, res) => {
   try {
     const userId = req.user._id;
@@ -435,7 +435,7 @@ router.post('/reset-data', auth, async (req, res) => {
 
     console.log(`Purging all activity data for user: ${email} (${userId}), type: ${type}`);
 
-    // Irreversibly delete data from all activity-related collections
+    
     const results = await Promise.all([
       AppUsage.deleteMany({ userId }),
       TabUsage.deleteMany({ userId }),
@@ -449,7 +449,7 @@ router.post('/reset-data', auth, async (req, res) => {
       FocusResult.deleteMany({ userId })
     ]);
 
-    // Reset UserProfile stats but keep the profile itself
+    
     await UserProfile.findOneAndUpdate(
       { userId },
       {
@@ -482,12 +482,12 @@ router.post('/reset-data', auth, async (req, res) => {
   }
 });
 
-// Export data endpoint
+
 router.get('/export-data', auth, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Fetch all relevant data from collections
+    
     const [
       productivitySummaries,
       appUsage,
@@ -510,7 +510,7 @@ router.get('/export-data', auth, async (req, res) => {
       Alert.find({ userId })
     ]);
 
-    // Compile all data into a single JSON object
+    
     const exportData = {
       exportDate: new Date().toISOString(),
       user: {
@@ -540,7 +540,7 @@ router.get('/export-data', auth, async (req, res) => {
       }
     };
 
-    // Send as JSON with proper headers
+    
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename="focusai-export-${new Date().toISOString().split('T')[0]}.json"`);
     res.send(JSON.stringify(exportData, null, 2));
@@ -551,14 +551,14 @@ router.get('/export-data', auth, async (req, res) => {
   }
 });
 
-// Reset/Purge data endpoint
+
 router.post('/reset-data', auth, async (req, res) => {
   try {
     const userId = req.user._id;
     const { type } = req.body;
 
     if (type === 'usage') {
-      // Delete all usage-related data
+      
       const results = await Promise.all([
         AppUsage.deleteMany({ userId }),
         TabUsage.deleteMany({ userId }),
@@ -572,7 +572,7 @@ router.post('/reset-data', auth, async (req, res) => {
         deletedCount: totalDeleted
       });
     } else if (type === 'productivity') {
-      // Delete productivity summaries
+      
       const result = await ProductivitySummary.deleteMany({ userId });
       res.json({
         success: true,
@@ -580,7 +580,7 @@ router.post('/reset-data', auth, async (req, res) => {
         deletedCount: result.deletedCount
       });
     } else if (type === 'all') {
-      // Delete everything (same as purge)
+      
       const results = await Promise.all([
         AppUsage.deleteMany({ userId }),
         TabUsage.deleteMany({ userId }),

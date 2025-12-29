@@ -28,10 +28,10 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Hash password before saving - with timeout protection
+
 userSchema.pre('save', async function(next) {
   try {
-    // Only hash if password is modified
+    
     if (!this.isModified('password')) {
       console.log('Password not modified, skipping hash');
       return next();
@@ -39,15 +39,15 @@ userSchema.pre('save', async function(next) {
 
     console.log('Starting password hash for:', this.email);
     
-    // Use lower rounds for faster hashing in development
+    
     const saltRounds = process.env.NODE_ENV === 'production' ? 10 : 8;
     console.log('Using salt rounds:', saltRounds);
     
-    // Generate salt
+    
     const salt = await bcrypt.genSalt(saltRounds);
     console.log('Salt generated');
     
-    // Hash password
+    
     const hashedPassword = await bcrypt.hash(this.password, salt);
     console.log('Password hashed, length:', hashedPassword.length);
     
@@ -62,7 +62,7 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Method to compare passwords
+
 userSchema.methods.comparePassword = async function(candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
@@ -72,7 +72,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   }
 };
 
-// Remove password from JSON output
+
 userSchema.methods.toJSON = function() {
   const obj = this.toObject();
   delete obj.password;

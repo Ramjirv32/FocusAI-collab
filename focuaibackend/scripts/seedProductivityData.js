@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const ProductivitySummary = require('../models/ProductivitySummary');
 const User = require('../models/User');
 
-// Configuration
+
 const DAYS_TO_SEED = 14;
 const USERS_TO_SEED = 5;
 
-// Connect to MongoDB
+
 mongoose.connect('mongodb://localhost:27017/focusai', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -23,11 +23,11 @@ db.once('open', async () => {
 
 async function seedData() {
   try {
-    // Clear existing productivity summaries
+    
     await ProductivitySummary.deleteMany({});
     console.log('Cleared existing productivity data');
 
-    // Get users from the database
+    
     const users = await User.find({}).limit(USERS_TO_SEED);
     
     if (users.length === 0) {
@@ -37,21 +37,21 @@ async function seedData() {
     
     console.log(`Found ${users.length} users to seed data for`);
 
-    // Create productivity summaries for each user
+    
     for (const user of users) {
       console.log(`Creating productivity data for user: ${user.email}`);
       
-      // Create summaries for the last DAYS_TO_SEED days
+      
       for (let i = 0; i < DAYS_TO_SEED; i++) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         const dateString = date.toISOString().slice(0, 10);
         
-        // Generate random productivity data
+        
         const productiveApps = getRandomProductiveApps();
         const nonProductiveApps = getRandomNonProductiveApps();
         
-        // Calculate totals
+        
         let totalProductiveTime = 0;
         let totalNonProductiveTime = 0;
         
@@ -72,7 +72,7 @@ async function seedData() {
         const overallTotalUsage = totalProductiveTime + totalNonProductiveTime;
         const focusScore = Math.round((totalProductiveTime / overallTotalUsage) * 100);
         
-        // Determine most used productive app
+        
         let maxProductiveApp = "";
         let maxTime = 0;
         for (const [app, time] of Object.entries(productiveApps)) {
@@ -82,7 +82,7 @@ async function seedData() {
           }
         }
         
-        // Determine most used app overall
+        
         let mostUsedApp = "";
         let mostUsedTime = 0;
         const allApps = { ...productiveApps, ...nonProductiveApps };
@@ -93,7 +93,7 @@ async function seedData() {
           }
         }
         
-        // Create summary document
+        
         const summary = new ProductivitySummary({
           userId: user._id,
           email: user.email,
@@ -107,7 +107,7 @@ async function seedData() {
           focusScore,
           mostUsedApp: mostUsedApp.replace(/\./g, '_'),
           mostVisitedTab: getRandomTopWebsite(),
-          distractionApps: new Map(),  // Empty for simplicity
+          distractionApps: new Map(),  
         });
         
         await summary.save();
@@ -121,7 +121,7 @@ async function seedData() {
   }
 }
 
-// Helper functions to generate random data
+
 function getRandomProductiveApps() {
   const productiveApps = {
     'vscode': getRandom(1800, 3600),
@@ -132,7 +132,7 @@ function getRandomProductiveApps() {
     'github_desktop': getRandom(300, 900),
   };
   
-  // Only include some of the apps randomly
+  
   return Object.fromEntries(
     Object.entries(productiveApps)
       .filter(() => Math.random() > 0.3)
@@ -149,7 +149,7 @@ function getRandomNonProductiveApps() {
     'photos': getRandom(180, 600),
   };
   
-  // Only include some of the apps randomly
+  
   return Object.fromEntries(
     Object.entries(nonProductiveApps)
       .filter(() => Math.random() > 0.4)

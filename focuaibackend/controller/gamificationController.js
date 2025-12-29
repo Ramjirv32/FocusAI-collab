@@ -2,7 +2,7 @@ const Gamification = require('../models/Gamification');
 const UserProfile = require('../models/UserProfile');
 const ProductivitySummary = require('../models/ProductivitySummary');
 
-// Badge definitions
+
 const BADGES = {
   'focus-master': {
     name: 'Focus Master',
@@ -70,7 +70,7 @@ const BADGES = {
   }
 };
 
-// Challenge definitions
+
 const CHALLENGE_TEMPLATES = {
   daily: [
     {
@@ -83,7 +83,7 @@ const CHALLENGE_TEMPLATES = {
     {
       name: 'Productive Hours',
       description: 'Complete 4 hours of productive work today',
-      target: 240, // minutes
+      target: 240, 
       reward: 75,
       category: 'daily'
     },
@@ -121,24 +121,24 @@ const CHALLENGE_TEMPLATES = {
 };
 
 const gamificationController = {
-  // Get user gamification data
+  
   async getGamificationData(req, res) {
     try {
       let gamification = await Gamification.findOne({ userId: req.user._id });
 
       if (!gamification) {
-        // Create initial gamification data
+        
         gamification = new Gamification({
           userId: req.user._id,
           email: req.user.email
         });
 
-        // Add initial challenges
+        
         gamification.challenges = generateDailyChallenges();
         await gamification.save();
       }
 
-      // Update daily challenges if needed
+      
       const now = new Date();
       const lastReset = gamification.dailyReset || new Date(0);
 
@@ -157,7 +157,7 @@ const gamificationController = {
     }
   },
 
-  // Award points for activity
+  
   async awardPoints(req, res) {
     try {
       const { usageData, sessionData } = req.body;
@@ -173,31 +173,31 @@ const gamificationController = {
       let pointsEarned = 0;
       const updates = [];
 
-      // Calculate points based on productivity
+      
       if (usageData) {
         const { productiveHours = 0, focusScore = 0, distractionHours = 0 } = usageData;
 
-        // Base points for productive time (10 points per hour)
+        
         const productivePoints = Math.floor(productiveHours * 10);
         pointsEarned += productivePoints;
 
-        // Bonus points for high focus score
+        
         if (focusScore >= 90) pointsEarned += 50;
         else if (focusScore >= 80) pointsEarned += 30;
         else if (focusScore >= 70) pointsEarned += 15;
 
-        // Penalty for too much distraction (but never negative)
+        
         const distractionPenalty = Math.min(pointsEarned * 0.1, distractionHours * 5);
         pointsEarned = Math.max(0, pointsEarned - distractionPenalty);
       }
 
-      // Update points
+      
       gamification.points.total += pointsEarned;
       gamification.points.daily += pointsEarned;
       gamification.points.weekly += pointsEarned;
       gamification.points.monthly += pointsEarned;
 
-      // Check for badge achievements
+      
       const newBadges = [];
       Object.keys(BADGES).forEach(badgeKey => {
         const badge = BADGES[badgeKey];
@@ -218,12 +218,12 @@ const gamificationController = {
         }
       });
 
-      // Update streak
+      
       updateStreak(gamification);
 
       await gamification.save();
 
-      // Also update user profile stats
+      
       await updateUserProfileStats(req.user._id, gamification);
 
       res.json({
@@ -240,7 +240,7 @@ const gamificationController = {
     }
   },
 
-  // Claim challenge reward
+  
   async claimReward(req, res) {
     try {
       const { challengeId } = req.body;
@@ -263,18 +263,18 @@ const gamificationController = {
         return res.status(400).json({ error: 'Reward already claimed' });
       }
 
-      // Award points
+      
       const pointsAwarded = challenge.reward;
       gamification.points.total += pointsAwarded;
       gamification.points.daily += pointsAwarded;
       gamification.points.weekly += pointsAwarded;
       gamification.points.monthly += pointsAwarded;
 
-      // Mark as claimed
+      
       challenge.claimed = true;
       challenge.claimedDate = new Date();
 
-      // Check for level up
+      
       const newLevel = calculateLevel(gamification.points.total);
       const leveledUp = newLevel > gamification.level.current;
       if (leveledUp) {
@@ -296,7 +296,7 @@ const gamificationController = {
     }
   },
 
-  // Get leaderboard
+  
   async getLeaderboard(req, res) {
     try {
       const { limit = 10, timeFrame = 'total' } = req.query;
@@ -316,7 +316,7 @@ const gamificationController = {
           sortField = { 'points.total': -1 };
       }
 
-      // Get gamification data with user profiles
+      
       const leaderboard = await Gamification.aggregate([
         {
           $lookup: {
@@ -360,7 +360,7 @@ const gamificationController = {
     }
   },
 
-  // Get user rank
+  
   async getUserRank(req, res) {
     try {
       const { timeFrame = 'total' } = req.query;
@@ -404,24 +404,24 @@ const gamificationController = {
     }
   },
 
-  // Get available challenges
+  
   async getChallenges(req, res) {
     try {
       const Challenge = require('../models/Challenge');
       const email = req.user.email;
 
-      // Get all active challenges
+      
       const challenges = await Challenge.find({ isActive: true });
 
-      // Format challenges for frontend
+      
       const formattedChallenges = challenges.map(challenge => {
-        // Check if user is already part of this challenge
+        
         const userProgress = challenge.userProgress.find(p => p.email === email);
         const isJoined = !!userProgress;
         const isCompleted = userProgress?.completedAt ? true : false;
         const progress = userProgress?.completionPercentage || 0;
 
-        // Map difficulty to badge type for frontend
+        
         const difficultyToBadgeType = {
           'bronze': 'bronze',
           'silver': 'silver',
@@ -459,7 +459,7 @@ const gamificationController = {
     }
   },
 
-  // Join a challenge
+  
   async joinChallenge(req, res) {
     try {
       const { challengeId } = req.params;
@@ -476,7 +476,7 @@ const gamificationController = {
         });
       }
 
-      // Check if challenge is still active
+      
       if (!challenge.isActive || (challenge.endDate && new Date(challenge.endDate) < new Date())) {
         return res.status(400).json({
           success: false,
@@ -484,7 +484,7 @@ const gamificationController = {
         });
       }
 
-      // Check if user is already part of this challenge
+      
       const userProgressIndex = challenge.userProgress.findIndex(p => p.email === email);
 
       if (userProgressIndex >= 0) {
@@ -494,7 +494,7 @@ const gamificationController = {
         });
       }
 
-      // Add user to challenge with enhanced data
+      
       challenge.userProgress.push({
         email: email,
         userId: userId,
@@ -505,15 +505,15 @@ const gamificationController = {
         status: 'joined'
       });
 
-      // Increment users in progress count
+      
       challenge.usersInProgress = (challenge.usersInProgress || 0) + 1;
 
       await challenge.save();
 
-      // Also add challenge to user's gamification profile
+      
       const gamification = await Gamification.findOne({ userId });
       if (gamification) {
-        // Check if this challenge is already in user's challenges
+        
         const existingChallengeIndex = gamification.challenges.findIndex(
           c => c.challengeId === challengeId
         );
@@ -561,7 +561,7 @@ const gamificationController = {
     }
   },
 
-  // Complete a challenge
+  
   async completeChallenge(req, res) {
     try {
       const { challengeId } = req.body;
@@ -578,7 +578,7 @@ const gamificationController = {
         });
       }
 
-      // Check if challenge is still active
+      
       if (!challenge.isActive || (challenge.endDate && new Date(challenge.endDate) < new Date())) {
         return res.status(400).json({
           success: false,
@@ -586,7 +586,7 @@ const gamificationController = {
         });
       }
 
-      // Find user progress for this challenge
+      
       const userProgressIndex = challenge.userProgress.findIndex(p => p.email === email);
 
       if (userProgressIndex === -1) {
@@ -596,7 +596,7 @@ const gamificationController = {
         });
       }
 
-      // Check if already completed
+      
       if (challenge.userProgress[userProgressIndex].status === 'completed' ||
         challenge.userProgress[userProgressIndex].status === 'claimed') {
         return res.status(400).json({
@@ -605,30 +605,30 @@ const gamificationController = {
         });
       }
 
-      // Mark as completed and award points
+      
       challenge.userProgress[userProgressIndex].completionPercentage = 100;
       challenge.userProgress[userProgressIndex].currentValue = challenge.targetValue;
       challenge.userProgress[userProgressIndex].completedAt = new Date();
       challenge.userProgress[userProgressIndex].status = 'completed';
       challenge.userProgress[userProgressIndex].pointsEarned = challenge.points;
 
-      // Update challenge stats
+      
       challenge.usersInProgress = Math.max(0, (challenge.usersInProgress || 1) - 1);
       challenge.usersCompleted = (challenge.usersCompleted || 0) + 1;
 
       await challenge.save();
 
-      // Update user gamification stats
+      
       const gamification = await Gamification.findOne({ userId });
 
       if (gamification) {
-        // Add points
+        
         gamification.points.total += challenge.points;
         gamification.points.daily += challenge.points;
         gamification.points.weekly += challenge.points;
         gamification.points.monthly += challenge.points;
 
-        // Check for level up
+        
         const oldLevel = gamification.level.current;
         const newLevel = calculateLevel(gamification.points.total);
         const leveledUp = newLevel > oldLevel;
@@ -637,19 +637,19 @@ const gamificationController = {
           gamification.level.current = newLevel;
         }
 
-        // Find and update or add the challenge in user's challenges
+        
         const userChallengeIndex = gamification.challenges.findIndex(
           c => c.challengeId === challengeId
         );
 
         if (userChallengeIndex >= 0) {
-          // Update existing challenge
+          
           gamification.challenges[userChallengeIndex].progress = challenge.targetValue;
           gamification.challenges[userChallengeIndex].completed = true;
           gamification.challenges[userChallengeIndex].claimed = true;
           gamification.challenges[userChallengeIndex].claimedDate = new Date();
         } else {
-          // Add to completed challenges if not already tracked
+          
           gamification.challenges.push({
             challengeId: challenge._id.toString(),
             name: challenge.title,
@@ -666,7 +666,7 @@ const gamificationController = {
 
         await gamification.save();
 
-        // Also update user profile stats
+        
         await updateUserProfileStats(userId, gamification);
 
         res.json({
@@ -697,16 +697,16 @@ const gamificationController = {
     }
   },
 
-  // Get user's gamification stats
+  
   async getStats(req, res) {
     try {
       const userId = req.user._id;
       const email = req.user.email;
 
-      // Find the user's gamification data
+      
       let gamificationData = await Gamification.findOne({ userId });
 
-      // If no gamification data exists, create a new one
+      
       if (!gamificationData) {
         gamificationData = new Gamification({
           userId,
@@ -740,7 +740,7 @@ const gamificationController = {
         await gamificationData.save();
       }
 
-      // Update streak if not already done today
+      
       const today = new Date().toDateString();
       const lastActive = gamificationData.streaks?.lastActiveDate
         ? new Date(gamificationData.streaks.lastActiveDate).toDateString()
@@ -749,25 +749,25 @@ const gamificationController = {
       console.log(`[Streak Debug] Today: ${today}, Last Active: ${lastActive}, Current Streak Before: ${gamificationData.streaks?.current || 0}`);
 
       if (lastActive !== today || (gamificationData.streaks?.current === 0)) {
-        // Streak hasn't been updated today or is still 0, update it now
+        
         updateStreak(gamificationData);
         console.log(`[Streak Debug] Streak Updated - New Value: ${gamificationData.streaks?.current || 0}`);
         await gamificationData.save();
       }
 
-      // Calculate next level points
+      
       const nextLevelPoints = Math.floor(100 * Math.pow(gamificationData.level.current + 1, 2));
       const currentLevelPoints = Math.floor(100 * Math.pow(gamificationData.level.current, 2));
       const pointsNeeded = nextLevelPoints - currentLevelPoints;
 
-      // Format response
+      
       const stats = {
         level: gamificationData.level.current,
         points: gamificationData.points.total,
         pointsToNextLevel: nextLevelPoints - gamificationData.points.total,
         totalPointsForLevel: pointsNeeded,
         achievements: {
-          total: gamificationData.badges.length + 10, // Total available achievements
+          total: gamificationData.badges.length + 10, 
           completed: gamificationData.badges.length,
         },
         challenges: {
@@ -790,13 +790,13 @@ const gamificationController = {
   },
 
 
-  // Claim streak badge
+  
   async claimStreakBadge(req, res) {
     try {
       const { streakDays } = req.body;
       const userId = req.user._id;
 
-      // Validate streak milestone
+      
       const validMilestones = [7, 30, 50, 100, 150, 200, 250, 365];
       if (!validMilestones.includes(streakDays)) {
         return res.status(400).json({
@@ -813,7 +813,7 @@ const gamificationController = {
         });
       }
 
-      // Check if user has reached this streak
+      
       if (gamification.streaks.current < streakDays) {
         return res.status(400).json({
           success: false,
@@ -821,7 +821,7 @@ const gamificationController = {
         });
       }
 
-      // Check if badge already claimed
+      
       const badgeId = `streak_${streakDays}`;
       const alreadyClaimed = gamification.badges.some(b => b.badgeId === badgeId);
       if (alreadyClaimed) {
@@ -831,7 +831,7 @@ const gamificationController = {
         });
       }
 
-      // Calculate average focus score for the streak period
+      
       const streakStartDate = new Date();
       streakStartDate.setDate(streakStartDate.getDate() - streakDays);
 
@@ -844,7 +844,7 @@ const gamificationController = {
         ? Math.round(summaries.reduce((sum, s) => sum + (s.focusScore || 0), 0) / summaries.length)
         : 0;
 
-      // Determine badge rarity based on streak length
+      
       let rarity = 'bronze';
       let points = 100;
       if (streakDays >= 365) { rarity = 'legendary'; points = 1000; }
@@ -864,7 +864,7 @@ const gamificationController = {
         365: '365 Days Streak'
       };
 
-      // Add badge to user's collection
+      
       const newBadge = {
         badgeId,
         name: badgeNames[streakDays],
@@ -879,7 +879,7 @@ const gamificationController = {
 
       gamification.badges.push(newBadge);
 
-      // Award points
+      
       gamification.points.total += points;
       gamification.points.daily += points;
       gamification.points.weekly += points;
@@ -927,12 +927,12 @@ const gamificationController = {
   }
 };
 
-// Helper functions
+
 function generateDailyChallenges() {
   const challenges = [];
   const dailyTemplates = CHALLENGE_TEMPLATES.daily;
 
-  // Select 2-3 random daily challenges
+  
   const selectedTemplates = dailyTemplates.sort(() => 0.5 - Math.random()).slice(0, 3);
 
   selectedTemplates.forEach((template, index) => {
@@ -946,7 +946,7 @@ function generateDailyChallenges() {
       reward: template.reward,
       completed: false,
       claimed: false,
-      expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000) 
     });
   });
 
@@ -954,19 +954,19 @@ function generateDailyChallenges() {
 }
 
 function calculateLevel(totalPoints) {
-  // Level calculation: Level = floor(sqrt(totalPoints / 100)) + 1
+  
   return Math.floor(Math.sqrt(totalPoints / 100)) + 1;
 }
 
 function checkBadgeEligibility(badgeKey, gamification, usageData) {
-  // Implement badge eligibility logic
+  
   switch (badgeKey) {
     case 'focus-master':
       return gamification.statistics.averageFocusScore >= 85;
     case 'consistency-champion':
       return gamification.streaks.current >= 7;
     case 'productivity-wizard':
-      return gamification.statistics.totalProductiveTime >= 144000; // 40 hours in seconds
+      return gamification.statistics.totalProductiveTime >= 144000; 
     default:
       return false;
   }
@@ -984,23 +984,23 @@ function updateStreak(gamification) {
   console.log(`[updateStreak] Today: ${todayString}, Last Active: ${lastActiveDateString}`);
 
   if (lastActiveDateString === todayString && (gamification.streaks.current > 0)) {
-    // Already counted today and streak is active, don't increment
+    
     console.log('[updateStreak] Already counted today, returning');
     return;
   }
 
-  // Calculate yesterday's date
+  
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayString = yesterday.toDateString();
 
   if (lastActiveDateString === yesterdayString) {
-    // Consecutive day - increment streak
+    
     gamification.streaks.current = (gamification.streaks.current || 0) + 1;
     gamification.streaks.longest = Math.max(gamification.streaks.longest || 0, gamification.streaks.current);
     console.log(`[updateStreak] Consecutive day! Streak now: ${gamification.streaks.current}`);
   } else {
-    // Streak broken or first time - start new streak at 1
+    
     gamification.streaks.current = 1;
     gamification.streaks.longest = Math.max(gamification.streaks.longest || 0, 1);
     console.log(`[updateStreak] New or broken streak! Streak now: 1`);
@@ -1034,7 +1034,7 @@ async function updateUserProfileStats(userId, gamification) {
   }
 }
 
-// Helper function to count badges by rarity
+
 function countBadgesByRarity(badges) {
   const counts = {
     bronze: 0,
@@ -1051,7 +1051,7 @@ function countBadgesByRarity(badges) {
     if (counts.hasOwnProperty(rarity)) {
       counts[rarity]++;
     } else {
-      // Map other rarities to our frontend types
+      
       switch (rarity) {
         case 'common': counts.bronze++; break;
         case 'rare': counts.silver++; break;
@@ -1065,7 +1065,7 @@ function countBadgesByRarity(badges) {
   return counts;
 }
 
-// Helper function to get appropriate icon for a challenge based on category
+
 function getChallengeIcon(category) {
   const categoryIcons = {
     'focus': 'Target',

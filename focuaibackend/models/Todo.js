@@ -38,7 +38,7 @@ const todoSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-  // Add overdue tracking
+  
   isOverdue: {
     type: Boolean,
     default: false
@@ -47,18 +47,18 @@ const todoSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for better query performance
+
 todoSchema.index({ userId: 1, completed: 1 });
 todoSchema.index({ userId: 1, createdAt: -1 });
-todoSchema.index({ userId: 1, dueDate: 1 }); // Add index for due date queries
+todoSchema.index({ userId: 1, dueDate: 1 }); 
 
-// Virtual to check if todo is overdue
+
 todoSchema.virtual('overdue').get(function() {
   if (!this.dueDate || this.completed) return false;
   return this.dueDate < new Date();
 });
 
-// Pre-save middleware to set isOverdue
+
 todoSchema.pre('save', function(next) {
   if (this.dueDate && !this.completed) {
     this.isOverdue = this.dueDate < new Date();

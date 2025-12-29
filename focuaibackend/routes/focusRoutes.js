@@ -3,11 +3,11 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 
-// Import Focus Results model (we'll create this next)
+
 const FocusResult = require('../models/FocusResult');
 const ProductivitySummary = require('../models/ProductivitySummary');
 
-// Store focus analysis results
+
 router.post('/focus-results', auth, async (req, res) => {
   try {
     const { 
@@ -20,7 +20,7 @@ router.post('/focus-results', auth, async (req, res) => {
       totalDistractionTimeSeconds
     } = req.body;
     
-    // Validate that the authenticated user matches the userId in the request
+    
     if (req.user.id !== userId) {
       return res.status(403).json({ 
         success: false, 
@@ -28,14 +28,14 @@ router.post('/focus-results', auth, async (req, res) => {
       });
     }
     
-    // Find existing result for this user and date
+    
     let focusResult = await FocusResult.findOne({ 
       userId, 
       date 
     });
     
     if (focusResult) {
-      // Update existing record
+      
       focusResult.productivityScore = productivityScore;
       focusResult.focusAreas = focusAreas;
       focusResult.distractionAreas = distractionAreas;
@@ -51,7 +51,7 @@ router.post('/focus-results', auth, async (req, res) => {
         data: focusResult 
       });
     } else {
-      // Create new record
+      
       focusResult = new FocusResult({
         userId,
         email: req.user.email,
@@ -81,7 +81,7 @@ router.post('/focus-results', auth, async (req, res) => {
   }
 });
 
-// Get focus results for a user
+
 router.get('/focus-results', auth, async (req, res) => {
   try {
     const { date } = req.query;
@@ -96,7 +96,7 @@ router.get('/focus-results', auth, async (req, res) => {
     
     const focusResults = await FocusResult.find(query)
       .sort({ date: -1 })
-      .limit(date ? 1 : 30); // If date specified, get just one, otherwise get last 30 days
+      .limit(date ? 1 : 30); 
       
     res.json({ 
       success: true, 
@@ -113,10 +113,10 @@ router.get('/focus-results', auth, async (req, res) => {
   }
 });
 
-// Get focus summary
+
 router.get('/summary', auth, async (req, res) => {
   try {
-    // Find the latest productivity summary
+    
     const summary = await ProductivitySummary.findOne({
       userId: req.user._id,
       email: req.user.email
@@ -130,7 +130,7 @@ router.get('/summary', auth, async (req, res) => {
       });
     }
     
-    // Format distractions
+    
     const distractions = Object.entries(summary.distractionContent || {})
       .map(([name, duration]) => ({ name, duration }))
       .sort((a, b) => b.duration - a.duration)

@@ -10,7 +10,7 @@ const alertSchema = new mongoose.Schema({
     required: true
   },
   date: {
-    type: String, // Format: YYYY-MM-DD
+    type: String, 
     required: true
   },
   is50: {
@@ -39,12 +39,12 @@ alertSchema.pre('save', function(next) {
     const docDate = this.lastTriggered ? 
       new Date(this.lastTriggered).toISOString().slice(0, 10) : '';
     
-    // If lastTriggered exists and is not today, reset the flags
+    
     if (this.lastTriggered && docDate !== today) {
       this.is20 = false;
       this.is50 = false;
       this.focusScore = 0;
-      this.date = today; // Update the date to today
+      this.date = today; 
       console.log(`🔄 Auto-reset alert flags for user ${this.userId}`);
     }
     

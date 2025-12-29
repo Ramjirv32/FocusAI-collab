@@ -2,13 +2,13 @@ const UserProfile = require('../models/UserProfile');
 const User = require('../models/User');
 
 const profileController = {
-  // Get user profile
+  
   async getProfile(req, res) {
     try {
       let profile = await UserProfile.findOne({ userId: req.user._id });
       
       if (!profile) {
-        // Create default profile if doesn't exist
+        
         profile = new UserProfile({
           userId: req.user._id,
           email: req.user.email,
@@ -24,7 +24,7 @@ const profileController = {
     }
   },
 
-  // Update user profile
+  
   async updateProfile(req, res) {
     try {
       const {
@@ -52,7 +52,7 @@ const profileController = {
         });
       }
 
-      // Update fields
+      
       if (displayName !== undefined) profile.displayName = displayName;
       if (bio !== undefined) profile.bio = bio;
       if (location !== undefined) profile.location = location;
@@ -60,11 +60,11 @@ const profileController = {
       if (company !== undefined) profile.company = company;
       if (profilePhoto !== undefined) profile.profilePhoto = profilePhoto;
       
-      // Handle social links - both new format and legacy individual fields
+      
       if (socialLinks) {
         profile.socialLinks = { ...profile.socialLinks, ...socialLinks };
       } else {
-        // Handle individual social fields for backward compatibility
+        
         if (website !== undefined) profile.socialLinks.website = website;
         if (twitter !== undefined) profile.socialLinks.twitter = twitter;
         if (linkedin !== undefined) profile.socialLinks.linkedin = linkedin;
@@ -81,7 +81,7 @@ const profileController = {
     }
   },
 
-  // Upload profile photo (base64)
+  
   async uploadProfilePhoto(req, res) {
     try {
       const { profilePhoto } = req.body;
@@ -90,14 +90,14 @@ const profileController = {
         return res.status(400).json({ error: 'Profile photo is required' });
       }
 
-      // Validate base64 image
+      
       if (!profilePhoto.startsWith('data:image/')) {
         return res.status(400).json({ error: 'Invalid image format. Must be base64 encoded image.' });
       }
 
-      // Check file size (base64 is ~33% larger than original)
+      
       const imageSizeBytes = (profilePhoto.length * 3) / 4;
-      if (imageSizeBytes > 5 * 1024 * 1024) { // 5MB limit
+      if (imageSizeBytes > 5 * 1024 * 1024) { 
         return res.status(400).json({ error: 'Image too large. Maximum size is 5MB.' });
       }
 
@@ -124,7 +124,7 @@ const profileController = {
     }
   },
 
-  // Delete profile photo
+  
   async deleteProfilePhoto(req, res) {
     try {
       const profile = await UserProfile.findOne({ userId: req.user._id });
@@ -143,7 +143,7 @@ const profileController = {
     }
   },
 
-  // Get public profiles for leaderboard
+  
   async getPublicProfiles(req, res) {
     try {
       const { limit = 10, sortBy = 'totalPoints' } = req.query;
@@ -181,7 +181,7 @@ const profileController = {
     }
   },
 
-  // Get user rank in leaderboard
+  
   async getUserRank(req, res) {
     try {
       const { sortBy = 'totalPoints' } = req.query;

@@ -51,15 +51,15 @@ const chatHistorySchema = new mongoose.Schema({
   }
 });
 
-// Update timestamp on save
+
 chatHistorySchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   
-  // Generate title from first user message if not set
+  
   if (this.title === 'New Conversation' && this.messages.length > 0) {
     const firstUserMessage = this.messages.find(m => m.isUser);
     if (firstUserMessage) {
-      // Use first 30 characters of first user message as title
+      
       this.title = firstUserMessage.content.substring(0, 30);
       if (firstUserMessage.content.length > 30) this.title += '...';
     }

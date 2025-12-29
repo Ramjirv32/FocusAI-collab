@@ -1,9 +1,6 @@
 const { Groq } = require('groq-sdk');
 
-/**
- * AI Provider Utility
- * Handles switching between Groq and local Ollama
- */
+
 class AIProvider {
     constructor() {
         this.provider = process.env.AI_PROVIDER || 'groq';
@@ -15,7 +12,7 @@ class AIProvider {
     }
 
     initGroq() {
-        // Only initialize Groq if it's the selected provider
+        
         if (this.provider === 'groq' && this.groqKey) {
             this.groq = new Groq({
                 apiKey: this.groqKey
@@ -31,16 +28,16 @@ class AIProvider {
         this.ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
         this.ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
 
-        // Re-initialize based on new provider selection
+        
         this.initGroq();
     }
 
     async createChatCompletion({ messages, temperature = 0.7, max_tokens = 1024 }) {
-        this.refreshConfig(); // Ensure we have latest env vars
+        this.refreshConfig(); 
 
         if (this.provider === 'groq') {
             if (!this.groq) {
-                // Try initializing one more time in case key was just set
+                
                 this.initGroq();
                 if (!this.groq) throw new Error('Groq selected but API key not configured');
             }
@@ -55,7 +52,7 @@ class AIProvider {
 
             return completion.choices[0].message.content;
         } else if (this.provider === 'ollama') {
-            // Ollama
+            
             console.log('🏠 Using Local AI (Ollama)');
             try {
                 const response = await fetch(`${this.ollamaUrl}/api/chat`, {

@@ -5,16 +5,16 @@ const auth = require('../middleware/auth');
 const AppUsage = require('../models/AppUsage');
 const TabUsage = require('../models/TabUsage');
 
-// Get raw usage data
+
 router.get('/', auth, async (req, res) => {
   try {
     console.log('User requesting raw usage data:', req.user.email);
     const { date, timeFrame } = req.query;
     
-    // Default to today if no date provided
+    
     const today = date ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
     
-    // Calculate date range based on time frame
+    
     let startDate = today;
     
     if (timeFrame === 'weekly') {
@@ -27,7 +27,7 @@ router.get('/', auth, async (req, res) => {
       startDate = monthAgo.toISOString().slice(0, 10);
     }
     
-    // Get app usage for the specified time range
+    
     const appUsage = await AppUsage.find({
       userId: req.user._id,
       email: req.user.email,
@@ -36,16 +36,16 @@ router.get('/', auth, async (req, res) => {
     
     console.log(`Found ${appUsage.length} app usage records for user ${req.user.email}`);
     
-    // Format app usage
+    
     const appUsageFormatted = appUsage.reduce((acc, item) => {
       acc[item.appName] = (acc[item.appName] || 0) + item.duration;
       return acc;
     }, {});
     
-    // Get tab usage data
+    
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(today);
-    endDateObj.setDate(endDateObj.getDate() + 1); // Include the end date
+    endDateObj.setDate(endDateObj.getDate() + 1); 
     
     const tabs = await TabUsage.find({
       userId: req.user._id,
@@ -55,7 +55,7 @@ router.get('/', auth, async (req, res) => {
     
     console.log(`Found ${tabs.length} tab records for user ${req.user.email}`);
     
-    // Group tab usage by domain
+    
     const tabUsage = tabs.reduce((acc, tab) => {
       const domain = tab.domain || 'unknown';
       acc[domain] = (acc[domain] || 0) + tab.duration;

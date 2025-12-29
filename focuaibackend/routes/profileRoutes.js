@@ -5,22 +5,22 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const multer = require('multer');
 
-// Configure multer for handling base64 images
+
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 5 * 1024 * 1024 
   }
 });
 
-// Get user profile
+
 router.get('/profile', auth, async (req, res) => {
   try {
     let profile = await UserProfile.findOne({ userId: req.user._id });
     
     if (!profile) {
-      // Create default profile if doesn't exist
+      
       profile = new UserProfile({
         userId: req.user._id,
         email: req.user.email,
@@ -36,7 +36,7 @@ router.get('/profile', auth, async (req, res) => {
   }
 });
 
-// Update user profile
+
 router.put('/profile', auth, async (req, res) => {
   try {
     const {
@@ -64,7 +64,7 @@ router.put('/profile', auth, async (req, res) => {
       });
     }
 
-    // Update fields
+    
     if (displayName !== undefined) profile.displayName = displayName;
     if (bio !== undefined) profile.bio = bio;
     if (location !== undefined) profile.location = location;
@@ -72,11 +72,11 @@ router.put('/profile', auth, async (req, res) => {
     if (company !== undefined) profile.company = company;
     if (profilePhoto !== undefined) profile.profilePhoto = profilePhoto;
     
-    // Handle social links - both new format and legacy individual fields
+    
     if (socialLinks) {
       profile.socialLinks = { ...profile.socialLinks, ...socialLinks };
     } else {
-      // Handle individual social fields for backward compatibility
+      
       if (website !== undefined) profile.socialLinks.website = website;
       if (twitter !== undefined) profile.socialLinks.twitter = twitter;
       if (linkedin !== undefined) profile.socialLinks.linkedin = linkedin;
@@ -93,7 +93,7 @@ router.put('/profile', auth, async (req, res) => {
   }
 });
 
-// Upload profile photo (base64)
+
 router.post('/profile/photo', auth, async (req, res) => {
   try {
     const { profilePhoto } = req.body;
@@ -102,14 +102,14 @@ router.post('/profile/photo', auth, async (req, res) => {
       return res.status(400).json({ error: 'Profile photo is required' });
     }
 
-    // Validate base64 image
+    
     if (!profilePhoto.startsWith('data:image/')) {
       return res.status(400).json({ error: 'Invalid image format. Must be base64 encoded image.' });
     }
 
-    // Check file size (base64 is ~33% larger than original)
+    
     const imageSizeBytes = (profilePhoto.length * 3) / 4;
-    if (imageSizeBytes > 5 * 1024 * 1024) { // 5MB limit
+    if (imageSizeBytes > 5 * 1024 * 1024) { 
       return res.status(400).json({ error: 'Image too large. Maximum size is 5MB.' });
     }
 
@@ -136,7 +136,7 @@ router.post('/profile/photo', auth, async (req, res) => {
   }
 });
 
-// Get public profiles for leaderboard
+
 router.get('/public-profiles', auth, async (req, res) => {
   try {
     const { limit = 10, sortBy = 'totalPoints' } = req.query;
@@ -174,7 +174,7 @@ router.get('/public-profiles', auth, async (req, res) => {
   }
 });
 
-// Get user rank in leaderboard
+
 router.get('/rank', auth, async (req, res) => {
   try {
     const { sortBy = 'totalPoints' } = req.query;
@@ -227,7 +227,7 @@ router.get('/rank', auth, async (req, res) => {
   }
 });
 
-// Delete profile photo
+
 router.delete('/profile/photo', auth, async (req, res) => {
   try {
     const profile = await UserProfile.findOne({ userId: req.user._id });

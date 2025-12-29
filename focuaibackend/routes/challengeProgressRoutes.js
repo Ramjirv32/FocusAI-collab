@@ -3,19 +3,15 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const { updateChallengeProgress } = require('../scripts/updateChallengeProgress');
 
-/**
- * @route   POST /api/gamification/update-challenge-progress
- * @desc    Update challenge progress for the authenticated user
- * @access  Private
- */
+
 router.post('/update-challenge-progress', auth, async (req, res) => {
   try {
     const email = req.user.email;
     
-    // Optional: Allow override of user email for admin functions
+    
     const targetEmail = req.body.email || email;
     
-    // Optional: Allow manual override of activity data
+    
     const activityData = req.body.activityData;
     
     console.log(`Updating challenge progress for ${targetEmail}`);
@@ -33,11 +29,7 @@ router.post('/update-challenge-progress', auth, async (req, res) => {
   }
 });
 
-/**
- * @route   GET /api/gamification/user-challenge-progress
- * @desc    Get challenge progress for the authenticated user
- * @access  Private
- */
+
 router.get('/user-challenge-progress', auth, async (req, res) => {
   try {
     const email = req.user.email;

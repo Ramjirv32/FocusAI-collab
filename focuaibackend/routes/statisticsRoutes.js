@@ -5,16 +5,16 @@ const statisticsController = require('../controller/statisticsController');
 const ProductivitySummary = require('../models/ProductivitySummary');
 const AppUsage = require('../models/AppUsage');
 
-// Get user statistics
+
 router.get('/statistics', auth, statisticsController.getStatistics);
 
-// Health check route
+
 router.get('/health', statisticsController.healthCheck);
 
-// Basic overview endpoint
+
 router.get('/overview', auth, async (req, res) => {
   try {
-    // Find the latest productivity summary
+    
     const summary = await ProductivitySummary.findOne({
       userId: req.user._id,
       email: req.user.email
@@ -31,7 +31,7 @@ router.get('/overview', auth, async (req, res) => {
       });
     }
     
-    // Get app usage for top apps
+    
     const appUsage = await AppUsage.find({
       userId: req.user._id,
       email: req.user.email,

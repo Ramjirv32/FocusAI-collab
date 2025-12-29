@@ -10,7 +10,7 @@ function loadConfigToEnv() {
             const configData = fs.readFileSync(CONFIG_PATH, 'utf8');
             const config = JSON.parse(configData);
 
-            // Load Groq API key from config (only if not already set)
+            
             if (config.GROQ_API_KEY && !process.env.GROQ_API_KEY) {
                 process.env.GROQ_API_KEY = config.GROQ_API_KEY;
                 console.log('✅ Loaded GROQ_API_KEY from ~/.focusia/config.json');
@@ -18,7 +18,7 @@ function loadConfigToEnv() {
                 console.warn('⚠️  No GROQ_API_KEY found in config.json');
             }
 
-            // Load MongoDB URI if present (only if not already set by docker-compose)
+            
             if (config.MONGODB_URI && !process.env.MONGODB_URI) {
                 process.env.MONGODB_URI = config.MONGODB_URI;
                 console.log('✅ Loaded MONGODB_URI from config');
@@ -36,7 +36,7 @@ function loadConfigToEnv() {
     }
 }
 
-// Load config immediately when this module is imported
+
 loadConfigToEnv();
 
 module.exports = { loadConfigToEnv, CONFIG_PATH };

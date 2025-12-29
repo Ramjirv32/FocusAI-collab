@@ -4,15 +4,15 @@ const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const TabUsage = require('../models/TabUsage');
 
-// Get tab usage data
+
 router.get('/', auth, async (req, res) => {
   try {
     console.log(`User requesting tabs data: ${req.user.email}`);
     
-    // Get time frame from query params
+    
     const { date, timeFrame } = req.query;
     
-    // Default to today if no date provided
+    
     const endDate = date ? new Date(date) : new Date();
     let startDate = new Date(endDate);
     
@@ -25,13 +25,13 @@ router.get('/', auth, async (req, res) => {
       startDate.setMonth(startDate.getMonth() - 1);
     }
     
-    // Find tabs for this user within the date range
+    
     const tabs = await TabUsage.find({
       email: req.user.email,
       $or: [
-        // Match by userId string comparison
+        
         { userId: req.user._id.toString() },
-        // Match by userId ObjectId
+        
         { userId: req.user._id }
       ],
       timestamp: { $gte: startDate, $lte: endDate }

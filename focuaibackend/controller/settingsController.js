@@ -3,7 +3,7 @@ const Gamification = require('../models/Gamification');
 const User = require('../models/User');
 
 const settingsController = {
-  // Get user settings
+  
   async getSettings(req, res) {
     try {
       const profile = await UserProfile.findOne({ userId: req.user._id });
@@ -70,12 +70,12 @@ const settingsController = {
     }
   },
 
-  // Update user settings
+  
   async updateSettings(req, res) {
     try {
       const { profile, gamification, notifications, privacy, tracking, display } = req.body;
 
-      // Update profile preferences
+      
       if (profile || notifications || privacy || tracking || display) {
         let userProfile = await UserProfile.findOne({ userId: req.user._id });
         
@@ -128,7 +128,7 @@ const settingsController = {
         await userProfile.save();
       }
 
-      // Update gamification settings
+      
       if (gamification?.dailyGoals) {
         let userGamification = await Gamification.findOne({ userId: req.user._id });
         
@@ -150,10 +150,10 @@ const settingsController = {
     }
   },
 
-  // Reset user data
+  
   async resetData(req, res) {
     try {
-      const { type } = req.body; // 'gamification', 'profile', 'all'
+      const { type } = req.body; 
 
       if (type === 'gamification' || type === 'all') {
         await Gamification.findOneAndDelete({ userId: req.user._id });
@@ -170,7 +170,7 @@ const settingsController = {
     }
   },
 
-  // Export user data
+  
   async exportData(req, res) {
     try {
       const profile = await UserProfile.findOne({ userId: req.user._id });
@@ -193,12 +193,12 @@ const settingsController = {
     }
   },
 
-  // Delete account
+  
   async deleteAccount(req, res) {
     try {
       const { confirmPassword } = req.body;
 
-      // Verify password
+      
       const user = await User.findById(req.user._id);
       const isMatch = await user.comparePassword(confirmPassword);
       
@@ -206,7 +206,7 @@ const settingsController = {
         return res.status(400).json({ error: 'Invalid password' });
       }
 
-      // Delete all user data
+      
       await Promise.all([
         User.findByIdAndDelete(req.user._id),
         UserProfile.findOneAndDelete({ userId: req.user._id }),
@@ -220,7 +220,7 @@ const settingsController = {
     }
   },
 
-  // Update daily goals
+  
   async updateDailyGoals(req, res) {
     try {
       const { focusTimeTarget, focusScoreTarget, sessionsTarget } = req.body;
@@ -250,7 +250,7 @@ const settingsController = {
     }
   },
 
-  // Get notification preferences
+  
   async getNotifications(req, res) {
     try {
       const profile = await UserProfile.findOne({ userId: req.user._id });
@@ -273,7 +273,7 @@ const settingsController = {
     }
   },
 
-  // Update notification preferences
+  
   async updateNotifications(req, res) {
     try {
       const { 

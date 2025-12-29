@@ -21,7 +21,7 @@ const ensureUserHasInitialData = async (userId, email) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
 
-    // Check if user has app usage data
+    
     const appUsageCount = await AppUsage.countDocuments({ userId, email });
     if (appUsageCount === 0) {
       console.log(`Creating initial app usage data for user ${email} (${userId})`);
@@ -45,7 +45,7 @@ const ensureUserHasInitialData = async (userId, email) => {
       }
     }
 
-    // Check if user has tab usage data
+    
     const tabCount = await TabUsage.countDocuments({ userId, email });
     if (tabCount === 0) {
       console.log(`Creating initial tab data for user ${email} (${userId})`);
@@ -73,7 +73,7 @@ const ensureUserHasInitialData = async (userId, email) => {
       }
     }
 
-    // Ensure user has a profile
+    
     const profile = await UserProfile.findOne({ userId });
     if (!profile) {
       await new UserProfile({
@@ -83,7 +83,7 @@ const ensureUserHasInitialData = async (userId, email) => {
       }).save();
     }
 
-    // Ensure user has gamification data
+    
     const gamification = await Gamification.findOne({ userId });
     if (!gamification) {
       await new Gamification({
@@ -98,12 +98,12 @@ const ensureUserHasInitialData = async (userId, email) => {
 };
 
 const authController = {
-  // User registration
+  
   async register(req, res) {
     try {
       const { email, password, name } = req.body;
 
-      // Detailed validation
+      
       if (!email) {
         return res.status(400).json({ error: 'Email is required' });
       }
@@ -112,18 +112,18 @@ const authController = {
         return res.status(400).json({ error: 'Password is required' });
       }
 
-      // Email format validation
+      
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ error: 'Please enter a valid email address' });
       }
 
-      // Password length validation
+      
       if (password.length < 6) {
         return res.status(400).json({ error: 'Password must be at least 6 characters long' });
       }
 
-      // Check if user already exists
+      
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ error: 'An account with this email already exists' });
@@ -134,7 +134,7 @@ const authController = {
 
       const token = generateToken(user);
 
-      // Create initial data for new user
+      
       await ensureUserHasInitialData(user._id, user.email);
 
       res.status(201).json({
@@ -147,12 +147,12 @@ const authController = {
     }
   },
 
-  // User login
+  
   async login(req, res) {
     try {
       const { email, password } = req.body;
 
-      // Detailed validation
+      
       if (!email) {
         return res.status(400).json({ error: 'Email is required' });
       }
@@ -161,13 +161,13 @@ const authController = {
         return res.status(400).json({ error: 'Password is required' });
       }
 
-      // Check if user exists
+      
       const user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({ error: 'No account found with this email address' });
       }
 
-      // Verify password
+      
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
         return res.status(400).json({ error: 'Incorrect password. Please try again.' });
@@ -175,7 +175,7 @@ const authController = {
 
       const token = generateToken(user);
 
-      // Check if user wants sample data
+      
       const shouldCreateSample = req.body.includeSampleData === true;
       const appCount = await AppUsage.countDocuments({ userId: user._id });
       const tabCount = await TabUsage.countDocuments({ userId: user._id });
@@ -195,7 +195,7 @@ const authController = {
     }
   },
 
-  // Get current user
+  
   async getCurrentUser(req, res) {
     try {
       res.json({
@@ -212,10 +212,10 @@ const authController = {
     }
   },
 
-  // Logout (optional - mainly handled client-side)
+  
   async logout(req, res) {
     try {
-      // Here you could implement token blacklisting if needed
+      
       res.json({ message: 'Logged out successfully' });
     } catch (error) {
       console.error('Logout error:', error);
@@ -223,7 +223,7 @@ const authController = {
     }
   },
 
-  // Refresh token
+  
   async refreshToken(req, res) {
     try {
       const user = await User.findById(req.user._id);

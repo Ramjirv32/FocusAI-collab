@@ -105,7 +105,7 @@ const userProfileSchema = new Schema({
   }]
 }, { timestamps: true });
 
-// Add indexes for performance
+
 userProfileSchema.index({ userId: 1 }, { unique: true });
 
 module.exports = mongoose.model('UserProfile', userProfileSchema);

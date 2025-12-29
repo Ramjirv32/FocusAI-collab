@@ -6,32 +6,24 @@ const UserProfile = require('../models/UserProfile');
 const ProductivitySummary = require('../models/ProductivitySummary');
 const gamificationController = require('../controller/gamificationController');
 
-/**
- * @route   GET /api/gamification/stats
- * @desc    Get user's gamification stats
- * @access  Private
- */
+
 router.get('/stats', auth, gamificationController.getStats);
 router.get('/data', auth, gamificationController.getGamificationData);
 router.post('/streak/claim', auth, gamificationController.claimStreakBadge);
 
-/**
- * @route   GET /api/gamification/achievements
- * @desc    Get user's achievements
- * @access  Private
- */
+
 router.get('/achievements', auth, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Find the user's gamification data
+    
     const gamificationData = await Gamification.findOne({ userId });
 
     if (!gamificationData) {
       return res.json({ success: true, achievements: [] });
     }
 
-    // Map challenges to achievements format for frontend
+    
     const achievements = gamificationData.challenges
       .filter(challenge => challenge.completed)
       .map(challenge => ({
@@ -46,10 +38,10 @@ router.get('/achievements', auth, async (req, res) => {
         claimed: challenge.claimed || false,
         category: challenge.category || 'focus',
         icon: challenge.icon || 'trophy',
-        type: determineBadgeType(challenge.reward) // Helper function to determine badge type
+        type: determineBadgeType(challenge.reward) 
       }));
 
-    // Add badges as achievements too
+    
     const badgeAchievements = gamificationData.badges.map(badge => ({
       id: badge.badgeId,
       name: badge.name,
@@ -58,8 +50,8 @@ router.get('/achievements', auth, async (req, res) => {
       progress: 100,
       maxProgress: 100,
       dateCompleted: badge.earnedDate,
-      pointsAwarded: 0, // Badges don't have points in this model
-      claimed: true, // Badges are automatically claimed
+      pointsAwarded: 0, 
+      claimed: true, 
       category: badge.category || 'badge',
       icon: badge.icon || 'award',
       type: badge.rarity || 'bronze'
@@ -72,21 +64,13 @@ router.get('/achievements', auth, async (req, res) => {
   }
 });
 
-/**
- * @route   GET /api/gamification/challenges
- * @desc    Get user's challenges
- * @access  Private
- */
+
 router.get('/challenges', auth, gamificationController.getChallenges);
 
-/**
- * @route   GET /api/gamification/leaderboard
- * @desc    Get leaderboard data based on user productivity
- * @access  Private
- */
+
 router.get('/leaderboard', auth, async (req, res) => {
   try {
-    // Get current user's statistics
+    
     const userSummary = await ProductivitySummary.aggregate([
       { $match: { userId: req.user._id } },
       {
@@ -107,7 +91,7 @@ router.get('/leaderboard', auth, async (req, res) => {
     const totalProductiveTime = userSummary.length > 0 ? (userSummary[0].totalProductiveTime || 0) : 0;
     const sessionsCount = userSummary.length > 0 ? (userSummary[0].sessionsCount || 0) : 0;
 
-    // Return only the current user in the leaderboard array
+    
     const leaderboard = [{
       id: userId.toString(),
       position: 1,
@@ -133,17 +117,13 @@ router.get('/leaderboard', auth, async (req, res) => {
   }
 });
 
-/**
- * @route   POST /api/gamification/challenge/complete
- * @desc    Complete a challenge manually or check automatic completion
- * @access  Private
- */
+
 router.post('/challenge/complete', auth, async (req, res) => {
   try {
     const { challengeId } = req.body;
     const userId = req.user._id;
 
-    // Find user's gamification data
+    
     let gamification = await Gamification.findOne({ userId });
 
     if (!gamification) {
@@ -153,7 +133,7 @@ router.post('/challenge/complete', auth, async (req, res) => {
       });
     }
 
-    // Find the challenge
+    
     const challengeIndex = gamification.challenges.findIndex(c =>
       c.challengeId === challengeId && !c.completed
     );
@@ -165,19 +145,19 @@ router.post('/challenge/complete', auth, async (req, res) => {
       });
     }
 
-    // Complete the challenge
+    
     gamification.challenges[challengeIndex].completed = true;
     gamification.challenges[challengeIndex].completedAt = new Date();
 
-    // Award points
+    
     const pointsAwarded = gamification.challenges[challengeIndex].reward || 0;
     gamification.points.total += pointsAwarded;
     gamification.points.daily += pointsAwarded;
     gamification.points.weekly += pointsAwarded;
     gamification.points.monthly += pointsAwarded;
 
-    // Simplified Leveling Flow: 1 level per challenge completion, total 5 levels
-    // Levels: 1 (Bronze), 2 (Silver), 3 (Gold), 4 (Platinum), 5 (Diamond)
+    
+    
     const prevLevel = gamification.level.current;
     if (prevLevel < 5) {
       gamification.level.current += 1;
@@ -191,7 +171,7 @@ router.post('/challenge/complete', auth, async (req, res) => {
         5: 'Diamond'
       };
 
-      // Add a level-up badge
+      
       gamification.badges.push({
         badgeId: `level_${newLevel}`,
         name: `${levelNames[newLevel]} Level Achieved`,
@@ -202,13 +182,13 @@ router.post('/challenge/complete', auth, async (req, res) => {
         points: newLevel * 100
       });
 
-      // Update nextLevelAt for UI progress bars (if used)
+      
       gamification.level.nextLevelAt = 1000 * newLevel;
     }
 
     await gamification.save();
 
-    // Return the updated challenge information
+    
     res.json({
       success: true,
       challenge: gamification.challenges[challengeIndex],
@@ -227,29 +207,25 @@ router.post('/challenge/complete', auth, async (req, res) => {
   }
 });
 
-/**
- * @route   GET /api/gamification/timeline
- * @desc    Get user's gamification timeline events
- * @access  Private
- */
+
 router.get('/timeline', auth, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Get user's gamification data
+    
     const gamification = await Gamification.findOne({ userId });
     if (!gamification) {
       return res.json({ success: true, timeline: [] });
     }
 
-    // Get productivity summaries for timeline data
+    
     const summaries = await ProductivitySummary.find({
       userId
     }).sort({ date: -1 }).limit(30).lean();
 
     const timeline = [];
 
-    // Add badge achievements to timeline
+    
     gamification.badges.forEach(badge => {
       timeline.push({
         id: `badge_${badge.badgeId}`,
@@ -265,7 +241,7 @@ router.get('/timeline', auth, async (req, res) => {
       });
     });
 
-    // Add completed challenges to timeline
+    
     gamification.challenges.filter(c => c.completed).forEach(challenge => {
       timeline.push({
         id: `challenge_${challenge.challengeId}`,
@@ -281,11 +257,11 @@ router.get('/timeline', auth, async (req, res) => {
       });
     });
 
-    // Add significant focus score improvements
+    
     let lastFocusScore = 0;
     summaries.forEach(summary => {
       if (summary.focusScore > lastFocusScore + 15) {
-        // Significant improvement (15% or more)
+        
         timeline.push({
           id: `focus_${summary.date}`,
           type: 'improvement',
@@ -301,7 +277,7 @@ router.get('/timeline', auth, async (req, res) => {
       lastFocusScore = summary.focusScore;
     });
 
-    // Add streak milestones
+    
     if (gamification.streaks.current >= 3) {
       timeline.push({
         id: `streak_${gamification.streaks.current}`,
@@ -315,7 +291,7 @@ router.get('/timeline', auth, async (req, res) => {
       });
     }
 
-    // Sort timeline by date (newest first)
+    
     timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     res.json({
@@ -328,12 +304,12 @@ router.get('/timeline', auth, async (req, res) => {
   }
 });
 
-// Add this endpoint for joining challenges
+
 router.post('/challenges/:challengeId/join', auth, gamificationController.joinChallenge);
 
-// Helper functions
+
 function calculateNextLevelPoints(currentLevel) {
-  // Formula: base points × (level multiplier)²
+  
   const basePoints = 100;
   const nextLevel = currentLevel + 1;
   return Math.floor(basePoints * Math.pow(nextLevel, 2));
@@ -345,13 +321,13 @@ function calculateProgressPercentage(currentPoints, currentLevel) {
   const pointsNeeded = nextLevelPoints - currentLevelPoints;
   const pointsAchieved = Math.max(0, currentPoints - currentLevelPoints);
 
-  // Calculate percentage, ensuring it stays between 0-100
+  
   const percentage = Math.min(100, Math.max(0, Math.floor((pointsAchieved / pointsNeeded) * 100)));
 
   return percentage;
 }
 
-// Helper function to determine badge type based on reward points
+
 function determineBadgeType(points) {
   if (!points) return 'bronze';
 
@@ -364,7 +340,7 @@ function determineBadgeType(points) {
   return 'bronze';
 }
 
-// Heatmap data for streak calendar
+
 router.get('/heatmap', auth, gamificationController.getHeatmapData);
 
 module.exports = router;

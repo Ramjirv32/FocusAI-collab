@@ -1,7 +1,7 @@
 const Todo = require('../models/Todo');
 const mongoose = require('mongoose');
 
-// Get all todos for a user
+
 const getTodos = async (req, res) => {
   try {
     const { completed, category, priority, startDate, endDate, overdue } = req.query;
@@ -17,7 +17,7 @@ const getTodos = async (req, res) => {
       filter.priority = priority;
     }
     
-    // Date range filtering for calendar view
+    
     if (startDate && endDate) {
       filter.dueDate = {
         $gte: new Date(startDate),
@@ -25,14 +25,14 @@ const getTodos = async (req, res) => {
       };
     }
     
-    // Filter overdue todos
+    
     if (overdue === 'true') {
       filter.dueDate = { $lt: new Date() };
       filter.completed = false;
     }
 
     const todos = await Todo.find(filter)
-      .sort({ dueDate: 1, createdAt: -1 }) // Sort by due date first
+      .sort({ dueDate: 1, createdAt: -1 }) 
       .lean();
 
     res.json({
@@ -49,7 +49,7 @@ const getTodos = async (req, res) => {
   }
 };
 
-// Create a new todo
+
 const createTodo = async (req, res) => {
   try {
     const { title, description, priority, dueDate, category } = req.body;
@@ -87,20 +87,20 @@ const createTodo = async (req, res) => {
   }
 };
 
-// Update a todo
+
 const updateTodo = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
 
-    // If marking as completed, set completedAt timestamp
+    
     if (updates.completed === true) {
       updates.completedAt = new Date();
     } else if (updates.completed === false) {
       updates.completedAt = null;
     }
 
-    // Handle due date updates
+    
     if (updates.dueDate) {
       updates.dueDate = new Date(updates.dueDate);
     }
@@ -133,7 +133,7 @@ const updateTodo = async (req, res) => {
   }
 };
 
-// Delete a todo
+
 const deleteTodo = async (req, res) => {
   try {
     const { id } = req.params;
@@ -164,12 +164,12 @@ const deleteTodo = async (req, res) => {
   }
 };
 
-// Get todo statistics
+
 const getTodoStats = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Get today's date range (start and end of today)
+    
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
@@ -240,13 +240,13 @@ const getTodoStats = async (req, res) => {
   }
 };
 
-// Get todos for calendar view (grouped by date)
+
 const getTodosForCalendar = async (req, res) => {
   try {
     const { year, month } = req.query;
     const userId = req.user._id;
 
-    // Default to current month if not provided
+    
     const currentDate = new Date();
     const targetYear = year ? parseInt(year) : currentDate.getFullYear();
     const targetMonth = month ? parseInt(month) : currentDate.getMonth();
@@ -264,11 +264,11 @@ const getTodosForCalendar = async (req, res) => {
     .sort({ dueDate: 1, priority: -1 })
     .lean();
 
-    // Group todos by date - Fix timezone issue
+    
     const groupedTodos = {};
     todos.forEach(todo => {
       if (todo.dueDate) {
-        // Use the local date instead of UTC date to avoid timezone issues
+        
         const dueDateObj = new Date(todo.dueDate);
         const year = dueDateObj.getFullYear();
         const month = String(dueDateObj.getMonth() + 1).padStart(2, '0');
@@ -300,7 +300,7 @@ const getTodosForCalendar = async (req, res) => {
   }
 };
 
-// Get upcoming todos (next 7 days)
+
 const getUpcomingTodos = async (req, res) => {
   try {
     const userId = req.user._id;

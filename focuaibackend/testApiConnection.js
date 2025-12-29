@@ -1,9 +1,6 @@
 const axios = require('axios');
 
-/**
- * Test script to verify API connections to the Focus AI backend
- * Run this with: node src/utils/testApiConnection.js
- */
+
 
 const AI_API_BASE_URL = 'http://localhost:8000';
 const TEST_USER_ID = '6885b9202e0e815cf52a94a7';
@@ -15,7 +12,7 @@ const runTests = async () => {
   console.log('-----------------------------------');
   
   try {
-    // 1. Test basic connection
+    
     console.log('1️⃣ Testing basic API connection...');
     try {
       const rootResponse = await axios.get(AI_API_BASE_URL + '/');
@@ -26,7 +23,7 @@ const runTests = async () => {
       return;
     }
     
-    // 2. Test seeding data
+    
     console.log('\n2️⃣ Testing data seeding...');
     const today = new Date().toISOString().split('T')[0];
     try {
@@ -39,7 +36,7 @@ const runTests = async () => {
       }
     }
     
-    // 3. Test focus analysis
+    
     console.log('\n3️⃣ Testing focus analysis endpoint...');
     try {
       const analysisResponse = await axios.get(`${AI_API_BASE_URL}/user/${TEST_USER_ID}/focus-analysis?date=${today}`);
@@ -54,7 +51,7 @@ const runTests = async () => {
       }
     }
     
-    // 4. Test quick stats
+    
     console.log('\n4️⃣ Testing quick stats endpoint...');
     try {
       const statsResponse = await axios.get(`${AI_API_BASE_URL}/user/${TEST_USER_ID}/quick-stats?date=${today}`);

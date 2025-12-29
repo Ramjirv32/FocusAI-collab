@@ -73,7 +73,7 @@ const GamificationSchema = new mongoose.Schema({
   ],
   timeline: [
     {
-      type: String, // badge, challenge, improvement, streak, level
+      type: String, 
       title: String,
       description: String,
       date: {

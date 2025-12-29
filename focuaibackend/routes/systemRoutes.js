@@ -3,7 +3,7 @@ const router = express.Router();
 const { spawn } = require('child_process');
 const auth = require('../middleware/auth');
 
-// POST /api/system/os-dnd { enabled: boolean }
+
 router.post('/os-dnd', auth, async (req, res) => {
   try {
     if (process.env.ENABLE_OS_DND !== 'true') {
@@ -18,8 +18,8 @@ router.post('/os-dnd', auth, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Missing or invalid enabled flag' });
     }
 
-    // Toggle toast notifications globally via registry (best-effort)
-    // 0 = disabled (DND on), 1 = enabled (DND off)
+    
+    
     const value = enabled ? 0 : 1;
     const regPath = 'HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Notifications\\Settings';
     const psCommand = `Try { \\

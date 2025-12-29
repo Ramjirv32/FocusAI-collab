@@ -10,7 +10,7 @@ const focusAreaSchema = new mongoose.Schema({
 
 const FocusResultSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.Mixed, // Accept both String and ObjectId
+    type: mongoose.Schema.Types.Mixed, 
     required: true,
     index: true
   },
@@ -49,7 +49,7 @@ const FocusResultSchema = new mongoose.Schema({
   }
 });
 
-// Compound index to ensure unique user per day
+
 FocusResultSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model('FocusResult', FocusResultSchema);

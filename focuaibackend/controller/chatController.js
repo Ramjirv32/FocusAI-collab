@@ -3,7 +3,7 @@ const TabUsage = require('../models/TabUsage');
 const ProductivitySummary = require('../models/ProductivitySummary');
 const ChatHistory = require('../models/ChatHistory');
 
-// Helper function to get user's productivity data - SAME LOGIC AS usageController.js
+
 const getUserProductivityData = async (userId, email, date = null) => {
   try {
     const targetDate = date || new Date().toISOString().slice(0, 10);
@@ -11,7 +11,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
     console.log(`👤 User: ${email} (ID: ${userId})`);
     console.log(`📅 Target date: ${targetDate}`);
 
-    // First try to get existing ProductivitySummary - SAME AS usageController
+    
     let summary = await ProductivitySummary.findOne({
       userId: userId,
       email: email,
@@ -20,7 +20,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
 
     console.log(`📊 ProductivitySummary found for ${targetDate}: ${!!summary}`);
 
-    // If no summary for today, get the latest one - SAME AS usageController
+    
     if (!summary) {
       console.log(`⚠️ No summary for ${targetDate}, getting latest...`);
       summary = await ProductivitySummary.findOne({
@@ -34,7 +34,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
       }
     }
 
-    // If still no summary, calculate from raw data - SAME AS usageController getUserStats
+    
     if (!summary) {
       console.log(`🔄 No ProductivitySummary found, calculating from raw usage...`);
 
@@ -43,7 +43,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
       const startDate = new Date(targetDate);
       startDate.setHours(0, 0, 0, 0);
 
-      // Get app and tab usage - EXACT SAME QUERY PATTERN AS usageController
+      
       const [appUsage, tabUsage] = await Promise.all([
         AppUsage.find({
           email: email,
@@ -75,7 +75,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
       const totalTabTime = tabUsage.reduce((sum, tab) => sum + (tab.duration || 0), 0);
       const totalActiveTime = totalAppTime + totalTabTime;
 
-      // Classify apps - SAME LOGIC AS usageController
+      
       const productiveApps = appUsage.filter(app => classifyApp(app.appName) === 'productive');
       const productiveTime = productiveApps.reduce((sum, app) => sum + (app.duration || 0), 0);
 
@@ -84,7 +84,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
 
       const focusScore = totalActiveTime > 0 ? Math.round((productiveTime / totalActiveTime) * 100) : 0;
 
-      // Get top apps - SAME LOGIC AS usageController
+      
       const topApps = getTopItems(appUsage, 'appName');
       const topSites = getTopItems(tabUsage, 'domain');
 
@@ -93,12 +93,12 @@ const getUserProductivityData = async (userId, email, date = null) => {
       return {
         date: targetDate,
         focusScore: focusScore,
-        // Convert seconds directly to hours
-        totalProductiveTime: Math.round(productiveTime / 60), // in minutes
-        totalNonProductiveTime: Math.round(distractionTime / 60), // in minutes
-        overallTotalUsage: Math.round(totalActiveTime / 60), // in minutes
-        productiveHours: Math.round(productiveTime / 3600 * 10) / 10, // in hours, rounded to 1 decimal
-        distractionHours: Math.round(distractionTime / 3600 * 10) / 10, // in hours, rounded to 1 decimal
+        
+        totalProductiveTime: Math.round(productiveTime / 60), 
+        totalNonProductiveTime: Math.round(distractionTime / 60), 
+        overallTotalUsage: Math.round(totalActiveTime / 60), 
+        productiveHours: Math.round(productiveTime / 3600 * 10) / 10, 
+        distractionHours: Math.round(distractionTime / 3600 * 10) / 10, 
         maxProductiveApp: topApps[0]?.name || 'Not identified',
         mostUsedApp: topApps[0]?.name || 'Not identified',
         mostVisitedTab: topSites[0]?.name || 'Not identified',
@@ -107,7 +107,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
         uniqueApps: new Set(appUsage.map(app => app.appName)).size,
         uniqueSites: new Set(tabUsage.map(tab => tab.domain)).size,
         sessionsCompleted: appUsage.length,
-        isCalculated: true, // Flag to show this was calculated, not from summary
+        isCalculated: true, 
         productiveContent: productiveApps.reduce((acc, app) => {
           acc[app.appName] = (acc[app.appName] || 0) + app.duration;
           return acc;
@@ -119,7 +119,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
       };
     }
 
-    // Return existing summary data - FORMAT SAME AS usageController
+    
     console.log(`✅ Using existing ProductivitySummary:`, {
       date: summary.date,
       focusScore: summary.focusScore,
@@ -133,8 +133,8 @@ const getUserProductivityData = async (userId, email, date = null) => {
       totalProductiveTime: summary.totalProductiveTime,
       totalNonProductiveTime: summary.totalNonProductiveTime,
       overallTotalUsage: summary.overallTotalUsage,
-      productiveHours: Math.round((summary.totalProductiveTime * 60 || 0) / 3600 * 10) / 10, // convert minutes to hours
-      distractionHours: Math.round((summary.totalNonProductiveTime * 60 || 0) / 3600 * 10) / 10, // convert minutes to hours
+      productiveHours: Math.round((summary.totalProductiveTime * 60 || 0) / 3600 * 10) / 10, 
+      distractionHours: Math.round((summary.totalNonProductiveTime * 60 || 0) / 3600 * 10) / 10, 
       maxProductiveApp: summary.maxProductiveApp,
       mostUsedApp: summary.mostUsedApp,
       mostVisitedTab: summary.mostVisitedTab,
@@ -155,7 +155,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
   }
 };
 
-// Helper function to get top items from an object
+
 function getTopItemsFromObject(items, limit = 5) {
   return Object.entries(items)
     .sort(([, a], [, b]) => b - a)
@@ -163,7 +163,7 @@ function getTopItemsFromObject(items, limit = 5) {
     .map(([name, duration]) => ({ name, duration: Math.round(duration / 60) }));
 }
 
-// Helper functions - SAME AS usageController.js
+
 function classifyApp(appName) {
   const appLower = appName.toLowerCase();
 
@@ -208,18 +208,18 @@ function getTopItems(items, field) {
   return Object.entries(grouped)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
-    .map(([name, duration]) => ({ name, duration: Math.round(duration / 60) })); // Convert to minutes
+    .map(([name, duration]) => ({ name, duration: Math.round(duration / 60) })); 
 }
 
-// Helper function to format time duration
+
 const formatTime = (minutes) => {
   if (!minutes || minutes === 0) return '0 hours';
 
-  // Always convert to hours for display
+  
   const hours = minutes / 60;
 
   if (hours < 1) {
-    return `${Math.round(minutes)} minutes`; // Keep minutes only for very small durations
+    return `${Math.round(minutes)} minutes`; 
   }
 
   if (hours % 1 === 0) {
@@ -229,11 +229,11 @@ const formatTime = (minutes) => {
   return `${Math.floor(hours)} hour${Math.floor(hours) > 1 ? 's' : ''} ${Math.round(minutes % 60)} min`;
 };
 
-// Helper function to get top apps text
+
 const getTopAppsText = (appsData, limit = 3) => {
   if (Array.isArray(appsData)) {
     return appsData.slice(0, limit).map(app => {
-      // Convert to hours for display
+      
       const hours = app.duration / 60;
       if (hours < 1) {
         return `${app.name} (${app.duration}min)`;
@@ -250,7 +250,7 @@ const getTopAppsText = (appsData, limit = 3) => {
       .sort(([, a], [, b]) => b - a)
       .slice(0, limit)
       .map(([app, time]) => {
-        // Convert minutes to hours
+        
         const hours = time / 60;
         if (hours < 1) {
           return `${app} (${Math.round(time)}min)`;
@@ -264,7 +264,7 @@ const getTopAppsText = (appsData, limit = 3) => {
   return 'No apps recorded';
 };
 
-// Calculate user streak
+
 const calculateStreak = async (userId) => {
   try {
     const today = new Date().toISOString().slice(0, 10);
@@ -299,7 +299,7 @@ const calculateStreak = async (userId) => {
   }
 };
 
-// New helper function to fetch all productivity summaries for a user
+
 const getAllProductivitySummaries = async (email) => {
   try {
     console.log(`\n📊 === FETCHING ALL PRODUCTIVITY SUMMARIES ===`);
@@ -316,7 +316,7 @@ const getAllProductivitySummaries = async (email) => {
   }
 };
 
-// Updated sendMessage function to include historical productivity data
+
 const sendMessage = async (req, res) => {
   try {
     const { message, historyId, userData } = req.body;
@@ -336,31 +336,31 @@ const sendMessage = async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Get user's productivity data - SAME PATTERN AS usageController
-    // Prioritize user data sent from frontend if available
+    
+    
     let productivityData = userData;
 
-    // If no userData provided, try to get it from the database
+    
     if (!productivityData) {
       try {
         productivityData = await getUserProductivityData(userId, email);
       } catch (dataError) {
         console.error('Error fetching productivity data from database:', dataError);
-        // Continue without productivity data
+        
       }
     }
 
-    // Get all productivity summaries for historical analysis
+    
     let allProductivitySummaries = [];
     try {
       allProductivitySummaries = await getAllProductivitySummaries(email);
       console.log(`📈 Retrieved ${allProductivitySummaries.length} historical productivity summaries`);
     } catch (summariesError) {
       console.error('Error fetching historical productivity summaries:', summariesError);
-      // Continue with whatever data we have
+      
     }
 
-    // 1. Manage Chat History (Find or Create)
+    
     let chatHistory;
     try {
       if (historyId && historyId.match(/^[0-9a-fA-F]{24}$/)) {
@@ -383,7 +383,7 @@ const sendMessage = async (req, res) => {
       chatHistory = { messages: [] };
     }
 
-    // Build historical trends section if we have multiple data points
+    
     let historicalTrendsSection = "";
     if (allProductivitySummaries && allProductivitySummaries.length > 1) {
       const sortedSummaries = [...allProductivitySummaries].sort((a, b) =>
@@ -408,11 +408,11 @@ HISTORICAL TRENDS (${sortedSummaries.length} days of data):
 `;
     }
 
-    // 2. Build Groq Messages with Context
+    
     let systemPrompt = "";
 
     if (productivityData) {
-      // Robustly extract metrics
+      
       const focusScore = productivityData.focusScore || 0;
       const totalProdMinutes = productivityData.totalProductiveTime || productivityData.productiveTime || 0;
       const totalDistMinutes = productivityData.totalNonProductiveTime || productivityData.distractionTime || 0;
@@ -462,7 +462,7 @@ USER QUESTION: "${message}"`;
       }
     ];
 
-    // Add previous messages for context (last 10)
+    
     if (chatHistory.messages && chatHistory.messages.length > 0) {
       const historyContext = chatHistory.messages.slice(-10).map(msg => ({
         role: msg.isUser ? "user" : "assistant",
@@ -471,7 +471,7 @@ USER QUESTION: "${message}"`;
       groqMessages.push(...historyContext);
     }
 
-    // Add current user message
+    
     groqMessages.push({
       role: "user",
       content: message
@@ -479,7 +479,7 @@ USER QUESTION: "${message}"`;
 
     console.log(`🤖 Sending request to Groq with ${groqMessages.length} total messages (Context: ${Math.max(0, groqMessages.length - 2)})`);
 
-    // 3. Create chat completion using AI Provider
+    
     const aiProvider = require('../utils/aiProvider');
     const aiResponse = await aiProvider.createChatCompletion({
       messages: groqMessages,
@@ -489,16 +489,16 @@ USER QUESTION: "${message}"`;
 
     console.log(`✅ Generated ${productivityData ? 'PERSONALIZED' : 'GENERAL'} response`);
 
-    // 4. Update and Save Chat History
+    
     try {
-      // Add user message to history
+      
       chatHistory.messages.push({
         content: message,
         isUser: true,
         timestamp: new Date()
       });
 
-      // Add AI response to history
+      
       chatHistory.messages.push({
         content: aiResponse,
         isUser: false,
@@ -522,7 +522,7 @@ USER QUESTION: "${message}"`;
 
     console.log(`💬 === CHAT REQUEST END ===\n`);
 
-    // Return enhanced response
+    
     res.json({
       success: true,
       response: aiResponse,
@@ -545,7 +545,7 @@ USER QUESTION: "${message}"`;
   } catch (error) {
     console.error('❌ Chat controller error:', error);
 
-    // Check if it's an invalid API key error
+    
     if (error.message && (
       error.message.includes('Invalid API Key') ||
       error.message.includes('invalid_api_key') ||
@@ -560,7 +560,7 @@ USER QUESTION: "${message}"`;
       });
     }
 
-    // Generic error response
+    
     res.status(500).json({
       success: false,
       error: 'Failed to process message',
