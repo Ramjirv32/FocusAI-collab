@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 
-const AI_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; 
-const MODEL_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000'; 
-const BACKEND_API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'; 
+const AI_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
+const MODEL_API_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:8000';
+const BACKEND_API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 
 
 const getAuthHeader = () => {
@@ -26,7 +26,7 @@ const logError = (message, error) => {
 
 const getUserId = () => {
   try {
-    
+
     const userStr = localStorage.getItem('user');
     if (userStr) {
       const user = JSON.parse(userStr);
@@ -35,7 +35,7 @@ const getUserId = () => {
       }
     }
 
-    
+
     const token = localStorage.getItem('token');
     if (token) {
       const base64Url = token.split('.')[1];
@@ -50,8 +50,8 @@ const getUserId = () => {
       }
     }
 
-    
-    
+
+
     if (process.env.NODE_ENV === 'development') {
       return '6885b9202e0e815cf52a94a7';
     }
@@ -65,12 +65,12 @@ const getUserId = () => {
 };
 
 
-let activeModelServerUrl = AI_API_URL; 
+let activeModelServerUrl = AI_API_URL;
 
 
 export const testAiServerConnection = async () => {
   try {
-    
+
     if (activeModelServerUrl) {
       try {
         const response = await axios.get(`${activeModelServerUrl}/`);
@@ -80,13 +80,13 @@ export const testAiServerConnection = async () => {
           timestamp: new Date().toISOString()
         };
       } catch (cachedError) {
-        
+
         activeModelServerUrl = null;
         logDebug('Cached server no longer responding, trying alternatives');
       }
     }
 
-    
+
     try {
       const response = await axios.get(`${AI_API_URL}/`);
       activeModelServerUrl = AI_API_URL;
@@ -96,7 +96,7 @@ export const testAiServerConnection = async () => {
         timestamp: new Date().toISOString()
       };
     } catch (firstError) {
-      
+
       try {
         logDebug('Main AI server failed, trying model server');
         const modelResponse = await axios.get(`${MODEL_API_URL}/`);
@@ -107,7 +107,7 @@ export const testAiServerConnection = async () => {
           timestamp: new Date().toISOString()
         };
       } catch (secondError) {
-        
+
         try {
           const healthResponse = await axios.get(`${AI_API_URL}/health`);
           activeModelServerUrl = AI_API_URL;
@@ -163,7 +163,7 @@ export const syncFocusData = async (date = null) => {
 
     logDebug(`Starting focus data sync for user ${userId}`);
 
-    
+
     const connectionTest = await testAiServerConnection();
     if (!connectionTest.status) {
       throw new Error(`Cannot connect to AI server: ${connectionTest.message}`);
@@ -172,21 +172,21 @@ export const syncFocusData = async (date = null) => {
     const headers = getAuthHeader();
     const formattedDate = date || new Date().toISOString().split('T')[0];
 
-    
+
     logDebug('Fetching app usage data from backend...');
     const appResponse = await axios.get(`${BACKEND_API_URL}/focus-data`, {
       headers,
       params: { date: formattedDate }
     });
 
-    
+
     logDebug('Fetching tab data from backend...');
     const tabResponse = await axios.get(`${BACKEND_API_URL}/tabs`, {
       headers,
       params: { date: formattedDate }
     });
 
-    
+
     const combinedData = {
       userId: userId,
       date: formattedDate,
@@ -197,7 +197,7 @@ export const syncFocusData = async (date = null) => {
 
     logDebug(`Sending ${combinedData.appUsage.length} app records and ${combinedData.tabUsage.length} tab records for AI analysis`);
 
-    
+
     const serverUrl = activeModelServerUrl || MODEL_API_URL;
     const response = await axios.post(
       `${serverUrl}/sync-user-data/${userId}`,
@@ -207,7 +207,7 @@ export const syncFocusData = async (date = null) => {
 
     logDebug('Focus data sync successful:', response.data);
 
-    
+
     const statsResponse = await getQuickStats(formattedDate);
 
     return statsResponse;
@@ -230,7 +230,7 @@ export const getQuickStats = async (date = null) => {
 
     logDebug(`Fetching quick stats for user ${userId} on ${formattedDate}`);
 
-    
+
     const serverUrl = activeModelServerUrl || MODEL_API_URL;
     const response = await axios.get(
       `${serverUrl}/user/${userId}/quick-stats`,
@@ -250,7 +250,7 @@ export const getQuickStats = async (date = null) => {
   } catch (error) {
     logError('Error getting quick stats:', error);
 
-    
+
     return {
       user_id: getUserId(),
       date: date || new Date().toISOString().split('T')[0],
@@ -297,7 +297,7 @@ export const getFocusAnalysis = async (date = null) => {
   } catch (error) {
     logError('Error getting focus analysis:', error);
 
-    
+
     return {
       user_id: getUserId(),
       date: date || new Date().toISOString().split('T')[0],
@@ -311,6 +311,17 @@ export const getFocusAnalysis = async (date = null) => {
 };
 
 
+export const getHeatmapData = async () => {
+  try {
+    const headers = getAuthHeader();
+    const response = await axios.get(`${BACKEND_API_URL}/api/gamification/heatmap`, { headers });
+    return response.data.heatmap || [];
+  } catch (error) {
+    logError('Error fetching heatmap data:', error);
+    return [];
+  }
+};
+
 export const getConsolidatedFocusData = async (date = null) => {
   try {
     const userId = getUserId();
@@ -322,7 +333,7 @@ export const getConsolidatedFocusData = async (date = null) => {
 
     const formattedDate = date || new Date().toISOString().split('T')[0];
 
-    
+
     const [appData, tabData, quickStats, focusAnalysis] = await Promise.all([
       fetchAppUsageData(formattedDate),
       axios.get(`${BACKEND_API_URL}/tabs`, {
@@ -336,8 +347,8 @@ export const getConsolidatedFocusData = async (date = null) => {
       getFocusAnalysis(formattedDate)
     ]);
 
-    
-    
+
+
     const needsSync = (
       (appData?.appUsage?.length > 0 || tabData?.length > 0) &&
       (!quickStats?.quick_stats?.productivity_score || quickStats.quick_stats.productivity_score === 0)

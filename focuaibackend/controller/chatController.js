@@ -11,7 +11,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
     console.log(`👤 User: ${email} (ID: ${userId})`);
     console.log(`📅 Target date: ${targetDate}`);
 
-    
+
     let summary = await ProductivitySummary.findOne({
       userId: userId,
       email: email,
@@ -20,7 +20,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
 
     console.log(`📊 ProductivitySummary found for ${targetDate}: ${!!summary}`);
 
-    
+
     if (!summary) {
       console.log(`⚠️ No summary for ${targetDate}, getting latest...`);
       summary = await ProductivitySummary.findOne({
@@ -34,7 +34,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
       }
     }
 
-    
+
     if (!summary) {
       console.log(`🔄 No ProductivitySummary found, calculating from raw usage...`);
 
@@ -43,7 +43,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
       const startDate = new Date(targetDate);
       startDate.setHours(0, 0, 0, 0);
 
-      
+
       const [appUsage, tabUsage] = await Promise.all([
         AppUsage.find({
           email: email,
@@ -75,7 +75,7 @@ const getUserProductivityData = async (userId, email, date = null) => {
       const totalTabTime = tabUsage.reduce((sum, tab) => sum + (tab.duration || 0), 0);
       const totalActiveTime = totalAppTime + totalTabTime;
 
-      
+
       const productiveApps = appUsage.filter(app => classifyApp(app.appName) === 'productive');
       const productiveTime = productiveApps.reduce((sum, app) => sum + (app.duration || 0), 0);
 
@@ -84,21 +84,25 @@ const getUserProductivityData = async (userId, email, date = null) => {
 
       const focusScore = totalActiveTime > 0 ? Math.round((productiveTime / totalActiveTime) * 100) : 0;
 
-      
+
       const topApps = getTopItems(appUsage, 'appName');
       const topSites = getTopItems(tabUsage, 'domain');
 
+      const streak = await calculateStreak(userId);
       console.log(`✅ Calculated stats: Focus Score ${focusScore}%, Active Time ${Math.round(totalActiveTime / 60)}min`);
+
+      const productiveMinutes = Math.round(productiveTime / 60);
+      const distractionMinutes = Math.round(distractionTime / 60);
 
       return {
         date: targetDate,
         focusScore: focusScore,
-        
-        totalProductiveTime: Math.round(productiveTime / 60), 
-        totalNonProductiveTime: Math.round(distractionTime / 60), 
-        overallTotalUsage: Math.round(totalActiveTime / 60), 
-        productiveHours: Math.round(productiveTime / 3600 * 10) / 10, 
-        distractionHours: Math.round(distractionTime / 3600 * 10) / 10, 
+
+        totalProductiveTime: productiveMinutes,
+        totalNonProductiveTime: distractionMinutes,
+        overallTotalUsage: Math.round(totalActiveTime / 60),
+        productiveHours: productiveMinutes, // Frontend expects minutes
+        distractionHours: distractionMinutes,
         maxProductiveApp: topApps[0]?.name || 'Not identified',
         mostUsedApp: topApps[0]?.name || 'Not identified',
         mostVisitedTab: topSites[0]?.name || 'Not identified',
@@ -107,7 +111,8 @@ const getUserProductivityData = async (userId, email, date = null) => {
         uniqueApps: new Set(appUsage.map(app => app.appName)).size,
         uniqueSites: new Set(tabUsage.map(tab => tab.domain)).size,
         sessionsCompleted: appUsage.length,
-        isCalculated: true, 
+        isCalculated: true,
+        streak: streak,
         productiveContent: productiveApps.reduce((acc, app) => {
           acc[app.appName] = (acc[app.appName] || 0) + app.duration;
           return acc;
@@ -119,29 +124,40 @@ const getUserProductivityData = async (userId, email, date = null) => {
       };
     }
 
-    
+
+    // Calculate additional stats
+    const streak = await calculateStreak(userId);
+    const uniqueApps = summary.productiveContent ?
+      (summary.productiveContent instanceof Map ? summary.productiveContent.size : Object.keys(summary.productiveContent).length) : 0;
+
     console.log(`✅ Using existing ProductivitySummary:`, {
       date: summary.date,
       focusScore: summary.focusScore,
       totalProductiveTime: summary.totalProductiveTime,
-      hasProductiveContent: !!(summary.productiveContent && Object.keys(summary.productiveContent).length > 0)
+      hasProductiveContent: !!(summary.productiveContent && (summary.productiveContent.size > 0 || Object.keys(summary.productiveContent).length > 0))
     });
+
+    // In summary, totalProductiveTime is stored in SECONDS
+    // The frontend formatMinutesToHoursAndMinutes expects MINUTES
+    const productiveMinutes = Math.round((summary.totalProductiveTime || 0) / 60);
+    const distractionMinutes = Math.round((summary.totalNonProductiveTime || 0) / 60);
 
     return {
       date: summary.date,
       focusScore: summary.focusScore,
-      totalProductiveTime: summary.totalProductiveTime,
-      totalNonProductiveTime: summary.totalNonProductiveTime,
-      overallTotalUsage: summary.overallTotalUsage,
-      productiveHours: Math.round((summary.totalProductiveTime * 60 || 0) / 3600 * 10) / 10, 
-      distractionHours: Math.round((summary.totalNonProductiveTime * 60 || 0) / 3600 * 10) / 10, 
-      maxProductiveApp: summary.maxProductiveApp,
-      mostUsedApp: summary.mostUsedApp,
-      mostVisitedTab: summary.mostVisitedTab,
+      totalProductiveTime: productiveMinutes,
+      totalNonProductiveTime: distractionMinutes,
+      overallTotalUsage: Math.round((summary.overallTotalUsage || 0) / 60),
+      productiveHours: productiveMinutes, // Frontend expects minutes despite the name
+      distractionHours: distractionMinutes,
+      maxProductiveApp: summary.maxProductiveApp || 'Not identified',
+      mostUsedApp: summary.mostUsedApp || 'Not identified',
+      mostVisitedTab: summary.mostVisitedTab || 'Not identified',
       productiveContent: summary.productiveContent || {},
       distractionContent: summary.distractionContent || {},
       distractionApps: summary.distractionApps || {},
-      streak: summary.streak || 0,
+      streak: streak,
+      uniqueApps: uniqueApps,
       level: summary.level || 1,
       totalPoints: summary.totalPoints || 0,
       isCalculated: false,
@@ -208,18 +224,18 @@ function getTopItems(items, field) {
   return Object.entries(grouped)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
-    .map(([name, duration]) => ({ name, duration: Math.round(duration / 60) })); 
+    .map(([name, duration]) => ({ name, duration: Math.round(duration / 60) }));
 }
 
 
 const formatTime = (minutes) => {
   if (!minutes || minutes === 0) return '0 hours';
 
-  
+
   const hours = minutes / 60;
 
   if (hours < 1) {
-    return `${Math.round(minutes)} minutes`; 
+    return `${Math.round(minutes)} minutes`;
   }
 
   if (hours % 1 === 0) {
@@ -233,7 +249,7 @@ const formatTime = (minutes) => {
 const getTopAppsText = (appsData, limit = 3) => {
   if (Array.isArray(appsData)) {
     return appsData.slice(0, limit).map(app => {
-      
+
       const hours = app.duration / 60;
       if (hours < 1) {
         return `${app.name} (${app.duration}min)`;
@@ -250,7 +266,7 @@ const getTopAppsText = (appsData, limit = 3) => {
       .sort(([, a], [, b]) => b - a)
       .slice(0, limit)
       .map(([app, time]) => {
-        
+
         const hours = time / 60;
         if (hours < 1) {
           return `${app} (${Math.round(time)}min)`;
@@ -336,31 +352,31 @@ const sendMessage = async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    
-    
+
+
     let productivityData = userData;
 
-    
+
     if (!productivityData) {
       try {
         productivityData = await getUserProductivityData(userId, email);
       } catch (dataError) {
         console.error('Error fetching productivity data from database:', dataError);
-        
+
       }
     }
 
-    
+
     let allProductivitySummaries = [];
     try {
       allProductivitySummaries = await getAllProductivitySummaries(email);
       console.log(`📈 Retrieved ${allProductivitySummaries.length} historical productivity summaries`);
     } catch (summariesError) {
       console.error('Error fetching historical productivity summaries:', summariesError);
-      
+
     }
 
-    
+
     let chatHistory;
     try {
       if (historyId && historyId.match(/^[0-9a-fA-F]{24}$/)) {
@@ -383,7 +399,7 @@ const sendMessage = async (req, res) => {
       chatHistory = { messages: [] };
     }
 
-    
+
     let historicalTrendsSection = "";
     if (allProductivitySummaries && allProductivitySummaries.length > 1) {
       const sortedSummaries = [...allProductivitySummaries].sort((a, b) =>
@@ -408,11 +424,11 @@ HISTORICAL TRENDS (${sortedSummaries.length} days of data):
 `;
     }
 
-    
+
     let systemPrompt = "";
 
     if (productivityData) {
-      
+
       const focusScore = productivityData.focusScore || 0;
       const totalProdMinutes = productivityData.totalProductiveTime || productivityData.productiveTime || 0;
       const totalDistMinutes = productivityData.totalNonProductiveTime || productivityData.distractionTime || 0;
@@ -462,7 +478,7 @@ USER QUESTION: "${message}"`;
       }
     ];
 
-    
+
     if (chatHistory.messages && chatHistory.messages.length > 0) {
       const historyContext = chatHistory.messages.slice(-10).map(msg => ({
         role: msg.isUser ? "user" : "assistant",
@@ -471,7 +487,7 @@ USER QUESTION: "${message}"`;
       groqMessages.push(...historyContext);
     }
 
-    
+
     groqMessages.push({
       role: "user",
       content: message
@@ -479,7 +495,7 @@ USER QUESTION: "${message}"`;
 
     console.log(`🤖 Sending request to Groq with ${groqMessages.length} total messages (Context: ${Math.max(0, groqMessages.length - 2)})`);
 
-    
+
     const aiProvider = require('../utils/aiProvider');
     const aiResponse = await aiProvider.createChatCompletion({
       messages: groqMessages,
@@ -489,16 +505,16 @@ USER QUESTION: "${message}"`;
 
     console.log(`✅ Generated ${productivityData ? 'PERSONALIZED' : 'GENERAL'} response`);
 
-    
+
     try {
-      
+
       chatHistory.messages.push({
         content: message,
         isUser: true,
         timestamp: new Date()
       });
 
-      
+
       chatHistory.messages.push({
         content: aiResponse,
         isUser: false,
@@ -522,7 +538,7 @@ USER QUESTION: "${message}"`;
 
     console.log(`💬 === CHAT REQUEST END ===\n`);
 
-    
+
     res.json({
       success: true,
       response: aiResponse,
@@ -545,22 +561,23 @@ USER QUESTION: "${message}"`;
   } catch (error) {
     console.error('❌ Chat controller error:', error);
 
-    
+
     if (error.message && (
       error.message.includes('Invalid API Key') ||
       error.message.includes('invalid_api_key') ||
       error.message.includes('401') ||
       (error.error && error.error.code === 'invalid_api_key')
     )) {
+      const provider = process.env.AI_PROVIDER || 'groq';
       return res.status(401).json({
         success: false,
-        error: 'Invalid API Key',
-        message: 'Your Groq API key is not valid. Please update it in the API Key Manager (Key icon in header).',
-        response: "⚠️ Invalid API Key\n\nYour Groq API key is not valid or has expired. Please:\n\n1. Click the Key icon (🔑) in the header\n2. Enter a valid Groq API key\n3. Test the key to verify it works\n4. Save and restart the services\n\nGet a free API key at: https://console.groq.com/keys"
+        error: `Invalid ${provider.toUpperCase()} Configuration`,
+        message: `Your ${provider} configuration is not valid. Please update it in the AI Intelligence Settings.`,
+        response: `⚠️ Invalid ${provider} Setup\n\nYour ${provider} configuration is not valid or causing errors. Please check your settings in the AI Intelligence Settings (Cloud icon in header).`
       });
     }
 
-    
+
     res.status(500).json({
       success: false,
       error: 'Failed to process message',

@@ -47,11 +47,11 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
     return 'bg-emerald-600 dark:bg-emerald-400';
   };
 
-  
+
   const heatmapWeeks: { [key: number]: Date[] } = {};
   const currentDate = new Date(startDate);
 
-  
+
   for (let i = 0; i < 364; i++) {
     const weekNumber = getWeekNumber(currentDate);
     if (!heatmapWeeks[weekNumber]) {
@@ -68,7 +68,7 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
 
-  
+
   const monthStarts: { [key: number]: number } = {};
   let lastMonth = -1;
   weeks.forEach((week, weekIndex) => {
@@ -133,10 +133,10 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {}
+        { }
         <div className="overflow-x-auto pb-4">
           <div className="min-w-fit">
-            {}
+            { }
             <div className="flex ml-8 mb-2">
               {weeks.map((week, weekIndex) => (
                 <div
@@ -151,9 +151,9 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
               ))}
             </div>
 
-            {}
+            { }
             <div className="flex gap-1">
-              {}
+              { }
               <div className="flex flex-col justify-between pr-2">
                 {dayLabels.map((day, idx) => (
                   <div
@@ -165,7 +165,7 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
                 ))}
               </div>
 
-              {}
+              { }
               <div className="flex gap-1">
                 {weeks.map((week, weekIndex) => {
                   const isNewMonth = monthStarts[weekIndex] !== undefined;
@@ -177,11 +177,12 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
                       {week.map((date, dayIndex) => {
                         const score = getScoreForDate(date);
                         const colorClass = getColorClass(score);
-                        const dateStr = date.toISOString().slice(0, 10);
-                        const today = new Date().toISOString().slice(0, 10);
+                        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        const now = new Date();
+                        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                         const isToday = dateStr === today;
 
-                        
+
                         const monthName = date.toLocaleString('en-US', { month: 'short' });
                         const day = date.getDate();
                         const tooltipText = `${monthName} ${day}: Focus Score ${score}%${isToday ? ' (Today)' : ''}`;
@@ -203,9 +204,9 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
           </div>
         </div>
 
-        {}
+        { }
         <div className="space-y-4 border-t pt-4">
-          {}
+          { }
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Less</span>
             <div className="flex gap-1 items-center">
@@ -219,7 +220,7 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
             <span className="text-xs text-muted-foreground">More</span>
           </div>
 
-          {}
+          { }
           <div className="grid grid-cols-4 gap-3">
             <div className="text-center p-3 rounded-lg bg-muted/50">
               <div className="text-sm font-medium text-muted-foreground">Total</div>
@@ -243,7 +244,7 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
             </div>
           </div>
 
-          {}
+          { }
           <p className="text-xs text-muted-foreground text-center italic">
             🔥 Darker green = more productive! Keep your contributions consistent throughout the year.
           </p>

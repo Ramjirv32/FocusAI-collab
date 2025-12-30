@@ -44,24 +44,37 @@ document.addEventListener('DOMContentLoaded', function() {
   async function handleLogin() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
+    console.log('🔐 Attempting login for:', email);
+    
     try {
       const response = await fetch('http://localhost:5001/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+      
+      console.log('📡 Server response status:', response.status);
       const data = await response.json();
+      console.log('📥 Server response data:', data);
+      
       if (data && data.token && data.user && data.user.id) {
-        chrome.storage.local.set({ userId: data.user.id, email: data.user.email, token: data.token });
+        console.log('✅ Login successful, saving credentials...');
+        chrome.storage.local.set({ userId: data.user.id, email: data.user.email, token: data.token }, () => {
+          console.log('💾 Credentials saved to storage');
+        });
         chrome.runtime.sendMessage({ action: 'setCredentials', userId: data.user.id, email: data.user.email, token: data.token });
+        console.log('📤 Sent credentials to background script');
+        
         loginForm.classList.add('hidden');
         loggedInDiv.classList.remove('hidden');
         userEmailEl.textContent = data.user.email;
         showStatus('Logged in! Tab tracking enabled.', 'success');
       } else {
+        console.error('❌ Login failed:', data);
         showStatus('Login failed: ' + (data && (data.error || 'Unknown error')), 'error');
       }
     } catch (error) {
+      console.error('❌ Login error:', error);
       showStatus('Error connecting to server', 'error');
     }
   }

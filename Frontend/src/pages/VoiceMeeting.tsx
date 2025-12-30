@@ -27,19 +27,20 @@ export default function MeetingPage() {
   const messagesEndRef = useRef(null);
   const localStreamRef = useRef(null);
   const isRecognitionActive = useRef(false);
+  const utteranceRef = useRef(null);
 
-  
+
   const AI_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 
-  
+
   useEffect(() => {
     const initializeSpeechRecognition = () => {
       if ('webkitSpeechRecognition' in window) {
         const SpeechRecognition = window.webkitSpeechRecognition;
         recognitionRef.current = new SpeechRecognition();
 
-        
+
         recognitionRef.current.continuous = true;
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = 'en-US';
@@ -65,13 +66,13 @@ export default function MeetingPage() {
             }
           }
 
-          
+
           setTranscript(interimTranscript);
 
-          
+
           if (finalTranscript.trim()) {
             console.log("Final transcript:", finalTranscript);
-            setTranscript(""); 
+            setTranscript("");
             handleUserMessage(finalTranscript.trim());
           }
         };
@@ -85,7 +86,7 @@ export default function MeetingPage() {
             setIsListening(false);
           } else if (event.error === 'no-speech') {
             console.log("No speech detected, continuing...");
-            
+
             if (isListening) {
               setTimeout(() => {
                 startRecognition();
@@ -107,7 +108,7 @@ export default function MeetingPage() {
           console.log("Speech recognition ended");
           isRecognitionActive.current = false;
 
-          
+
           if (isListening && isMicrophoneEnabled) {
             setTimeout(() => {
               startRecognition();
@@ -116,10 +117,10 @@ export default function MeetingPage() {
         };
 
       } else if ('SpeechRecognition' in window) {
-        
+
         const SpeechRecognition = window.SpeechRecognition;
         recognitionRef.current = new SpeechRecognition();
-        
+
         setSpeechSupported(true);
       } else {
         console.warn("Speech recognition not supported in this browser");
@@ -130,7 +131,7 @@ export default function MeetingPage() {
     initializeSpeechRecognition();
 
     return () => {
-      
+
       if (recognitionRef.current && isRecognitionActive.current) {
         try {
           recognitionRef.current.stop();
@@ -142,14 +143,14 @@ export default function MeetingPage() {
         localStreamRef.current.getTracks().forEach(track => track.stop());
       }
 
-      
+
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
     };
   }, []);
 
-  
+
   const fetchProductivityData = async () => {
     setIsLoadingData(true);
     setDataError(null);
@@ -176,7 +177,7 @@ export default function MeetingPage() {
     }
   };
 
-  
+
   const startRecognition = () => {
     if (!recognitionRef.current || !speechSupported || !isMicrophoneEnabled) {
       console.log("Cannot start recognition: missing requirements");
@@ -194,14 +195,14 @@ export default function MeetingPage() {
     } catch (error) {
       console.error("Error starting speech recognition:", error);
       if (error.name === 'InvalidStateError') {
-        
+
         return true;
       }
       return false;
     }
   };
 
-  
+
   const stopRecognition = () => {
     if (recognitionRef.current && isRecognitionActive.current) {
       try {
@@ -229,7 +230,7 @@ export default function MeetingPage() {
 
   const startMeeting = async () => {
     try {
-      
+
       await fetchProductivityData();
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -259,7 +260,7 @@ export default function MeetingPage() {
 
       speakText(welcomeMessage);
 
-      
+
       setTimeout(() => {
         if (speechSupported) {
           toggleListening();
@@ -298,31 +299,31 @@ export default function MeetingPage() {
     }
   };
 
-  
+
   const analyzeProductivityData = () => {
     if (!productivityData || productivityData.length === 0) {
       return null;
     }
 
-    
+
     const latestData = productivityData[productivityData.length - 1];
     console.log("Latest productivity data:", latestData);
 
-    
+
     const focusScore = Math.round(latestData.focusScore || 0);
 
-    
+
     const productiveTime = (latestData.totalProductiveTime || 0) / 3600;
     const distractionTime = (latestData.totalNonProductiveTime || 0) / 3600;
 
-    
+
     const mostUsedApp = latestData.mostUsedApp || latestData.maxUsedApp || "Unknown";
     const mostVisitedTab = latestData.mostVisitedTab || latestData.maxVisitedTab || "Unknown";
 
-    
+
     const weekAgoData = productivityData.length > 7 ? productivityData[productivityData.length - 8] : null;
 
-    
+
     let focusTrend = null;
     if (weekAgoData && weekAgoData.focusScore !== undefined) {
       const scoreDifference = focusScore - Math.round(weekAgoData.focusScore || 0);
@@ -346,25 +347,25 @@ export default function MeetingPage() {
     };
   };
 
-  
+
   const getTopDistractionApp = (distractionApps) => {
     if (!distractionApps) return "Unknown";
 
     try {
-      
+
       if (distractionApps.entries && typeof distractionApps.entries === 'function') {
         const distractionEntries = Array.from(distractionApps.entries());
         if (distractionEntries.length > 0) {
           return distractionEntries.sort((a, b) => b[1] - a[1])[0][0];
         }
       }
-      
+
       else if (Array.isArray(distractionApps)) {
         if (distractionApps.length > 0) {
           return distractionApps.sort((a, b) => b.duration - a.duration)[0].name;
         }
       }
-      
+
       else if (typeof distractionApps === 'object') {
         const entries = Object.entries(distractionApps);
         if (entries.length > 0) {
@@ -375,14 +376,14 @@ export default function MeetingPage() {
       console.error("Error parsing distraction apps:", error);
     }
 
-    return "Social media"; 
+    return "Social media";
   };
 
-  
+
   const getTotalApps = (data) => {
     let count = 0;
 
-    
+
     if (data.productiveContent && typeof data.productiveContent.size === 'number') {
       count += data.productiveContent.size;
     } else if (data.productiveApps && Array.isArray(data.productiveApps)) {
@@ -414,10 +415,10 @@ export default function MeetingPage() {
 
     setIsAiResponding(true);
     try {
-      
+
       const productivityAnalysis = analyzeProductivityData();
 
-      
+
       const aiResponse = await getAiResponse(text, productivityAnalysis);
 
       const aiMessage = {
@@ -451,19 +452,19 @@ export default function MeetingPage() {
     }
   };
 
-  
+
 
   const getAiResponse = async (userInput, productivityAnalysis) => {
     console.log("Getting AI response for:", userInput);
 
     try {
-      
+
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error("Authentication token not found");
       }
 
-      
+
       console.log("Fetching fresh productivity data from /ch endpoint");
       const dataResponse = await axios.get(`${API_BASE_URL}/ch`, {
         headers: {
@@ -471,20 +472,20 @@ export default function MeetingPage() {
         }
       });
 
-      
+
       if (!dataResponse.data || !Array.isArray(dataResponse.data) || dataResponse.data.length === 0) {
         throw new Error("Invalid or empty productivity data received from server");
       }
 
       console.log("Fresh productivity data fetched:", dataResponse.data);
 
-      
+
       setProductivityData(dataResponse.data);
 
-      
+
       console.log("Sending raw productivity data to Groq");
 
-      
+
       const groqResponse = await axios.post(
         "https://api.groq.com/openai/v1/chat/completions",
         {
@@ -508,7 +509,7 @@ export default function MeetingPage() {
               content: `Here is my complete productivity data: ${JSON.stringify(dataResponse.data)}\n\nMy question is: ${userInput}`
             }
           ],
-          temperature: 0.6, 
+          temperature: 0.6,
           max_tokens: 1024
         },
         {
@@ -528,12 +529,12 @@ export default function MeetingPage() {
 
       const aiResponseContent = groqResponse.data.choices[0].message.content;
 
-      
+
       return aiResponseContent;
     } catch (error) {
       console.error("Error in AI response generation:", error);
 
-      
+
       return "I'm having trouble accessing your productivity data right now. Could you try asking your question again in a moment?";
     }
   };
@@ -541,7 +542,7 @@ export default function MeetingPage() {
   const generateLocalResponse = (userInput, productivityData) => {
     const input = userInput.toLowerCase();
 
-    
+
     if (input.match(/\b(focus score|productivity|productive|focus|stats|statistics)\b/)) {
       if (!productivityData) {
         return "I don't have your productivity data available right now. Please check your connection or try again later.";
@@ -553,7 +554,7 @@ export default function MeetingPage() {
         }You've spent ${productivityData.productiveTime} hours on productive activities and ${productivityData.distractionTime} hours on distractions today. Your most productive application is ${productivityData.topProductiveApp}.`;
     }
 
-    
+
     if (input.match(/\b(distract|distracting|distractions|wasting time|time wasters)\b/)) {
       if (!productivityData) {
         return "I don't have your distraction data available right now. Please check your connection or try again later.";
@@ -565,7 +566,7 @@ export default function MeetingPage() {
         }`;
     }
 
-    
+
     if (input.match(/\b(improve|better|increase|enhance|tips|advice|suggestion|help me)\b/)) {
       if (!productivityData) {
         return "Here are some general productivity tips: break your work into 25-minute focused sessions, minimize distractions by turning off notifications, prioritize your most important tasks first, and take regular short breaks.";
@@ -580,7 +581,7 @@ export default function MeetingPage() {
       }
     }
 
-    
+
     if (input.match(/\b(app|application|program|software|using|use most|used most)\b/)) {
       if (!productivityData) {
         return "I don't have your application usage data available right now. Please check your connection or try again later.";
@@ -589,7 +590,7 @@ export default function MeetingPage() {
       return `Your most used application is ${productivityData.mostUsedApp}, and your most productive application is ${productivityData.topProductiveApp}. Your most visited website is ${productivityData.mostVisitedTab || "not recorded"}.`;
     }
 
-    
+
     if (productivityData) {
       return `I'm your FocusAI assistant. Your current focus score is ${productivityData.focusScore}%. You can ask me about your productivity stats, distractions, most used apps, or for tips to improve your focus. How can I help you today?`;
     } else {
@@ -597,54 +598,98 @@ export default function MeetingPage() {
     }
   };
 
-  
+
 
   const speakText = (text) => {
+    if (!text || text.trim() === '') return;
+
     if ('speechSynthesis' in window) {
+      console.log("Preparing to speak:", text.substring(0, 50) + "...");
+
+      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+      // Small delay to ensure the previous speech is fully cancelled
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utteranceRef.current = utterance; // Keep a reference to prevent garbage collection
 
-      const voices = window.speechSynthesis.getVoices();
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
 
-      const preferredVoice = voices.find(voice =>
-        voice.name.includes('Google') && voice.name.includes('Female') && voice.lang.includes('en-US')
-      ) || voices.find(voice =>
-        voice.name.includes('Google') && voice.lang.includes('en-US')
-      ) || voices.find(voice =>
-        voice.lang.includes('en-US')
-      );
+        let voices = window.speechSynthesis.getVoices();
 
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-
-      console.log("Speaking with voice:", utterance.voice?.name || "Default");
-
-      
-      setIsPlaying(true);
-
-      
-      if (isListening && isRecognitionActive.current) {
-        stopRecognition();
-      }
-
-      utterance.onend = () => {
-        
-        setIsPlaying(false);
-
-        
-        if (isListening && isMicrophoneEnabled) {
-          setTimeout(() => {
-            startRecognition();
-          }, 500);
+        if (voices.length === 0) {
+          console.log("Voices not loaded yet, waiting...");
+          // Fallback if voices are not yet loaded
+          voices = window.speechSynthesis.getVoices();
         }
-      };
 
-      window.speechSynthesis.speak(utterance);
+        // Find best possible English voice
+        let preferredVoice = voices.find(voice =>
+          voice.name.includes('Google') && voice.name.includes('Female') && voice.lang.includes('en-US')
+        );
+
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.name.includes('Google') && voice.name.includes('en-US')
+          );
+        }
+
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice => voice.lang.includes('en-US'));
+        }
+
+        if (!preferredVoice && voices.length > 0) {
+          preferredVoice = voices[0];
+        }
+
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+
+        console.log("Speaking with voice:", utterance.voice?.name || "Default");
+
+        utterance.onstart = () => {
+          console.log("Speech synthesis started firing onstart event");
+          setIsPlaying(true);
+        };
+
+        utterance.onend = () => {
+          console.log("Speech synthesis ended firing onend event");
+          setIsPlaying(false);
+          utteranceRef.current = null;
+
+          if (isListening && isMicrophoneEnabled) {
+            setTimeout(() => {
+              startRecognition();
+            }, 500);
+          }
+        };
+
+        utterance.onerror = (event) => {
+          console.error("Speech synthesis error event:", event);
+          setIsPlaying(false);
+          utteranceRef.current = null;
+
+          // If it failed shadowed, try one more time without a specific voice
+          if (event.error === 'network' || event.error === 'not-allowed') {
+            console.warn("Retrying speech without preferred voice...");
+            const retryUtterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(retryUtterance);
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
+
+        // Forced resume for Chrome bug
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }, 150);
+    } else {
+      console.warn("Speech synthesis not supported in this browser");
     }
   };
 
@@ -655,7 +700,7 @@ export default function MeetingPage() {
         audioTracks[0].enabled = !isMicrophoneEnabled;
         setIsMicrophoneEnabled(!isMicrophoneEnabled);
 
-        
+
         if (isMicrophoneEnabled && isListening) {
           toggleListening();
         }
@@ -694,7 +739,7 @@ export default function MeetingPage() {
     navigate('/');
   };
 
-  
+
   const formatProductivityData = () => {
     if (!productivityData || productivityData.length === 0) {
       return null;
@@ -703,8 +748,8 @@ export default function MeetingPage() {
     const latestData = productivityData[productivityData.length - 1];
     return {
       focusScore: Math.round(latestData.focusScore),
-      productiveTime: (latestData.totalProductiveTime / 3600).toFixed(1), 
-      distractionTime: (latestData.totalNonProductiveTime / 3600).toFixed(1), 
+      productiveTime: (latestData.totalProductiveTime / 3600).toFixed(1),
+      distractionTime: (latestData.totalNonProductiveTime / 3600).toFixed(1),
       mostUsedApp: latestData.mostUsedApp || "N/A",
       mostVisitedTab: latestData.mostVisitedTab || "N/A",
       date: new Date(latestData.date).toLocaleDateString()
@@ -720,7 +765,7 @@ export default function MeetingPage() {
       color: "white",
       overflow: "hidden"
     }}>
-      {}
+      { }
       <header style={{
         padding: "12px 16px",
         backgroundColor: "#202124",
@@ -757,7 +802,7 @@ export default function MeetingPage() {
       </header>
 
       {!meetingStarted ? (
-        
+
         <div style={{
           flex: 1,
           display: "flex",
@@ -841,21 +886,21 @@ export default function MeetingPage() {
           </button>
         </div>
       ) : (
-        
+
         <div style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
           overflow: "hidden"
         }}>
-          {}
+          { }
           <div style={{
             flex: 1,
             display: "flex",
             padding: "16px",
             overflow: "hidden"
           }}>
-            {}
+            { }
             <div style={{
               flex: "1 1 70%",
               borderRadius: "8px",
@@ -868,7 +913,7 @@ export default function MeetingPage() {
               justifyContent: "center",
               alignItems: "center"
             }}>
-              {}
+              { }
               <div style={{
                 width: "100%",
                 height: "100%",
@@ -878,7 +923,7 @@ export default function MeetingPage() {
                 alignItems: "center",
                 position: "relative"
               }}>
-                {}
+                { }
                 <div style={{
                   position: "absolute",
                   top: 0,
@@ -889,7 +934,7 @@ export default function MeetingPage() {
                   opacity: 0.3
                 }}></div>
 
-                {}
+                { }
                 <div style={{
                   width: "280px",
                   height: "280px",
@@ -918,7 +963,7 @@ export default function MeetingPage() {
                     alignItems: "center",
                     overflow: "hidden"
                   }}>
-                    {}
+                    { }
                     <span style={{
                       fontSize: "72px",
                       fontWeight: "900",
@@ -928,7 +973,7 @@ export default function MeetingPage() {
                       zIndex: 2
                     }}>AI</span>
 
-                    {}
+                    { }
                     <span style={{
                       fontSize: "20px",
                       fontWeight: "500",
@@ -939,7 +984,7 @@ export default function MeetingPage() {
                       zIndex: 2
                     }}>FOCUS</span>
 
-                    {}
+                    { }
                     {(isAiResponding || isPlaying) && (
                       <>
                         {[...Array(3)].map((_, i) => (
@@ -953,7 +998,7 @@ export default function MeetingPage() {
                           }}></div>
                         ))}
 
-                        {}
+                        { }
                         <div style={{
                           position: "absolute",
                           bottom: "50px",
@@ -979,7 +1024,7 @@ export default function MeetingPage() {
                       </>
                     )}
 
-                    {}
+                    { }
                     <div style={{
                       position: "absolute",
                       width: "200px",
@@ -991,7 +1036,7 @@ export default function MeetingPage() {
                   </div>
                 </div>
 
-                {}
+                { }
                 <div style={{
                   zIndex: 1,
                   textAlign: "center"
@@ -1062,7 +1107,7 @@ export default function MeetingPage() {
                   </div>
                 </div>
 
-                {}
+                { }
                 {transcript && (
                   <div style={{
                     position: "absolute",
@@ -1089,7 +1134,7 @@ export default function MeetingPage() {
                   </div>
                 )}
 
-                {}
+                { }
                 <div style={{
                   position: "absolute",
                   top: 0,
@@ -1115,7 +1160,7 @@ export default function MeetingPage() {
               </div>
             </div>
 
-            {}
+            { }
             <div style={{
               flex: "1 1 30%",
               display: "flex",
@@ -1124,233 +1169,168 @@ export default function MeetingPage() {
               borderRadius: "8px",
               border: "1px solid #3c4043",
               overflow: "hidden",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "20px"
+              padding: "16px"
             }}>
-              <div style={{
-                width: "140px",
-                height: "140px",
-                borderRadius: "50%",
-                backgroundColor: "#4a6cff",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: "20px",
-                position: "relative",
-                overflow: "hidden"
-              }}>
-                {isAiResponding || isPlaying ? (
-                  
-                  <div style={{
-                    width: "100%",
-                    height: "100%",
-                    position: "relative",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center"
-                  }}>
-                    <div style={{
-                      position: "absolute",
-                      width: "100%",
-                      height: "100%",
-                      backgroundImage: "url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGZkZGVzcHk0bjh6dWZmMWQzcTFkZW1ndGo0cWg5czU0N3B3Ym9raiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlQXlQ3nHyLMvte/giphy.gif')",
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      opacity: 0.2
-                    }}></div>
-                    <div className="wave-container" style={{
-                      position: "absolute",
-                      bottom: "20px",
-                      width: "80%",
-                      height: "30px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "flex-end",
-                      gap: "4px"
-                    }}>
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} style={{
-                          height: `${20 + Math.random() * 30}px`,
-                          width: "4px",
-                          backgroundColor: "white",
-                          borderRadius: "2px",
-                          animation: `soundWave 1s infinite ease-in-out alternate ${i * 0.1}s`
-                        }}></div>
-                      ))}
-                    </div>
-                    <span style={{
-                      fontSize: "32px",
-                      fontWeight: "bold",
-                      color: "white",
-                      zIndex: 2,
-                      marginBottom: "10px"
-                    }}>AI</span>
-                  </div>
-                ) : (
-                  
-                  <span style={{
-                    fontSize: "48px",
-                    fontWeight: "bold",
-                    color: "white"
-                  }}>AI</span>
-                )}
-              </div>
-
               <h3 style={{
-                fontSize: "20px",
-                marginBottom: "10px",
-                textAlign: "center"
+                fontSize: "18px",
+                marginBottom: "16px",
+                textAlign: "center",
+                color: "#8ab4f8"
               }}>
-                FocusAI Assistant
+                Conversation History
               </h3>
 
               <div style={{
+                flex: 1,
+                overflowY: "auto",
+                marginBottom: "16px",
+                paddingRight: "8px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px"
+              }}>
+                {messages.length === 0 ? (
+                  <div style={{
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    color: "#5f6368",
+                    fontStyle: "italic",
+                    fontSize: "14px"
+                  }}>
+                    No messages yet
+                  </div>
+                ) : (
+                  messages.map((msg, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                        maxWidth: '90%',
+                        backgroundColor: msg.sender === 'user' ? '#3c4043' : '#1a237e',
+                        padding: '10px 12px',
+                        borderRadius: msg.sender === 'user' ? '12px 12px 0 12px' : '12px 12px 12px 0',
+                        fontSize: '14px',
+                        lineHeight: '1.4',
+                        position: 'relative'
+                      }}
+                    >
+                      <div style={{ marginBottom: '4px', fontWeight: 'bold', fontSize: '11px', color: '#9aa0a6' }}>
+                        {msg.sender === 'user' ? 'You' : 'FocusAI'} • {msg.time}
+                      </div>
+                      <div>{msg.text}</div>
+                      {msg.sender === 'ai' && (
+                        <button
+                          onClick={() => speakText(msg.text)}
+                          style={{
+                            marginTop: '8px',
+                            background: 'none',
+                            border: 'none',
+                            color: '#8ab4f8',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '4px 0'
+                          }}
+                        >
+                          🔊 Replay Voice
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div style={{
                 backgroundColor: isAiResponding ? "#4a6cff33" : "#3c4043",
-                padding: "10px 16px",
-                borderRadius: "20px",
-                marginBottom: "20px",
+                padding: "8px 12px",
+                borderRadius: "16px",
+                marginBottom: "16px",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px"
+                gap: "8px",
+                fontSize: "13px"
               }}>
                 {isAiResponding ? (
                   <>
-                    <div style={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: "#4a6cff",
-                      animation: "pulse 1s infinite"
-                    }}></div>
-                    <span>Thinking...</span>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#4a6cff", animation: "pulse 1s infinite" }}></div>
+                    <span>AI is thinking...</span>
                   </>
                 ) : isListening ? (
                   <>
-                    <div style={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: "#8ab4f8",
-                      animation: "pulse 1s infinite"
-                    }}></div>
-                    <span>Listening...</span>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ff9800", animation: "pulse 1s infinite" }}></div>
+                    <span>I'm listening...</span>
                   </>
                 ) : (
                   <>
-                    <div style={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: "#4caf50"
-                    }}></div>
-                    <span>Ready to assist</span>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#4caf50" }}></div>
+                    <span>Ready</span>
                   </>
                 )}
               </div>
 
-              {transcript && (
-                <div style={{
-                  backgroundColor: "rgba(74, 108, 255, 0.15)",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  marginBottom: "20px",
-                  width: "90%",
-                  textAlign: "center"
-                }}>
-                  <p style={{ margin: 0, fontSize: "14px", color: "#8ab4f8" }}>
-                    "{transcript}"
-                  </p>
-                </div>
-              )}
-
-              {}
               <div style={{
-                width: "100%",
                 display: "flex",
                 flexDirection: "column",
-                gap: "10px",
-                marginTop: "auto"
+                gap: "8px"
               }}>
                 <h4 style={{
-                  fontSize: "14px",
+                  fontSize: "12px",
                   color: "#9aa0a6",
-                  margin: "0 0 5px 0",
+                  margin: "0 0 4px 0",
                   textAlign: "center"
                 }}>
-                  Quick Questions
+                  Suggestions
                 </h4>
 
                 <button
                   onClick={() => handleUserMessage("What's my focus score?")}
                   disabled={isAiResponding}
                   style={{
-                    padding: "10px 16px",
+                    padding: "8px 12px",
                     backgroundColor: "#3c4043",
                     border: "none",
-                    borderRadius: "8px",
+                    borderRadius: "6px",
                     color: "#e8eaed",
-                    fontSize: "14px",
+                    fontSize: "13px",
                     cursor: isAiResponding ? "not-allowed" : "pointer",
-                    opacity: isAiResponding ? 0.7 : 1,
                     textAlign: "left",
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px"
+                    gap: "6px"
                   }}
                 >
-                  <span style={{ fontSize: "18px" }}>📊</span>
-                  <span>What's my focus score?</span>
+                  📊 Focus score?
                 </button>
 
                 <button
-                  onClick={() => handleUserMessage("How can I improve my productivity?")}
+                  onClick={() => handleUserMessage("How can I improve?")}
                   disabled={isAiResponding}
                   style={{
-                    padding: "10px 16px",
+                    padding: "8px 12px",
                     backgroundColor: "#3c4043",
                     border: "none",
-                    borderRadius: "8px",
+                    borderRadius: "6px",
                     color: "#e8eaed",
-                    fontSize: "14px",
+                    fontSize: "13px",
                     cursor: isAiResponding ? "not-allowed" : "pointer",
-                    opacity: isAiResponding ? 0.7 : 1,
                     textAlign: "left",
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px"
+                    gap: "6px"
                   }}
                 >
-                  <span style={{ fontSize: "18px" }}>💡</span>
-                  <span>How can I improve my productivity?</span>
-                </button>
-
-                <button
-                  onClick={() => handleUserMessage("What are my main distractions?")}
-                  disabled={isAiResponding}
-                  style={{
-                    padding: "10px 16px",
-                    backgroundColor: "#3c4043",
-                    border: "none",
-                    borderRadius: "8px",
-                    color: "#e8eaed",
-                    fontSize: "14px",
-                    cursor: isAiResponding ? "not-allowed" : "pointer",
-                    opacity: isAiResponding ? 0.7 : 1,
-                    textAlign: "left",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px"
-                  }}
-                >
-                  <span style={{ fontSize: "18px" }}>🚫</span>
-                  <span>What are my main distractions?</span>
+                  💡 Any tips?
                 </button>
               </div>
             </div>
           </div>
 
-          {}
+          { }
           <div style={{
             padding: "16px",
             backgroundColor: "#202124",
@@ -1464,7 +1444,7 @@ export default function MeetingPage() {
         </div>
       )}
 
-      {}
+      { }
       <style>
         {`
           @keyframes pulse {

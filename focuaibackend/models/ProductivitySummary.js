@@ -13,7 +13,7 @@ const ProductivitySummarySchema = new mongoose.Schema({
     index: true
   },
   date: {
-    type: String, 
+    type: String,
     required: true,
     index: true
   },
@@ -33,19 +33,28 @@ const ProductivitySummarySchema = new mongoose.Schema({
   },
   totalProductiveTime: {
     type: Number,
-    default: 0 
+    default: 0
   },
   totalNonProductiveTime: {
     type: Number,
-    default: 0 
+    default: 0
+  },
+  neutralContent: {
+    type: Map,
+    of: Number,
+    default: new Map()
+  },
+  totalNeutralTime: {
+    type: Number,
+    default: 0
   },
   overallTotalUsage: {
     type: Number,
-    default: 0 
+    default: 0
   },
   focusScore: {
     type: Number,
-    default: 0 
+    default: 0
   },
   mostVisitedTab: {
     type: String,
@@ -70,20 +79,20 @@ const ProductivitySummarySchema = new mongoose.Schema({
 
 ProductivitySummarySchema.index({ userId: 1, email: 1, date: 1 }, { unique: true });
 
-ProductivitySummarySchema.methods.calculateFocusScore = function() {
+ProductivitySummarySchema.methods.calculateFocusScore = function () {
   if (this.overallTotalUsage === 0) return 0;
   return Math.round((this.totalProductiveTime / this.overallTotalUsage) * 100);
 };
 
-ProductivitySummarySchema.statics.sanitizeAppName = function(appName) {
+ProductivitySummarySchema.statics.sanitizeAppName = function (appName) {
   return appName.replace(/\./g, '_');
 };
 
-ProductivitySummarySchema.statics.restoreAppName = function(sanitizedAppName) {
+ProductivitySummarySchema.statics.restoreAppName = function (sanitizedAppName) {
   return sanitizedAppName.replace(/_/g, '.');
 };
 
-ProductivitySummarySchema.methods.getFormattedContent = function() {
+ProductivitySummarySchema.methods.getFormattedContent = function () {
   const restoreMap = (map) => {
     const restored = {};
     for (let [key, value] of map) {
@@ -95,26 +104,31 @@ ProductivitySummarySchema.methods.getFormattedContent = function() {
   return {
     productiveContent: restoreMap(this.productiveContent),
     nonProductiveContent: restoreMap(this.nonProductiveContent),
+    neutralContent: restoreMap(this.neutralContent || new Map()),
     distractionApps: restoreMap(this.distractionApps)
   };
 };
 
-ProductivitySummarySchema.methods.updateProductivityData = function(appName, duration, isProductive) {
+ProductivitySummarySchema.methods.updateProductivityData = function (appName, duration, classification) {
   const sanitizedAppName = appName.replace(/\./g, '_');
-  
-  if (isProductive) {
+
+  if (classification === 'productive') {
     const currentValue = this.productiveContent.get(sanitizedAppName) || 0;
     this.productiveContent.set(sanitizedAppName, currentValue + duration);
     this.totalProductiveTime += duration;
-  } else {
+  } else if (classification === 'non-productive') {
     const currentValue = this.nonProductiveContent.get(sanitizedAppName) || 0;
     this.nonProductiveContent.set(sanitizedAppName, currentValue + duration);
     this.totalNonProductiveTime += duration;
+  } else {
+    const currentValue = this.neutralContent.get(sanitizedAppName) || 0;
+    this.neutralContent.set(sanitizedAppName, currentValue + duration);
+    this.totalNeutralTime += duration;
   }
-  
+
   this.overallTotalUsage += duration;
   this.focusScore = this.calculateFocusScore();
-  
+
   let maxApp = "";
   let maxTime = 0;
   for (let [app, time] of this.productiveContent) {
@@ -124,7 +138,7 @@ ProductivitySummarySchema.methods.updateProductivityData = function(appName, dur
     }
   }
   this.maxProductiveApp = maxApp;
-  
+
   const allApps = new Map([...this.productiveContent, ...this.nonProductiveContent]);
   let mostUsedApp = "";
   let mostUsedTime = 0;
@@ -135,7 +149,7 @@ ProductivitySummarySchema.methods.updateProductivityData = function(appName, dur
     }
   }
   this.mostUsedApp = mostUsedApp;
-  
+
   this.lastUpdated = new Date();
 };
 

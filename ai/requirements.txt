@@ -6,4 +6,6 @@ python-dotenv==1.1.1
 requests==2.32.3
 numpy>=1.20,<2.0
 joblib==1.5.1
-scikit-learn==1.7.1
+scikit-learn==1.6.1
+pandas==2.2.3
+xgboost==2.1.3

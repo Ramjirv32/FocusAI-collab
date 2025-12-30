@@ -1,13 +1,5 @@
-const { Groq } = require('groq-sdk');
+const aiProvider = require('../utils/aiProvider');
 const ChatHistory = require('../models/ChatHistory');
-
-
-const { getUserProductivityData } = require('./chatController');
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
-
 
 const processVoiceMessage = async (req, res) => {
   try {
@@ -17,7 +9,6 @@ const processVoiceMessage = async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    
     let formattedData = "No productivity data available.";
     if (productivityData && Array.isArray(productivityData) && productivityData.length > 0) {
       const latestData = productivityData[productivityData.length - 1];
@@ -32,17 +23,14 @@ Most Used App: ${latestData.mostUsedApp || "Unknown"}
 Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
 `;
 
-      
       if (latestData.productiveContent) {
         formattedData += "\nProductive Apps/Sites:\n";
         try {
           if (typeof latestData.productiveContent.entries === 'function') {
-            
             for (const [app, duration] of latestData.productiveContent.entries()) {
               formattedData += `- ${app}: ${(duration / 60).toFixed(1)} minutes\n`;
             }
           } else if (typeof latestData.productiveContent === 'object') {
-            
             Object.entries(latestData.productiveContent).forEach(([app, duration]) => {
               formattedData += `- ${app}: ${(duration / 60).toFixed(1)} minutes\n`;
             });
@@ -57,12 +45,10 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
         try {
           const distractionSource = latestData.nonProductiveContent || latestData.distractionApps;
           if (typeof distractionSource.entries === 'function') {
-            
             for (const [app, duration] of distractionSource.entries()) {
               formattedData += `- ${app}: ${(duration / 60).toFixed(1)} minutes\n`;
             }
           } else if (typeof distractionSource === 'object') {
-            
             Object.entries(distractionSource).forEach(([app, duration]) => {
               formattedData += `- ${app}: ${(duration / 60).toFixed(1)} minutes\n`;
             });
@@ -73,7 +59,6 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
       }
     }
 
-    
     let historyId = null;
     if (req.user) {
       const newHistory = new ChatHistory({
@@ -88,7 +73,6 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
       historyId = newHistory._id;
     }
 
-    
     const systemPrompt = `You are FocusAI, a productivity assistant that helps users understand their productivity data and 
     improve their focus and work habits. You have access to the user's productivity data.
     
@@ -101,8 +85,7 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
     Provide personalized insights and advice based on this data. If you're asked something not 
     related to productivity, politely steer the conversation back to productivity topics.`;
 
-    
-    const completion = await groq.chat.completions.create({
+    const aiResponse = await aiProvider.createChatCompletion({
       messages: [
         {
           role: 'system',
@@ -113,14 +96,10 @@ Most Visited Website: ${latestData.mostVisitedTab || "Unknown"}
           content: message
         }
       ],
-      model: 'llama-3.3-70b-versatile',
       temperature: 0.7,
       max_tokens: 1024
     });
 
-    const aiResponse = completion.choices[0].message.content;
-
-    
     if (historyId) {
       await ChatHistory.findByIdAndUpdate(
         historyId,

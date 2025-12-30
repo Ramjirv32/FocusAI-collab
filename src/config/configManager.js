@@ -20,7 +20,10 @@ class ConfigManager {
     saveConfig(config) {
         try {
             const data = {
+                AI_PROVIDER: config.AI_PROVIDER || 'groq',
                 GROQ_API_KEY: config.GROQ_API_KEY || '',
+                OLLAMA_MODEL: config.OLLAMA_MODEL || 'llama3.2',
+                OLLAMA_URL: config.OLLAMA_URL || 'http://localhost:11434',
                 API_BASE_URL: config.API_BASE_URL || 'http://localhost:5001',
                 MONGODB_URI: config.MONGODB_URI || 'mongodb://localhost:27018/focusai',
                 updatedAt: new Date().toISOString()
@@ -40,8 +43,13 @@ class ConfigManager {
             if (fs.existsSync(CONFIG_FILE)) {
                 const data = fs.readFileSync(CONFIG_FILE, 'utf8');
                 const config = JSON.parse(data);
+
+                // Ensure defaults for missing fields
+                const defaults = this.getDefaultConfig();
+                const merged = { ...defaults, ...config };
+
                 console.log('✅ Config loaded from:', CONFIG_FILE);
-                return config;
+                return merged;
             } else {
                 console.log('⚠️  No config file found, using defaults');
                 return this.getDefaultConfig();
@@ -54,7 +62,10 @@ class ConfigManager {
 
     getDefaultConfig() {
         return {
+            AI_PROVIDER: 'groq',
             GROQ_API_KEY: '',
+            OLLAMA_MODEL: 'llama3.2',
+            OLLAMA_URL: 'http://localhost:11434',
             API_BASE_URL: 'http://localhost:5001',
             MONGODB_URI: 'mongodb://localhost:27018/focusai'
         };

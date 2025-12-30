@@ -12,7 +12,7 @@ class AIProvider {
     }
 
     initGroq() {
-        
+
         if (this.provider === 'groq' && this.groqKey) {
             this.groq = new Groq({
                 apiKey: this.groqKey
@@ -22,22 +22,41 @@ class AIProvider {
         }
     }
 
-    refreshConfig() {
-        this.provider = process.env.AI_PROVIDER || 'groq';
-        this.groqKey = process.env.GROQ_API_KEY;
-        this.ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
-        this.ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+    async refreshConfig() {
+        try {
+            const fs = require('fs').promises;
+            const path = require('path');
+            const os = require('os');
+            const CONFIG_PATH = path.join(os.homedir(), '.focusia', 'config.json');
 
-        
+            try {
+                const configData = await fs.readFile(CONFIG_PATH, 'utf8');
+                const config = JSON.parse(configData);
+
+                this.provider = config.AI_PROVIDER || process.env.AI_PROVIDER || 'groq';
+                this.groqKey = config.GROQ_API_KEY || process.env.GROQ_API_KEY;
+                this.ollamaModel = config.OLLAMA_MODEL || process.env.OLLAMA_MODEL || 'llama3.2';
+                this.ollamaUrl = config.OLLAMA_URL || process.env.OLLAMA_URL || 'http://localhost:11434';
+            } catch (fileErr) {
+                // Fallback to env if file not found
+                this.provider = process.env.AI_PROVIDER || 'groq';
+                this.groqKey = process.env.GROQ_API_KEY;
+                this.ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
+                this.ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+            }
+        } catch (error) {
+            console.error('Error refreshing AI config:', error);
+        }
+
         this.initGroq();
     }
 
     async createChatCompletion({ messages, temperature = 0.7, max_tokens = 1024 }) {
-        this.refreshConfig(); 
+        await this.refreshConfig();
 
         if (this.provider === 'groq') {
             if (!this.groq) {
-                
+
                 this.initGroq();
                 if (!this.groq) throw new Error('Groq selected but API key not configured');
             }
@@ -52,7 +71,7 @@ class AIProvider {
 
             return completion.choices[0].message.content;
         } else if (this.provider === 'ollama') {
-            
+
             console.log('🏠 Using Local AI (Ollama)');
             try {
                 const response = await fetch(`${this.ollamaUrl}/api/chat`, {

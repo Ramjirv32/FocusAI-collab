@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Focusia Settings</title>
   <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -12,73 +23,126 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
     }
 
     .container {
-      background: white;
-      border-radius: 16px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
       padding: 40px;
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
 
     h1 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 28px;
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(to right, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
     }
 
     .subtitle {
-      color: #666;
-      margin-bottom: 30px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+
+    .provider-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+    }
+
+    .provider-option {
+      cursor: pointer;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
       font-size: 14px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .provider-option.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
     .form-group {
-      margin-bottom: 25px;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group.hidden {
+      display: none;
+      opacity: 0;
+      transform: translateY(-10px);
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      color: #333;
-      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+      font-weight: 500;
       font-size: 14px;
     }
 
     input[type="password"],
-    input[type="text"] {
+    input[type="text"],
+    select {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
       font-size: 14px;
-      transition: all 0.3s ease;
-      font-family: monospace;
+      color: white;
+      transition: all 0.2s;
     }
 
     input:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: var(--primary);
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
     }
 
     .hint {
       font-size: 12px;
-      color: #999;
-      margin-top: 6px;
+      color: var(--text-muted);
+      margin-top: 8px;
     }
 
     .hint a {
-      color: #667eea;
+      color: var(--primary);
       text-decoration: none;
     }
 
@@ -87,136 +151,163 @@
     }
 
     .button-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 40px;
     }
 
     button {
-      flex: 1;
       padding: 14px 24px;
       border: none;
-      border-radius: 8px;
-      font-size: 14px;
+      border-radius: 12px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--primary);
       color: white;
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
     }
 
     .btn-secondary {
-      background: #f5f5f5;
-      color: #333;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      border: 1px solid var(--border);
     }
 
     .btn-secondary:hover {
-      background: #e0e0e0;
+      background: rgba(255, 255, 255, 0.1);
     }
 
-    .btn-primary:disabled,
-    .btn-secondary:disabled {
+    button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
+      transform: none !important;
     }
 
     .status {
-      margin-top: 20px;
-      padding: 12px 16px;
-      border-radius: 8px;
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 12px;
       font-size: 14px;
       display: none;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(10px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     .status.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
     .status.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .status.info {
-      background: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
     .config-path {
-      margin-top: 20px;
-      padding: 12px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      font-size: 12px;
-      color: #666;
+      margin-top: 32px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
       word-break: break-all;
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
     }
 
-    .loading {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid #ffffff;
+    .loader {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      border-top-color: transparent;
+      border-top-color: white;
       animation: spin 0.8s linear infinite;
-      margin-left: 8px;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1>⚙️ Focusia Settings</h1>
-    <p class="subtitle">Configure your Groq API key for AI features</p>
+    <h1>Focusia AI</h1>
+    <p class="subtitle">Select your preferred AI intelligence provider</p>
+
+    <div class="provider-toggle">
+      <div class="provider-option active" id="opt-groq" onclick="setProvider('groq')">
+        <span>☁️ Groq Cloud</span>
+      </div>
+      <div class="provider-option" id="opt-ollama" onclick="setProvider('ollama')">
+        <span>🏠 Ollama Local</span>
+      </div>
+    </div>
 
     <form id="settingsForm">
-      <div class="form-group">
-        <label for="groqApiKey">Groq API Key *</label>
-        <input 
-          type="password" 
-          id="groqApiKey" 
-          placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxx"
-          required
-        >
-        <div class="hint">
-          Get your API key from <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>
+      <div id="groq-section">
+        <div class="form-group">
+          <label for="groqApiKey">Groq API Key</label>
+          <input type="password" id="groqApiKey" placeholder="gsk_xxxxxxxxxxxxxxxx">
+          <div class="hint">
+            Get it from <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="ollama-section" class="hidden">
+        <div class="form-group">
+          <label for="ollamaUrl">Ollama Server URL</label>
+          <input type="text" id="ollamaUrl" placeholder="http://localhost:11434">
+        </div>
+        <div class="form-group">
+          <label for="ollamaModel">Model Name</label>
+          <input type="text" id="ollamaModel" placeholder="llama3.2">
+          <div class="hint">Make sure you have run <code>ollama pull llama3.2</code></div>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="apiBaseUrl">Backend URL (Optional)</label>
-        <input 
-          type="text" 
-          id="apiBaseUrl" 
-          placeholder="http://localhost:5001"
-          value="http://localhost:5001"
-        >
-        <div class="hint">Default: http://localhost:5001</div>
+        <label for="apiBaseUrl">Backend API URL</label>
+        <input type="text" id="apiBaseUrl" placeholder="http://localhost:5001">
       </div>
 
       <div class="button-group">
         <button type="button" class="btn-secondary" id="testBtn">
-          🧪 Test Connection
+          <span>🧪 Test</span>
         </button>
         <button type="submit" class="btn-primary" id="saveBtn">
-          💾 Save Configuration
+          <span>💾 Save</span>
         </button>
       </div>
     </form>
@@ -224,117 +315,131 @@
     <div id="status" class="status"></div>
 
     <div class="config-path" id="configPath">
-      Loading config path...
+      Detecting configuration path...
     </div>
   </div>
 
   <script>
     const form = document.getElementById('settingsForm');
     const groqApiKeyInput = document.getElementById('groqApiKey');
+    const ollamaUrlInput = document.getElementById('ollamaUrl');
+    const ollamaModelInput = document.getElementById('ollamaModel');
     const apiBaseUrlInput = document.getElementById('apiBaseUrl');
     const testBtn = document.getElementById('testBtn');
     const saveBtn = document.getElementById('saveBtn');
     const statusDiv = document.getElementById('status');
     const configPathDiv = document.getElementById('configPath');
 
-    // Load existing config
+    const groqSection = document.getElementById('groq-section');
+    const ollamaSection = document.getElementById('ollama-section');
+    const optGroq = document.getElementById('opt-groq');
+    const optOllama = document.getElementById('opt-ollama');
+
+    let currentProvider = 'groq';
+
+    function setProvider(provider) {
+      currentProvider = provider;
+      if (provider === 'groq') {
+        optGroq.classList.add('active');
+        optOllama.classList.remove('active');
+        groqSection.classList.remove('hidden');
+        ollamaSection.classList.add('hidden');
+      } else {
+        optGroq.classList.remove('active');
+        optOllama.classList.add('active');
+        groqSection.classList.add('hidden');
+        ollamaSection.classList.remove('hidden');
+      }
+    }
+
     async function loadConfig() {
       try {
         const config = await window.electronAPI.getConfig();
-        if (config.GROQ_API_KEY) {
-          groqApiKeyInput.value = config.GROQ_API_KEY;
-        }
-        if (config.API_BASE_URL) {
-          apiBaseUrlInput.value = config.API_BASE_URL;
-        }
+        console.log('Loaded config:', config);
 
-        const configPath = await window.electronAPI.getConfigPath();
-        configPathDiv.textContent = `Config file: ${configPath}`;
+        if (config.AI_PROVIDER) setProvider(config.AI_PROVIDER);
+        if (config.GROQ_API_KEY) groqApiKeyInput.value = config.GROQ_API_KEY;
+        if (config.OLLAMA_URL) ollamaUrlInput.value = config.OLLAMA_URL;
+        if (config.OLLAMA_MODEL) ollamaModelInput.value = config.OLLAMA_MODEL;
+        if (config.API_BASE_URL) apiBaseUrlInput.value = config.API_BASE_URL;
+
+        const path = await window.electronAPI.getConfigPath();
+        configPathDiv.textContent = `Config: ${path}`;
       } catch (error) {
         showStatus('Error loading config: ' + error.message, 'error');
       }
     }
 
-    // Show status message
     function showStatus(message, type = 'info') {
       statusDiv.textContent = message;
       statusDiv.className = `status ${type}`;
       statusDiv.style.display = 'block';
-      
-      if (type === 'success') {
-        setTimeout(() => {
-          statusDiv.style.display = 'none';
-        }, 5000);
-      }
+      setTimeout(() => {
+        if (type === 'success') statusDiv.style.display = 'none';
+      }, 5000);
     }
 
-    // Test Groq connection
     testBtn.addEventListener('click', async () => {
-      const apiKey = groqApiKeyInput.value.trim();
-      
-      if (!apiKey) {
-        showStatus('Please enter a Groq API key', 'error');
-        return;
-      }
-
       testBtn.disabled = true;
-      testBtn.innerHTML = '🧪 Testing<span class="loading"></span>';
-      
+      const originalText = testBtn.innerHTML;
+      testBtn.innerHTML = '<div class="loader"></div>';
+
       try {
-        const result = await window.electronAPI.testGroqConnection(apiKey);
-        
-        if (result.success) {
-          showStatus('✅ Connection successful! Your API key is valid.', 'success');
+        let result;
+        if (currentProvider === 'groq') {
+          const key = groqApiKeyInput.value.trim();
+          if (!key) throw new Error('Enter Groq API Key');
+          result = await window.electronAPI.testGroqConnection(key);
         } else {
-          showStatus('❌ Connection failed: ' + result.message, 'error');
+          const url = ollamaUrlInput.value.trim() || 'http://localhost:11434';
+          const model = ollamaModelInput.value.trim() || 'llama3.2';
+          result = await window.electronAPI.testOllamaConnection(url, model);
+        }
+
+        if (result.success) {
+          showStatus('✅ ' + result.message, 'success');
+        } else {
+          showStatus('❌ ' + result.message, 'error');
         }
       } catch (error) {
-        showStatus('❌ Test failed: ' + error.message, 'error');
+        showStatus('❌ ' + error.message, 'error');
       } finally {
         testBtn.disabled = false;
-        testBtn.innerHTML = '🧪 Test Connection';
+        testBtn.innerHTML = originalText;
       }
     });
 
-    // Save configuration
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      const apiKey = groqApiKeyInput.value.trim();
-      const baseUrl = apiBaseUrlInput.value.trim() || 'http://localhost:5001';
-      
-      if (!apiKey) {
-        showStatus('Please enter a Groq API key', 'error');
-        return;
-      }
-
       saveBtn.disabled = true;
-      saveBtn.innerHTML = '💾 Saving<span class="loading"></span>';
-      
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<div class="loader"></div>';
+
       try {
         const config = {
-          GROQ_API_KEY: apiKey,
-          API_BASE_URL: baseUrl,
-          MONGODB_URI: 'mongodb://localhost:27018/focusai'
+          AI_PROVIDER: currentProvider,
+          GROQ_API_KEY: groqApiKeyInput.value.trim(),
+          OLLAMA_URL: ollamaUrlInput.value.trim() || 'http://localhost:11434',
+          OLLAMA_MODEL: ollamaModelInput.value.trim() || 'llama3.2',
+          API_BASE_URL: apiBaseUrlInput.value.trim() || 'http://localhost:5001'
         };
-        
+
         const result = await window.electronAPI.saveConfig(config);
-        
         if (result.success) {
-          showStatus('✅ Configuration saved successfully! Please restart services.', 'success');
+          showStatus('✨ Settings saved! Please restart the app.', 'success');
         } else {
-          showStatus('❌ Failed to save: ' + result.error, 'error');
+          showStatus('❌ Save failed: ' + result.error, 'error');
         }
       } catch (error) {
-        showStatus('❌ Save failed: ' + error.message, 'error');
+        showStatus('❌ Error: ' + error.message, 'error');
       } finally {
         saveBtn.disabled = false;
-        saveBtn.innerHTML = '💾 Save Configuration';
+        saveBtn.innerHTML = originalText;
       }
     });
 
-    // Load config on startup
     loadConfig();
   </script>
 </body>
+
 </html>

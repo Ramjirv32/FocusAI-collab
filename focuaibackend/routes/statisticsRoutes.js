@@ -12,14 +12,14 @@ router.get('/statistics', auth, statisticsController.getStatistics);
 router.get('/health', statisticsController.healthCheck);
 
 
-router.get('/overview', auth, async (req, res) => {
+router.get('/statistics/overview', auth, async (req, res) => {
   try {
-    
+
     const summary = await ProductivitySummary.findOne({
       userId: req.user._id,
       email: req.user.email
     }).sort({ date: -1 });
-    
+
     if (!summary) {
       return res.json({
         focusScore: 0,
@@ -30,19 +30,19 @@ router.get('/overview', auth, async (req, res) => {
         totalAppUsage: 0
       });
     }
-    
-    
+
+
     const appUsage = await AppUsage.find({
       userId: req.user._id,
       email: req.user.email,
       date: summary.date
     }).sort({ duration: -1 }).limit(5);
-    
+
     const topApps = appUsage.map(app => ({
       name: app.appName,
       duration: app.duration
     }));
-    
+
     res.json({
       focusScore: summary.focusScore || 0,
       productiveTime: summary.totalProductiveTime || 0,

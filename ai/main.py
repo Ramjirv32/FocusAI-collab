@@ -1,6 +1,4 @@
 
-import load_config
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -14,9 +12,14 @@ import asyncio
 import requests
 import json
 import numpy as np
+import pandas as pd
 from scipy.sparse import hstack
 import uvicorn
+import traceback
 from dotenv import load_dotenv
+import re
+from functools import lru_cache
+from ai_provider import ai_provider
 
 load_dotenv()
 
@@ -29,14 +32,140 @@ print(f"   Backend URL: {BACKEND_URL}")
 print(f"   AI Service: {AI_SERVICE_HOST}:{AI_SERVICE_PORT}")
 
 model = None
-tfidf_vectorizer = None
+vectorizer = None # New single vectorizer
+metadata = {}
 FORCE_PROD = []
 FORCE_NON_PROD = []
+THRESHOLD = 0.75 # From new train.py
 
 background_task = None
 is_fetching_enabled = True
 
 REAL_MONGODB_DATA = []
+
+# Global optimized lookup structures
+FORCE_PROD_SET = set()
+FORCE_UNPROD_SET = set()
+FORCE_PROD_PATTERNS = []
+FORCE_UNPROD_PATTERNS = []
+
+def prepare_optimized_lookups():
+    """Convert JSON lists to optimized data structures for O(1) lookup"""
+    global FORCE_PROD_SET, FORCE_UNPROD_SET, FORCE_PROD_PATTERNS, FORCE_UNPROD_PATTERNS
+    
+    # Exact match sets (O(1) lookup)
+    FORCE_PROD_SET = {str(k).lower() for k in FORCE_PROD}
+    FORCE_UNPROD_SET = {str(k).lower() for k in FORCE_NON_PROD}
+    
+    # Compile regex patterns for URL/domain matching
+    FORCE_PROD_PATTERNS = [
+        re.compile(re.escape(str(k).lower())) 
+        for k in FORCE_PROD 
+        if '.' in str(k) or '/' in str(k)  # URLs/domains only
+    ]
+    
+    FORCE_UNPROD_PATTERNS = [
+        re.compile(re.escape(str(k).lower())) 
+        for k in FORCE_NON_PROD 
+        if '.' in str(k) or '/' in str(k)
+    ]
+    
+    print(f"✅ Optimized lookups: {len(FORCE_PROD_SET)} prod, {len(FORCE_UNPROD_SET)} unprod")
+
+@lru_cache(maxsize=1000)  # Cache results for repeated queries
+def smart_keyword_match(text_combined: str):
+    """Ultra-fast keyword matching with smart tokenization"""
+    text_lower = text_combined.lower()
+    
+    # 1. Exact matches (fastest - O(1))
+    if text_lower in FORCE_PROD_SET:
+        return "Productive", 0.95, [text_lower]
+    if text_lower in FORCE_UNPROD_SET:
+        return "Non-Productive", 0.95, [text_lower]
+    
+    # 2. Domain/URL extraction
+    url_pattern = r'(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+(?:/[^\s]*)?)'
+    urls = re.findall(url_pattern, text_lower)
+    
+    prod_matches = []
+    unprod_matches = []
+    
+    # Check URLs first (highest priority)
+    for url in urls:
+        # Extract domain (strip port if present)
+        domain = url.split('/')[0].split(':')[0]
+        if domain in FORCE_PROD_SET:
+            prod_matches.append(domain)
+        if domain in FORCE_UNPROD_SET:
+            unprod_matches.append(domain)
+            
+        # Subdomain check
+        parts = domain.split('.')
+        for i in range(len(parts)):
+            subdomain = '.'.join(parts[i:])
+            if subdomain in FORCE_PROD_SET:
+                prod_matches.append(subdomain)
+            if subdomain in FORCE_UNPROD_SET:
+                unprod_matches.append(subdomain)
+    
+    # 3. Word token matching
+    # Split by common separators including URL characters
+    tokens = set(re.split(r'[\s\-_\.\:\/\?\#\&\=\@]+', text_lower))
+    tokens = {t for t in tokens if len(t) > 2}
+    
+    # Check multi-word phrases from the combined text
+    # We check phrases that exist in our FORCE sets
+    for phrase in FORCE_PROD_SET:
+        if len(phrase) > 4 and phrase in text_lower:
+            # Word boundary check to avoid partial matches
+            if re.search(r'\b' + re.escape(phrase) + r'\b', text_lower):
+                prod_matches.append(phrase)
+
+    for phrase in FORCE_UNPROD_SET:
+        if len(phrase) > 4 and phrase in text_lower:
+            if re.search(r'\b' + re.escape(phrase) + r'\b', text_lower):
+                unprod_matches.append(phrase)
+
+    # Single word matching from tokens
+    for token in tokens:
+        if token in FORCE_PROD_SET:
+            prod_matches.append(token)
+        if token in FORCE_UNPROD_SET:
+            unprod_matches.append(token)
+    
+    # 4. File extension matching
+    ext_pattern = r'\.([a-z0-9]{1,5})$'
+    extensions = re.findall(ext_pattern, text_lower)
+    for ext in extensions:
+        ext_with_dot = f".{ext}"
+        if ext_with_dot in FORCE_PROD_SET:
+            prod_matches.append(ext_with_dot)
+    
+    # 5. Pattern matching (last resort)
+    if not prod_matches and not unprod_matches:
+        for pattern in FORCE_PROD_PATTERNS:
+            if pattern.search(text_lower):
+                prod_matches.append(pattern.pattern)
+                break
+        
+        for pattern in FORCE_UNPROD_PATTERNS:
+            if pattern.search(text_lower):
+                unprod_matches.append(pattern.pattern)
+                break
+    
+    # Decision logic
+    if prod_matches or unprod_matches:
+        prod_count = len(set(prod_matches))
+        unprod_count = len(set(unprod_matches))
+        
+        if prod_count > unprod_count:
+            confidence = min(0.98, 0.85 + (0.04 * (prod_count - unprod_count)))
+            return "Productive", confidence, list(set(prod_matches))
+        elif unprod_count > prod_count:
+            confidence = min(0.98, 0.85 + (0.04 * (unprod_count - prod_count)))
+            return "Non-Productive", confidence, list(set(unprod_matches))
+    
+    return None, 0.0, []
 
 class FocusActivity(BaseModel):
     app_name: str
@@ -90,74 +219,89 @@ class ProductivitySummaryResponse(BaseModel):
     distraction_apps: Dict[str, int]
 
 def predict_with_xgboost(app_name, tab_name, duration):
-    global model, tfidf_vectorizer, FORCE_PROD, FORCE_NON_PROD
+    global model, vectorizer, metadata
     
-    # Selection of text for classification
-    # If it's a browser, the tab_name (URL/Title) is more descriptive
-    browsers = ["browser", "chrome", "firefox", "chromium", "brave", "edge", "safari", "opera"]
-    text = tab_name if any(b in app_name.lower() for b in browsers) else app_name
+    app_low = str(app_name).lower()
+    tab_low = str(tab_name).lower()
     
-    if not text:
-        return {"label": "Neutral", "confidence": 0.5}
-
-    text_l = text.lower()
+    # Text to predict: if it's a browser, prioritize tab_name (URL)
+    # If app_name is not generic, use it too
+    if app_low in ["google-chrome", "chrome", "firefox", "browser", "chromium", "brave", "edge", "safari"]:
+        text_to_predict = tab_low
+    else:
+        text_to_predict = f"{app_low} {tab_low}".strip()
     
-    if any(k.lower() in text_l for k in FORCE_NON_PROD):
-        return {"label": "Non-Productive", "confidence": 0.99}
+    # 1. FAST keyword-based classification (O(1) average)
+    result, confidence, matches = smart_keyword_match(text_to_predict)
     
-    if any(k.lower() in text_l for k in FORCE_PROD):
-        return {"label": "Productive", "confidence": 0.99}
-        
-    if "youtube.com/watch" in text_l and duration >= 1800:
-        return {"label": "Productive", "confidence": 0.90}
-
-    if "wikipedia.org/wiki" in text_l and duration >= 1200:
-        return {"label": "Productive", "confidence": 0.85}
-
-    UTILITY_APPS = [
-        "calculator", "notepad", "settings", 
-        "control panel", "task manager", "system monitor",
-        "gnome-settings", "windows settings"
-    ]
-    if any(u in text_l for u in UTILITY_APPS):
-        if duration >= 900: # 15 minutes
-            return {"label": "Productive", "confidence": 0.80}
-        else:
-            return {"label": "Neutral", "confidence": 0.60}
-
-    if model is None or tfidf_vectorizer is None:
-        return {"label": "Neutral", "confidence": 0.5}
+    if result:
+        print(f"🎯 [KEYWORD HIT] '{text_to_predict}' -> {result} (Matches: {matches})")
+        return {
+            "label": result,
+            "confidence": float(confidence),
+            "matches": matches,
+            "method": "keyword"
+        }
+    
+    # 2. Context-based rules (fast heuristics)
+    # YouTube: educational if long duration
+    if "youtube.com/watch" in text_to_predict and duration >= 1800:
+        return {"label": "Productive", "confidence": 0.90, "method": "context"}
+    
+    # Localhost/development
+    if any(x in text_to_predict for x in ["localhost", "127.0.0.1", ":3000", ":8080", ":5000"]):
+        return {"label": "Productive", "confidence": 0.95, "method": "context"}
+    
+    # Common productivity patterns
+    if any(x in text_to_predict for x in ["github.com", "stackoverflow", "docs.", "/api/", "/documentation"]):
+        return {"label": "Productive", "confidence": 0.92, "method": "context"}
+    
+    # Common distraction patterns  
+    if any(x in text_to_predict for x in ["/feed", "/shorts", "/reels", "tiktok", "instagram.com"]):
+        return {"label": "Non-Productive", "confidence": 0.92, "method": "context"}
+    
+    # Utility apps - duration-based
+    UTILITY_APPS = {"calculator", "notepad", "settings", "control panel", "task manager"}
+    if any(u in text_to_predict for u in UTILITY_APPS):
+        label = "Productive" if duration >= 600 else "Neutral"
+        return {"label": label, "confidence": 0.70, "method": "utility"}
+    
+    # 3. ML Model prediction (fallback for unknown items)
+    if model is None or vectorizer is None:
+        print(f"⚠️ [DEFAULT] '{text_to_predict}' -> Neutral (Model missing)")
+        return {"label": "Neutral", "confidence": 0.5, "method": "default"}
 
     try:
-        dt = datetime.now()
-        hour = dt.hour
-        is_weekend = 1 if dt.weekday() >= 5 else 0
+        now = datetime.now()
+        current_hour = now.hour
+        is_weekend = 1 if now.weekday() >= 5 else 0
         
-        # 4. ML Inference
-        X_text = tfidf_vectorizer.transform([text])
-        X_num = np.array([[duration, hour, is_weekend]])
+        # Prepare features exactly as trained: [X_text, duration, hour, is_weekend]
+        X_text = vectorizer.transform([text_to_predict])
+        X_num = np.array([[duration, current_hour, is_weekend]])
         X = hstack([X_text, X_num]).tocsr()
 
-        prob = model.predict_proba(X)[0][1]
+        prob = model.predict_proba(X)[0][1] # Probability of being Productive
         
-        if prob >= 0.75:
+        if prob >= THRESHOLD:
             label = "Productive"
             confidence = float(prob)
-        elif prob <= 0.35:
+        elif prob <= (1.0 - THRESHOLD):
             label = "Non-Productive"
             confidence = float(1.0 - prob)
         else:
             label = "Neutral"
-            # Higher confidence if closer to 0.55 (the center of our neutral zone)
-            confidence = float(0.5 + (0.2 - abs(prob - 0.55)))
-        
+            confidence = float(max(prob, 1.0 - prob))
+
+        print(f"🤖 [ML] '{text_to_predict}' -> {label} (Prob: {prob:.2f})")
         return {
             "label": label,
-            "confidence": confidence
+            "confidence": confidence,
+            "method": "ml_model"
         }
     except Exception as e:
         print(f"❌ Error in XGBoost prediction: {e}")
-        return {"label": "Neutral", "confidence": 0.5}
+        return {"label": "Neutral", "confidence": 0.5, "method": "error"}
 
 def process_user_data(user_data):
     try:
@@ -170,61 +314,80 @@ def process_user_data(user_data):
         total_non_productive_time = 0
         total_neutral_time = 0
         
-        print(f"🔄 Processing {len(app_usage)} items with XGBoost model...")
+        browsers = ["browser", "chrome", "firefox", "chromium", "brave", "edge", "safari", "opera", "vivaldi", "google-chrome"]
         
-        for app in app_usage:
+        # Check if we have any tabs to determine if we should skip browser app entries
+        has_any_tabs = any(item.get("sourceType") == "tab" for item in (app_usage + tab_usage))
+        
+        # Combine them but keep track of type
+        combined_data = list(app_usage)
+        combined_data.extend(tab_usage)
+        
+        processed_records = []
+        for app in combined_data:
             if not isinstance(app, dict): continue
             name = app.get("appName", "")
             duration = app.get("duration", 0)
             url = app.get("url", "")
+            source_type = app.get("sourceType", "app")
             if not name or duration <= 0: continue
+
+            # Skip generic browser app shells to avoid double-counting IF we have tab data
+            # If we don't have tab data, we keep the browser app entries as a fallback
+            if has_any_tabs and source_type == "app" and any(b in name.lower() for b in browsers):
+                continue
             
-            prediction = predict_with_xgboost(name, url if url else name, duration)
-            if prediction['label'] == 'Productive':
-                productive_content[name] = productive_content.get(name, 0) + duration
-                total_productive_time += duration
-            elif prediction['label'] == 'Non-Productive':
-                non_productive_content[name] = non_productive_content.get(name, 0) + duration
-                total_non_productive_time += duration
+            # Smart selection of app/tab names for the new model
+            if source_type == "tab" or (url and url.startswith("http")):
+                app_name_to_predict = "Browser" # Standardize for tabs
+                tab_name_to_predict = url
             else:
-                neutral_content[name] = neutral_content.get(name, 0) + duration
-                total_neutral_time += duration
+                app_name_to_predict = name
+                tab_name_to_predict = url if url else name
                 
-        for tab in tab_usage:
-            if not isinstance(tab, dict): continue
-            domain = tab.get("domain", tab.get("title", "Browser"))
-            url = tab.get("url", "")
-            duration = tab.get("duration", 0)
-            if not duration or duration <= 0: continue
+            prediction = predict_with_xgboost(app_name_to_predict, tab_name_to_predict, duration)
             
-            prediction = predict_with_xgboost("Browser", url if url else domain, duration)
-            # Use URL as the primary identifier (given as link)
-            tab_name = url if url else f"Browser - {domain}"
+            display_url = url if url and url != 'unknown' else 'N/A'
+            print(f"🔍 [AI] Analyzing: {name} ({source_type}) | Link: {display_url} | Result: {prediction['label']}")
+            
+            # Use name (which is title for tabs) as storage key for display
+            storage_key = name
             
             if prediction['label'] == 'Productive':
-                productive_content[tab_name] = productive_content.get(tab_name, 0) + duration
+                productive_content[storage_key] = productive_content.get(storage_key, 0) + duration
                 total_productive_time += duration
             elif prediction['label'] == 'Non-Productive':
-                non_productive_content[tab_name] = non_productive_content.get(tab_name, 0) + duration
+                non_productive_content[storage_key] = non_productive_content.get(storage_key, 0) + duration
                 total_non_productive_time += duration
             else:
-                neutral_content[tab_name] = neutral_content.get(tab_name, 0) + duration
+                neutral_content[storage_key] = neutral_content.get(storage_key, 0) + duration
                 total_neutral_time += duration
         
         overall_total_usage = total_productive_time + total_non_productive_time + total_neutral_time
-        focus_score = int((total_productive_time / overall_total_usage * 100) if overall_total_usage > 0 else 0)
+        
+        # Focus Score calculation: 
+        # (Productive + Neutral*0.5) / Total 
+        # This makes Neutral "half-productive" so it doesn't penalize as much as distraction.
+        # This is more intuitive for users when distraction is 0.
+        if overall_total_usage > 0:
+            focus_score = int(((total_productive_time + (total_neutral_time * 0.5)) / overall_total_usage) * 100)
+        else:
+            focus_score = 0
+            
         distraction_score = int((total_non_productive_time / overall_total_usage * 100) if overall_total_usage > 0 else 0)
         
         max_productive_app = max(productive_content.items(), key=lambda x: x[1])[0] if productive_content else ""
-        all_apps = {**productive_content, **non_productive_content}
+        all_apps = {**productive_content, **non_productive_content, **neutral_content}
         most_used_app = max(all_apps.items(), key=lambda x: x[1])[0] if all_apps else ""
         
         return {
             "productive_content": productive_content,
             "non_productive_content": non_productive_content,
+            "neutral_content": neutral_content,
             "max_productive_app": max_productive_app,
             "total_productive_time": total_productive_time,
             "total_non_productive_time": total_non_productive_time,
+            "total_neutral_time": total_neutral_time,
             "overall_total_usage": overall_total_usage,
             "focus_score": focus_score,
             "distraction_score": distraction_score,
@@ -234,31 +397,42 @@ def process_user_data(user_data):
         }
     except Exception as e:
         print(f"❌ Error processing user data: {e}")
+        traceback.print_exc()
         return None
 
 def process_real_data(app_data):
     activities = []
     if not app_data: return activities
     
-    if isinstance(app_data, dict) and ("appUsage" in app_data or "tabUsage" in app_data):
-        combined = []
-        combined.extend(app_data.get("appUsage", []))
-        for tab in app_data.get("tabUsage", []):
-            if isinstance(tab, dict):
-                combined.append({
-                    "appName": f"Browser - {tab.get('domain', 'Browser')}",
-                    "url": tab.get("url", ""),
-                    "duration": tab.get("duration", 0)
-                })
-        app_data = combined
+    # Ensure it's a list for iteration
+    raw_list = []
+    if isinstance(app_data, dict):
+        raw_list.extend(app_data.get("appUsage", []))
+        raw_list.extend(app_data.get("tabUsage", []))
+    else:
+        raw_list = app_data
 
-    for app in app_data:
+    browsers = ["browser", "chrome", "firefox", "chromium", "brave", "edge", "safari", "opera", "vivaldi", "google-chrome"]
+    has_any_tabs = any(item.get("sourceType") == "tab" for item in raw_list)
+
+    for app in raw_list:
+        if not isinstance(app, dict): continue
         name = app.get("appName", "")
         duration = app.get("duration", 0)
         url = app.get("url", "")
+        source_type = app.get("sourceType", "app")
         if not name or duration <= 0: continue
         
-        res = predict_with_xgboost(name, url if url else name, duration)
+        # Deduplication
+        if has_any_tabs and source_type == "app" and any(b in name.lower() for b in browsers):
+            continue
+
+        # Consistent prediction logic
+        if source_type == "tab" or (url and url.startswith("http")):
+            res = predict_with_xgboost("Browser", url, duration)
+        else:
+            res = predict_with_xgboost(name, url if url else name, duration)
+            
         label = "Focused" if res['label'] == 'Productive' else ("Distracted" if res['label'] == 'Non-Productive' else "Neutral")
         activities.append(FocusActivity(
             app_name=name,
@@ -303,24 +477,27 @@ async def fetch_real_mongodb_data(user_id=None, email=None, date=None):
             if res.status_code == 200:
                 data = res.json()
                 formatted = []
-                # Simple extraction of everything into a single list
+                # Distinguish between apps and tabs
                 for app in data.get('appUsage', []):
                     if not isinstance(app, dict): continue
                     formatted.append({
                         "appName": app.get('appName', ''),
                         "duration": int(app.get('duration', 0)),
                         "url": app.get('url', ''),
+                        "sourceType": "app",
                         "email": app.get('email', email),
                         "userId": app.get('userId', user_id),
                         "date": app.get('date', date)
                     })
                 for tab in data.get('tabUsage', []):
                     if not isinstance(tab, dict): continue
-                    domain = tab.get('domain', 'Browser')
+                    title = tab.get('title', 'Browser')
+                    url = tab.get('url', '')
                     formatted.append({
-                        "appName": f"Browser - {domain}",
-                        "url": tab.get('url', ''),
+                        "appName": title,
+                        "url": url,
                         "duration": int(tab.get('duration', 0)),
+                        "sourceType": "tab",
                         "email": tab.get('email', email),
                         "userId": tab.get('userId', user_id),
                         "date": tab.get('date', date)
@@ -342,15 +519,42 @@ async def fetch_data_periodically():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, tfidf_vectorizer, FORCE_PROD, FORCE_NON_PROD, background_task
-    model_dir = 'newtrained25000'
+    global model, vectorizer, FORCE_PROD, FORCE_NON_PROD, background_task, metadata
+    
+    # Load NEW model from ai/newtrained25000
+    rules_dir = 'newtrained25000'
     try:
-        model = joblib.load(f'{model_dir}/xgb_productivity.pkl')
-        tfidf_vectorizer = joblib.load(f'{model_dir}/xgb_vectorizer.pkl')
-        with open(f'{model_dir}/FORCE_PROD.json') as f: FORCE_PROD = json.load(f)
-        with open(f'{model_dir}/FORCE_UNPROD.json') as f: FORCE_NON_PROD = json.load(f)
-        print("✅ XGBoost model and rules loaded")
-    except Exception as e: print(f"❌ Load error: {e}")
+        model_path = os.path.join(rules_dir, 'xgb_productivity.pkl')
+        vec_path = os.path.join(rules_dir, 'xgb_vectorizer.pkl')
+        
+        if os.path.exists(model_path) and os.path.exists(vec_path):
+            model = joblib.load(model_path)
+            vectorizer = joblib.load(vec_path)
+            print(f"✅ NEW XGBoost model and vectorizer loaded from {rules_dir}")
+        else:
+            print(f"⚠️ Model files not found in {rules_dir}, checking trainedmodel...")
+            model_dir = 'trainedmodel'
+            model = joblib.load(f'{model_dir}/xgboost_productivity_model.pkl')
+            # Fallback for old multi-vectorizer model if needed? 
+            # Actually better to just fail if we expect the new one
+            
+        # Load rules
+        with open(f'{rules_dir}/FORCE_PROD.json') as f: 
+            FORCE_PROD = json.load(f)
+            if "mongodb" not in [x.lower() for x in FORCE_PROD]: FORCE_PROD.append("mongodb")
+            if "groq" not in [x.lower() for x in FORCE_PROD]: FORCE_PROD.append("groq")
+            if "grok" not in [x.lower() for x in FORCE_PROD]: FORCE_PROD.append("grok")
+            
+        with open(f'{rules_dir}/FORCE_UNPROD.json') as f: 
+            FORCE_NON_PROD = json.load(f)
+        
+        # Build optimized lookup structures
+        prepare_optimized_lookups()
+        
+        print("✅ Optimized rules and lookup structures initialized")
+    except Exception as e: 
+        print(f"❌ Load error: {e}")
+        traceback.print_exc()
     
     background_task = asyncio.create_task(fetch_data_periodically())
     yield
@@ -397,7 +601,10 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
     n_dur = sum(a.duration for a in activities if a.predicted_label == "Neutral")
     
     total = p_dur + d_dur + n_dur
-    score = int(p_dur/total*100) if total > 0 else 0
+    if total > 0:
+        score = int(((p_dur + (n_dur * 0.5)) / total) * 100)
+    else:
+        score = 0
     
     return FocusAnalysisResponse(
         user_id=user_id,
@@ -422,12 +629,23 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
 @app.get("/user/{user_id}/quick-stats")
 async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
     cur_date = date or datetime.now().strftime("%Y-%m-%d")
-    data = [x for x in REAL_MONGODB_DATA if x.get("userId") == user_id and x.get("date") == cur_date]
+    data = [x for x in REAL_MONGODB_DATA if isinstance(x, dict) and str(x.get("userId")) == str(user_id) and x.get("date") == cur_date]
     activities = process_real_data(data)
+    
     p_dur = sum(a.duration for a in activities if a.predicted_label == "Focused")
-    total = sum(a.duration for a in activities)
+    d_dur = sum(a.duration for a in activities if a.predicted_label == "Distracted")
+    n_dur = sum(a.duration for a in activities if a.predicted_label == "Neutral")
+    
+    total = p_dur + d_dur + n_dur
+    
+    # Match the formula used in process_user_data
+    if total > 0:
+        score = int(((p_dur + (n_dur * 0.5)) / total) * 100)
+    else:
+        score = 0
+        
     return {
-        "productivity_score": int(p_dur/total*100) if total > 0 else 0,
+        "productivity_score": score,
         "total_time_minutes": total // 60,
         "activity_count": len(activities)
     }
@@ -439,7 +657,12 @@ async def seed_test_data(user_id: str):
 @app.post("/sync-user-data/{user_id}")
 async def sync_user_data(user_id: str, data: Dict[str, Any]):
     global REAL_MONGODB_DATA
-    REAL_MONGODB_DATA.extend(data.get("appUsage", []))
+    incoming = data.get("appUsage", [])
+    if isinstance(incoming, list):
+        REAL_MONGODB_DATA.extend([x for x in incoming if isinstance(x, dict)])
+    elif isinstance(incoming, dict):
+        # Handle case where it's a summary map (appName -> duration) - skip for now as we want raw data
+        pass
     return {"success": True}
 
 @app.get("/user/{user_id}/productivity-summary", response_model=ProductivitySummaryResponse)

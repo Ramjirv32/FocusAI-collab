@@ -24,7 +24,7 @@ const AIModelManager = () => {
     const [showKey, setShowKey] = useState(false);
     const [status, setStatus] = useState({ type: 'idle', message: '' });
 
-    
+
     useEffect(() => {
         if (isOpen) {
             fetchConfig();
@@ -43,7 +43,7 @@ const AIModelManager = () => {
                 const data = await response.json();
                 setConfig(data);
 
-                
+
                 if (data.provider === 'ollama') {
                     fetchOllamaModels();
                 }
@@ -74,7 +74,7 @@ const AIModelManager = () => {
     };
 
     const handleSave = async () => {
-        
+
         if (config.provider === 'groq' && !config.groqKey) {
             setStatus({ type: 'error', message: 'Please enter a Groq API key' });
             return;
@@ -89,7 +89,7 @@ const AIModelManager = () => {
         setStatus({ type: 'loading', message: 'Saving configuration...' });
 
         try {
-            
+
             const configToSave = {
                 provider: config.provider,
                 groqKey: config.provider === 'groq' ? config.groqKey : '',
@@ -154,7 +154,6 @@ const AIModelManager = () => {
                 </DialogHeader>
 
                 <Tabs value={config.provider} onValueChange={(v) => {
-                    setConfig({ ...config, provider: v });
                     if (v === 'ollama' && ollamaModels.length === 0) fetchOllamaModels();
                 }} className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
@@ -169,6 +168,19 @@ const AIModelManager = () => {
                     </TabsList>
 
                     <TabsContent value="groq" className="space-y-4 py-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <Label className="text-sm font-semibold">Cloud Configuration</Label>
+                            <Button
+                                size="sm"
+                                variant={config.provider === 'groq' ? "destructive" : "default"}
+                                onClick={() => setConfig({ ...config, provider: config.provider === 'groq' ? 'ollama' : 'groq' })}
+                                className="h-7 text-[10px]"
+                            >
+                                {config.provider === 'groq' ? (
+                                    <span className="flex items-center gap-1">Deactivate Groq</span>
+                                ) : 'Activate Groq'}
+                            </Button>
+                        </div>
                         <div className="space-y-2">
                             <Label htmlFor="groq-key">Groq API Key</Label>
                             <div className="flex gap-2">
@@ -179,7 +191,6 @@ const AIModelManager = () => {
                                     onChange={(e) => setConfig({ ...config, groqKey: e.target.value })}
                                     className="font-mono text-xs"
                                     placeholder="gsk_..."
-                                    disabled={config.provider !== 'groq'}
                                 />
                                 <Button
                                     variant="outline"
@@ -196,19 +207,35 @@ const AIModelManager = () => {
                         <Alert className="py-2 bg-blue-50 border-blue-200">
                             <Cloud className="h-3 w-3" />
                             <AlertDescription className="text-[10px]">
-                                <b>Cloud AI:</b> Fast, powerful models hosted by Groq. Requires internet connection.
+                                <b>Cloud AI:</b> {config.provider === 'groq' ? <span className="text-green-600 font-bold">[ACTIVE]</span> : <span className="text-gray-500">[INACTIVE]</span>} Fast, powerful models hosted by Groq.
                             </AlertDescription>
                         </Alert>
                     </TabsContent>
 
                     <TabsContent value="ollama" className="space-y-4 py-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <Label className="text-sm font-semibold">Local Configuration</Label>
+                            <Button
+                                size="sm"
+                                variant={config.provider === 'ollama' ? "destructive" : "default"}
+                                onClick={() => {
+                                    const nextProvider = config.provider === 'ollama' ? 'groq' : 'ollama';
+                                    setConfig({ ...config, provider: nextProvider });
+                                    if (nextProvider === 'ollama' && ollamaModels.length === 0) fetchOllamaModels();
+                                }}
+                                className="h-7 text-[10px]"
+                            >
+                                {config.provider === 'ollama' ? (
+                                    <span className="flex items-center gap-1">Deactivate Ollama</span>
+                                ) : 'Activate Ollama'}
+                            </Button>
+                        </div>
                         <div className="space-y-2">
                             <Label>Active Model</Label>
                             <div className="flex gap-2">
                                 <Select
                                     value={config.ollamaModel}
                                     onValueChange={(v) => setConfig({ ...config, ollamaModel: v })}
-                                    disabled={config.provider !== 'ollama'}
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select a model" />
@@ -246,13 +273,12 @@ const AIModelManager = () => {
                                 onChange={(e) => setConfig({ ...config, ollamaUrl: e.target.value })}
                                 className="font-mono text-xs"
                                 placeholder="http://localhost:11434"
-                                disabled={config.provider !== 'ollama'}
                             />
                         </div>
                         <Alert className="py-2 bg-slate-50 border-slate-200">
                             <Cpu className="h-3 w-3" />
                             <AlertDescription className="text-[10px]">
-                                Ollama must be running locally. Recommended: <b>llama3.2</b> or <b>mistral</b>.
+                                {config.provider === 'ollama' ? <span className="text-green-600 font-bold">[ACTIVE]</span> : <span className="text-gray-500">[INACTIVE]</span>} Ollama must be running locally. Recommended: <b>llama3.2</b>.
                             </AlertDescription>
                         </Alert>
                     </TabsContent>

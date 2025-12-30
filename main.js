@@ -200,6 +200,34 @@ ipcMain.handle('save-config', async (event, config) => {
   return result;
 });
 
+ipcMain.handle('test-ollama-connection', async (event, url, model) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.post(
+      `${url}/api/chat`,
+      {
+        model: model,
+        messages: [{ role: 'user', content: 'hi' }],
+        stream: false
+      },
+      { timeout: 5000 }
+    );
+
+    if (response.status === 200) {
+      return { success: true, message: 'Successfully connected to Ollama!' };
+    } else {
+      return { success: false, message: `Ollama returned status ${response.status}` };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error.code === 'ECONNREFUSED'
+        ? 'Could not connect to Ollama. Is it running?'
+        : error.message
+    };
+  }
+});
+
 ipcMain.handle('test-groq-connection', async (event, apiKey) => {
   try {
     const axios = require('axios');
