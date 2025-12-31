@@ -1213,11 +1213,10 @@ async function getUserRankInLeaderboard(userId, timeFrame = 'weekly') {
 const classifyApp = (nameOrUrl) => {
   const inputLower = (nameOrUrl || '').toLowerCase();
 
-
-  if (inputLower.includes('ai') || inputLower.includes('antigravity') || inputLower.includes('focus') || inputLower.includes('focuai') || inputLower.includes('cursor')) {
+  // Primary productive keywords (highest priority)
+  if (inputLower.includes('ai') || inputLower.includes('antigravity') || inputLower.includes('focus') || inputLower.includes('focuai') || inputLower.includes('cursor') || inputLower.includes('docker')) {
     return 'productive';
   }
-
 
   const productiveApps = [
     'code', 'vscode', 'visual studio', 'terminal', 'gnome-terminal', 'powershell', 'cmd',
@@ -1229,26 +1228,30 @@ const classifyApp = (nameOrUrl) => {
     'chatgpt', 'openai', 'claude.ai', 'gemini.google', 'perplexity', 'gemini'
   ];
 
-
   const nonProductiveApps = [
     'netflix', 'spotify', 'youtube', 'twitter', 'instagram', 'facebook',
     'tiktok', 'reddit', 'gaming', 'steam', 'discord', 'whatsapp',
     'telegram', 'snapchat', 'twitch', 'hulu', 'disney+', 'prime video'
   ];
 
+  // If match productive, return productive
   if (productiveApps.some(app => inputLower.includes(app))) {
     return 'productive';
-  } else if (nonProductiveApps.some(app => inputLower.includes(app))) {
+  }
+
+  // If match non-productive, return non-productive
+  if (nonProductiveApps.some(app => inputLower.includes(app))) {
     return 'non-productive';
   }
 
-
+  // Browsers and utility-like items default to productive if not clearly non-productive
   const browsers = ['chrome', 'firefox', 'browser', 'chromium', 'brave', 'edge', 'safari', 'opera', 'vivaldi'];
-  if (browsers.some(b => inputLower.includes(b))) {
+  if (browsers.some(b => inputLower.includes(b)) || inputLower.includes('settings') || inputLower.includes('calculator')) {
     return 'productive';
   }
 
-  return 'neutral';
+  // Default to productive for unknown items (as per "no neutral" request)
+  return 'productive';
 };
 
 

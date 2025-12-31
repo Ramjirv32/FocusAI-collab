@@ -111,7 +111,7 @@ def smart_keyword_match(text_combined: str):
     # 3. Word token matching
     # Split by common separators including URL characters
     tokens = set(re.split(r'[\s\-_\.\:\/\?\#\&\=\@]+', text_lower))
-    tokens = {t for t in tokens if len(t) > 2}
+    tokens = {t for t in tokens if len(t) >= 2} # Catch shorter keywords like 'ai', 'go', 'git'
     
     # Check multi-word phrases from the combined text
     # We check phrases that exist in our FORCE sets
@@ -153,19 +153,20 @@ def smart_keyword_match(text_combined: str):
                 unprod_matches.append(pattern.pattern)
                 break
     
-    # Decision logic
-    if prod_matches or unprod_matches:
-        prod_count = len(set(prod_matches))
-        unprod_count = len(set(unprod_matches))
-        
-        if prod_count > unprod_count:
-            confidence = min(0.98, 0.85 + (0.04 * (prod_count - unprod_count)))
-            return "Productive", confidence, list(set(prod_matches))
-        elif unprod_count > prod_count:
-            confidence = min(0.98, 0.85 + (0.04 * (unprod_count - prod_count)))
-            return "Non-Productive", confidence, list(set(unprod_matches))
+    # Decision logic: Modified to prioritize Productivity as requested
+    # If ANY productive keyword is found, it's productive (user: "if any one of works... is exists in prod... make it productive")
+    if prod_matches:
+        # Sort by length to get the most specific keyword first
+        sorted_prod = sorted(list(set(prod_matches)), key=len, reverse=True)
+        confidence = 0.98 if len(prod_matches) >= 2 else 0.95
+        return "Productive", confidence, sorted_prod
     
-    return None, 0.0, []
+    if unprod_matches:
+        sorted_unprod = sorted(list(set(unprod_matches)), key=len, reverse=True)
+        confidence = 0.98 if len(unprod_matches) >= 2 else 0.95
+        return "Non-Productive", confidence, sorted_unprod
+
+    return None, 0, []
 
 class FocusActivity(BaseModel):
     app_name: str
@@ -221,15 +222,17 @@ class ProductivitySummaryResponse(BaseModel):
 def predict_with_xgboost(app_name, tab_name, duration):
     global model, vectorizer, metadata
     
-    app_low = str(app_name).lower()
-    tab_low = str(tab_name).lower()
+    app_low = str(app_name or "").lower()
+    tab_low = str(tab_name or "").lower()
     
-    # Text to predict: if it's a browser, prioritize tab_name (URL)
-    # If app_name is not generic, use it too
-    if app_low in ["google-chrome", "chrome", "firefox", "browser", "chromium", "brave", "edge", "safari"]:
-        text_to_predict = tab_low
-    else:
-        text_to_predict = f"{app_low} {tab_low}".strip()
+    # Combine app and tab/title for maximum context. 
+    # This prevents missing keywords when app name is generic (like "Browser" or "Terminal")
+    # or when tab title is just a URL.
+    text_to_predict = f"{app_low} {tab_low}".strip()
+    
+    # If the combined text is too short or empty, provide a fallback
+    if len(text_to_predict) < 2:
+        text_to_predict = "none"
     
     # 1. FAST keyword-based classification (O(1) average)
     result, confidence, matches = smart_keyword_match(text_to_predict)
@@ -263,13 +266,13 @@ def predict_with_xgboost(app_name, tab_name, duration):
     # Utility apps - duration-based
     UTILITY_APPS = {"calculator", "notepad", "settings", "control panel", "task manager"}
     if any(u in text_to_predict for u in UTILITY_APPS):
-        label = "Productive" if duration >= 600 else "Neutral"
-        return {"label": label, "confidence": 0.70, "method": "utility"}
+        # User requested no neutral: utilities are productive
+        return {"label": "Productive", "confidence": 0.70, "method": "utility"}
     
     # 3. ML Model prediction (fallback for unknown items)
     if model is None or vectorizer is None:
-        print(f"⚠️ [DEFAULT] '{text_to_predict}' -> Neutral (Model missing)")
-        return {"label": "Neutral", "confidence": 0.5, "method": "default"}
+        print(f"⚠️ [DEFAULT] '{text_to_predict}' -> Productive (Model missing, defaulting as requested)")
+        return {"label": "Productive", "confidence": 0.5, "method": "default"}
 
     try:
         now = datetime.now()
@@ -290,7 +293,8 @@ def predict_with_xgboost(app_name, tab_name, duration):
             label = "Non-Productive"
             confidence = float(1.0 - prob)
         else:
-            label = "Neutral"
+            # User requested no neutral: map middle-range to Productive
+            label = "Productive"
             confidence = float(max(prob, 1.0 - prob))
 
         print(f"🤖 [ML] '{text_to_predict}' -> {label} (Prob: {prob:.2f})")
@@ -337,15 +341,8 @@ def process_user_data(user_data):
             if has_any_tabs and source_type == "app" and any(b in name.lower() for b in browsers):
                 continue
             
-            # Smart selection of app/tab names for the new model
-            if source_type == "tab" or (url and url.startswith("http")):
-                app_name_to_predict = "Browser" # Standardize for tabs
-                tab_name_to_predict = url
-            else:
-                app_name_to_predict = name
-                tab_name_to_predict = url if url else name
-                
-            prediction = predict_with_xgboost(app_name_to_predict, tab_name_to_predict, duration)
+            # Include the name/title even for tabs to catch keywords (e.g., "FOCUS-AI")
+            prediction = predict_with_xgboost(name, url if url and url != 'unknown' else name, duration)
             
             display_url = url if url and url != 'unknown' else 'N/A'
             print(f"🔍 [AI] Analyzing: {name} ({source_type}) | Link: {display_url} | Result: {prediction['label']}")
@@ -366,11 +363,9 @@ def process_user_data(user_data):
         overall_total_usage = total_productive_time + total_non_productive_time + total_neutral_time
         
         # Focus Score calculation: 
-        # (Productive + Neutral*0.5) / Total 
-        # This makes Neutral "half-productive" so it doesn't penalize as much as distraction.
-        # This is more intuitive for users when distraction is 0.
+        # Binary focus score (No Neutral as requested)
         if overall_total_usage > 0:
-            focus_score = int(((total_productive_time + (total_neutral_time * 0.5)) / overall_total_usage) * 100)
+            focus_score = int((total_productive_time / overall_total_usage) * 100)
         else:
             focus_score = 0
             
@@ -427,13 +422,11 @@ def process_real_data(app_data):
         if has_any_tabs and source_type == "app" and any(b in name.lower() for b in browsers):
             continue
 
-        # Consistent prediction logic
-        if source_type == "tab" or (url and url.startswith("http")):
-            res = predict_with_xgboost("Browser", url, duration)
-        else:
-            res = predict_with_xgboost(name, url if url else name, duration)
+        # Consistent prediction logic: Take BOTH name and URL into account
+        # In process_real_data, 'name' is often the window title.
+        res = predict_with_xgboost(name, url if url and url != 'unknown' else name, duration)
             
-        label = "Focused" if res['label'] == 'Productive' else ("Distracted" if res['label'] == 'Non-Productive' else "Neutral")
+        label = "Focused" if res['label'] == 'Productive' else "Distracted"
         activities.append(FocusActivity(
             app_name=name,
             tab_title=name,
