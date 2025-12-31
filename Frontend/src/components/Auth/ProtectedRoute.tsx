@@ -1,22 +1,17 @@
 import React, { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
-
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, token, isLoading } = useAuth();
   const navigate = useNavigate();
-  
   useEffect(() => {
-    
     if (!isLoading && !token) {
       navigate('/login');
     }
   }, [isLoading, token, navigate]);
-  
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -24,19 +19,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       </div>
     );
   }
-  
-  
-  console.log('ProtectedRoute - Auth State:', { 
-    isAuthenticated: !!token, 
+  console.log('ProtectedRoute - Auth State:', {
+    isAuthenticated: !!token,
     hasUser: !!user,
-    isLoading 
+    isLoading
   });
-  
   if (!token) {
     return <Navigate to="/login" replace />;
   }
-  
   return <>{children}</>;
 };
-
 export default ProtectedRoute;

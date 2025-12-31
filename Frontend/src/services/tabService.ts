@@ -1,16 +1,10 @@
 import axios from 'axios';
 import { TabLog, GroupedTabData, TimeFrame, TabSummary } from '@/types';
-
-
 const API_URL = 'http://localhost:5000';
-
-
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
-
-
 export const fetchTabLogs = async (): Promise<TabLog[]> => {
   try {
     const response = await axios.get(`${API_URL}/tabs`, {
@@ -23,22 +17,17 @@ export const fetchTabLogs = async (): Promise<TabLog[]> => {
     throw error;
   }
 };
-
-
 export const groupByDomain = (logs: TabLog[]): Record<string, GroupedTabData> => {
   const grouped: Record<string, GroupedTabData> = {};
-  
   logs.forEach(log => {
     try {
       let domain = 'unknown';
-      
       if (log.url) {
         const url = new URL(log.url);
         domain = url.hostname;
       } else if (log.domain) {
         domain = log.domain;
       }
-      
       if (!grouped[domain]) {
         grouped[domain] = {
           domain,
@@ -47,15 +36,12 @@ export const groupByDomain = (logs: TabLog[]): Record<string, GroupedTabData> =>
           avgSessionDuration: 0
         };
       }
-      
       grouped[domain].totalTime += log.duration || 0;
       grouped[domain].visits += 1;
     } catch (e) {
       console.error('Error processing log:', e, log);
     }
   });
-  
-  
   Object.keys(grouped).forEach(domain => {
     if (grouped[domain].visits > 0) {
       grouped[domain].avgSessionDuration = Math.round(
@@ -63,15 +49,11 @@ export const groupByDomain = (logs: TabLog[]): Record<string, GroupedTabData> =>
       );
     }
   });
-  
   return grouped;
 };
-
-
 export const filterByTimeFrame = (logs: TabLog[], timeframe: TimeFrame): TabLog[] => {
   const now = new Date();
   let startTime: Date;
-  
   switch (timeframe) {
     case 'daily':
       startTime = new Date(now.setHours(0, 0, 0, 0));
@@ -85,13 +67,10 @@ export const filterByTimeFrame = (logs: TabLog[], timeframe: TimeFrame): TabLog[
       startTime = new Date(now.getFullYear(), now.getMonth(), 1);
       break;
     default:
-      startTime = new Date(0); 
+      startTime = new Date(0);
   }
-  
   return logs.filter(log => new Date(log.timestamp) >= startTime);
 };
-
-
 export const generateSummary = (logs: TabLog[]): TabSummary => {
   if (!logs.length) {
     return {
@@ -102,29 +81,19 @@ export const generateSummary = (logs: TabLog[]): TabSummary => {
       totalTabs: 0
     };
   }
-  
   const domains = groupByDomain(logs);
   const domainArray = Object.values(domains);
-  
-  
   const mostVisitedDomain = domainArray.reduce(
     (max, domain) => (domain.visits > max.visits ? domain : max),
     domainArray[0]
   );
-  
-  
   const mostTimeSpentDomain = domainArray.reduce(
     (max, domain) => (domain.totalTime > max.totalTime ? domain : max),
     domainArray[0]
   );
-  
-  
   const totalTime = domainArray.reduce((sum, domain) => sum + domain.totalTime, 0);
-  
-  
   const totalSessions = domainArray.reduce((sum, domain) => sum + domain.visits, 0);
   const averageSessionDuration = totalSessions > 0 ? totalTime / totalSessions : 0;
-  
   return {
     totalTime,
     mostVisitedTab: mostVisitedDomain.domain,
@@ -133,8 +102,6 @@ export const generateSummary = (logs: TabLog[]): TabSummary => {
     totalTabs: logs.length
   };
 };
-
-
 export const logTabActivity = async (tabData: Partial<TabLog>): Promise<void> => {
   try {
     await axios.post(`${API_URL}/log-tab`, tabData, {

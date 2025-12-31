@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bar, Pie } from 'recharts';
@@ -13,29 +12,21 @@ import {
   Legend,
 } from 'recharts';
 import { GroupedTabData } from '@/types';
-
 interface TabActivityChartProps {
   data: GroupedTabData[];
 }
-
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF6384'];
-
 const TabActivityChart: React.FC<TabActivityChartProps> = ({ data }) => {
-  
   const sortedData = [...data].sort((a, b) => b.totalDuration - a.totalDuration).slice(0, 10);
-
-  
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
-    
     if (hours > 0) {
       const remainingMinutes = minutes % 60;
       return `${hours}h ${remainingMinutes}m`;
     }
     return `${minutes}m`;
   };
-
   const customTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -48,7 +39,6 @@ const TabActivityChart: React.FC<TabActivityChartProps> = ({ data }) => {
     }
     return null;
   };
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <Card className="col-span-1">
@@ -61,22 +51,22 @@ const TabActivityChart: React.FC<TabActivityChartProps> = ({ data }) => {
               data={sortedData}
               margin={{ top: 5, right: 30, left: 20, bottom: 80 }}
             >
-              <XAxis 
-                dataKey="label" 
-                angle={-45} 
-                textAnchor="end" 
+              <XAxis
+                dataKey="label"
+                angle={-45}
+                textAnchor="end"
                 height={80}
                 tick={{ fontSize: 12 }}
               />
-              <YAxis 
+              <YAxis
                 tickFormatter={(value) => formatTime(value)}
                 width={80}
               />
               <Tooltip content={customTooltip} />
               <Legend />
-              <Bar 
-                dataKey="totalDuration" 
-                name="Time Spent" 
+              <Bar
+                dataKey="totalDuration"
+                name="Time Spent"
                 fill="#9b87f5"
                 radius={[4, 4, 0, 0]}
               />
@@ -84,7 +74,6 @@ const TabActivityChart: React.FC<TabActivityChartProps> = ({ data }) => {
           </ResponsiveContainer>
         </CardContent>
       </Card>
-
       <Card className="col-span-1">
         <CardHeader>
           <CardTitle>Tab Activity Distribution</CardTitle>
@@ -117,5 +106,4 @@ const TabActivityChart: React.FC<TabActivityChartProps> = ({ data }) => {
     </div>
   );
 };
-
 export default TabActivityChart;

@@ -10,9 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import AppUsageInfoAlert from './AppUsageInfoAlert';
-
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28CFF', '#FF66B3', '#71DFE7'];
-
 const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: externalTimeFrame = 'daily', onTimeFrameChange = null }) => {
   const [timeFrame, setTimeFrame] = useState(externalTimeFrame);
   const [appUsageData, setAppUsageData] = useState(null);
@@ -20,20 +18,16 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
   const [error, setError] = useState(null);
   const [useDemoData, setUseDemoData] = useState(false);
   const { toast } = useToast();
-  
-  
   const handleTimeFrameChange = (newTimeFrame) => {
     setTimeFrame(newTimeFrame);
     if (onTimeFrameChange) {
       onTimeFrameChange(newTimeFrame);
     }
   };
-  
-  
   const demoData = {
     timeFrame: 'daily',
     dateRange: { start: new Date().toISOString().split('T')[0], end: new Date().toISOString().split('T')[0] },
-    totalTime: 15001, 
+    totalTime: 15001,
     totalApps: 5,
     mostUsedApp: 'Visual Studio Code',
     appUsage: [
@@ -48,8 +42,6 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
     productivityRatio: 50,
     appVsWebComparison: { applications: 65, web: 35 }
   };
-
-  
   useEffect(() => {
     if (initialData && !useDemoData) {
       console.log('Using provided initialData:', initialData);
@@ -64,20 +56,15 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
       fetchAppUsageData();
     }
   }, [initialData, timeFrame, useDemoData]);
-
   const fetchAppUsageData = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       console.log('Fetching app usage data for timeframe:', timeFrame);
-      
       const response = await axios.get(`http://localhost:5001/api/app-usage/app-analytics?timeFrame=${timeFrame}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-
       console.log('App usage data response:', response.data);
-      
-      
       if (response.data && response.data.success) {
         setAppUsageData(response.data);
         console.log('Data successfully loaded');
@@ -90,13 +77,9 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
           variant: 'destructive',
         });
       }
-      
-      
       if (!response.data.appUsage || response.data.appUsage.length === 0) {
         console.log('No app usage data found');
-        
       }
-      
       setLoading(false);
     } catch (err) {
       console.error('Error fetching app usage data:', err);
@@ -109,8 +92,6 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
       });
     }
   };
-
-  
   const formatTime = (seconds) => {
     if (!seconds) return '0m';
     const hours = Math.floor(seconds / 3600);
@@ -120,36 +101,28 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
     }
     return `${minutes}m`;
   };
-
   const formatDataForBarChart = () => {
     if (!appUsageData || !appUsageData.appUsage) return [];
-    
     return appUsageData.appUsage
       .slice(0, limit)
       .map(app => ({
         name: app.name.length > 15 ? app.name.substring(0, 15) + '...' : app.name,
-        duration: Math.floor(app.totalDuration / 60), 
+        duration: Math.floor(app.totalDuration / 60),
         fullName: app.name
       }));
   };
-
   const formatDataForPieChart = () => {
     if (!appUsageData || !appUsageData.appUsage) return [];
-    
-    
     const topApps = appUsageData.appUsage
       .slice(0, limit)
       .map(app => ({
         name: app.name,
         value: app.totalDuration
       }));
-    
-    
     if (appUsageData.appUsage.length > limit) {
       const othersValue = appUsageData.appUsage
         .slice(limit)
         .reduce((sum, app) => sum + app.totalDuration, 0);
-      
       if (othersValue > 0) {
         topApps.push({
           name: 'Others',
@@ -157,19 +130,15 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
         });
       }
     }
-    
     return topApps;
   };
-
   const renderAppVsWebComparison = () => {
     if (!appUsageData || !appUsageData.appVsWebComparison) return null;
-    
     const { applications, web } = appUsageData.appVsWebComparison;
     const data = [
       { name: 'Applications', value: applications },
       { name: 'Web Browsing', value: web }
     ];
-    
     return (
       <div className="mt-4">
         <CardTitle className="text-sm mb-2">Applications vs Web Browsing</CardTitle>
@@ -206,7 +175,6 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
       </div>
     );
   };
-
   if (loading) {
     return (
       <Card>
@@ -220,7 +188,6 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
       </Card>
     );
   }
-
   if (error) {
     return (
       <Card>
@@ -237,7 +204,6 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
       </Card>
     );
   }
-
   return (
     <Card>
       <CardHeader>
@@ -250,24 +216,22 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
           </div>
           <div className="flex items-center space-x-2">
             <Label htmlFor="demo-mode" className="text-xs">Demo Mode</Label>
-            <Switch 
-              id="demo-mode" 
-              checked={useDemoData} 
-              onCheckedChange={setUseDemoData} 
+            <Switch
+              id="demo-mode"
+              checked={useDemoData}
+              onCheckedChange={setUseDemoData}
             />
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {!useDemoData && !appUsageData?.appUsage?.length && <AppUsageInfoAlert />}
-        
         <Tabs defaultValue={timeFrame} onValueChange={handleTimeFrameChange} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="daily">Daily</TabsTrigger>
             <TabsTrigger value="weekly">Weekly</TabsTrigger>
             <TabsTrigger value="monthly">Monthly</TabsTrigger>
           </TabsList>
-
           <TabsContent value={timeFrame} className="w-full">
             {appUsageData && appUsageData.appUsage && appUsageData.appUsage.length > 0 ? (
               <>
@@ -288,17 +252,16 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
                       </p>
                     </div>
                   </div>
-
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={formatDataForBarChart()} layout="vertical">
                       <XAxis type="number" tick={{ fontSize: 12 }} />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
-                        tick={{ fontSize: 12 }} 
+                      <YAxis
+                        dataKey="name"
+                        type="category"
+                        tick={{ fontSize: 12 }}
                         width={100}
                       />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value, name, props) => [`${value} min`, props.payload.fullName]}
                         labelFormatter={() => 'Duration'}
                       />
@@ -306,9 +269,7 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-
                 {renderAppVsWebComparison()}
-
                 {appUsageData.productivityRatio !== undefined && (
                   <div className="mt-4 p-3 bg-muted rounded-md">
                     <div className="flex justify-between items-center">
@@ -366,5 +327,4 @@ const ApplicationUsageAnalytics = ({ limit = 5, initialData = null, timeFrame: e
     </Card>
   );
 };
-
 export default ApplicationUsageAnalytics;

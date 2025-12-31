@@ -22,12 +22,7 @@ import Activities from "./pages/Activities";
 import TodoList from "./pages/TodoList";
 import VoiceMeeting from "./pages/VoiceMeeting";
 import React from 'react';
-
-
-
 const queryClient = new QueryClient();
-
-
 const AppRoutes = () => (
   <Routes>
     <Route
@@ -128,14 +123,11 @@ const AppRoutes = () => (
         </ProtectedRoute>
       }
     />
-
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
-
 const App = () => {
   React.useEffect(() => {
-    
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
     console.log('App loaded - Auth state:', {
@@ -143,7 +135,6 @@ const App = () => {
       hasUser: !!user
     });
   }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -152,12 +143,10 @@ const App = () => {
             <Toaster />
             <Sonner />
             <AppRoutes />
-
           </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
 };
-
 export default App;

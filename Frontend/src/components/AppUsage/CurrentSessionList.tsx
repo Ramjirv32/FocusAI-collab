@@ -1,25 +1,21 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
-
 interface SessionItem {
   app: string;
   title: string;
   duration: number;
   timestamp: number;
 }
-
 interface CurrentSessionListProps {
   data: SessionItem[];
 }
-
 const CurrentSessionList: React.FC<CurrentSessionListProps> = ({ data }) => {
   const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
     return `${minutes}m ${seconds % 60}s`;
   };
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -31,8 +27,8 @@ const CurrentSessionList: React.FC<CurrentSessionListProps> = ({ data }) => {
             <p className="text-muted-foreground text-sm">No recent activity recorded</p>
           ) : (
             data.slice().reverse().map((item, index) => (
-              <li 
-                key={index} 
+              <li
+                key={index}
                 className="p-3 bg-muted/30 rounded-md flex justify-between"
               >
                 <div>
@@ -53,5 +49,4 @@ const CurrentSessionList: React.FC<CurrentSessionListProps> = ({ data }) => {
     </Card>
   );
 };
-
 export default CurrentSessionList;

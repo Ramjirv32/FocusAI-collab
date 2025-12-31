@@ -34,7 +34,6 @@ import DashboardLayout from '@/components/Layout/DashboardLayout';
 import TodoCalendar from '@/components/Todo/TodoCalendar';
 import TodoAlert from '@/components/Todo/TodoAlert';
 import { useTodoAlerts } from '@/hooks/useTodoAlerts';
-
 const TodoList = () => {
   const navigate = useNavigate();
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -44,8 +43,6 @@ const TodoList = () => {
   const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'overdue'>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'list' | 'calendar'>('list');
-
-  
   const {
     currentAlert,
     isMonitoring,
@@ -56,8 +53,6 @@ const TodoList = () => {
     stopMonitoring,
     triggerCheck
   } = useTodoAlerts();
-
-  
   const [newTodo, setNewTodo] = useState<CreateTodoData>({
     title: '',
     description: '',
@@ -65,8 +60,6 @@ const TodoList = () => {
     category: 'general',
     dueDate: ''
   });
-
-  
   const loadTodos = async () => {
     try {
       setLoading(true);
@@ -78,16 +71,13 @@ const TodoList = () => {
       } else if (filter === 'overdue') {
         filterParams.overdue = true;
       }
-
       if (priorityFilter !== 'all') {
         filterParams.priority = priorityFilter;
       }
-
       const [todosData, statsData] = await Promise.all([
         todoService.getTodos(filterParams),
         todoService.getTodoStats()
       ]);
-
       setTodos(todosData);
       setStats(statsData);
     } catch (error) {
@@ -101,12 +91,9 @@ const TodoList = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     loadTodos();
   }, [filter, priorityFilter]);
-
-  
   const handleCreateTodo = async () => {
     if (!newTodo.title.trim()) {
       toast({
@@ -116,13 +103,11 @@ const TodoList = () => {
       });
       return;
     }
-
     try {
       const todoData = {
         ...newTodo,
         dueDate: newTodo.dueDate || undefined
       };
-
       await todoService.createTodo(todoData);
       setIsCreateDialogOpen(false);
       setNewTodo({
@@ -146,8 +131,6 @@ const TodoList = () => {
       });
     }
   };
-
-  
   const toggleTodoCompletion = async (todo: Todo) => {
     try {
       await todoService.updateTodo(todo._id, {
@@ -167,11 +150,8 @@ const TodoList = () => {
       });
     }
   };
-
-  
   const deleteTodo = async (id: string) => {
     if (!confirm('Are you sure you want to delete this todo?')) return;
-
     try {
       await todoService.deleteTodo(id);
       loadTodos();
@@ -188,14 +168,10 @@ const TodoList = () => {
       });
     }
   };
-
-  
   const handleAlertComplete = () => {
     completeTask();
-    loadTodos(); 
+    loadTodos();
   };
-
-  
   const toggleAlertMonitoring = () => {
     if (isMonitoring) {
       stopMonitoring();
@@ -211,7 +187,6 @@ const TodoList = () => {
       });
     }
   };
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'destructive';
@@ -220,25 +195,21 @@ const TodoList = () => {
       default: return 'default';
     }
   };
-
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case 'high': return <AlertCircle className="h-4 w-4" />;
       default: return null;
     }
   };
-
   const isOverdue = (todo: Todo) => {
     if (!todo.dueDate || todo.completed) return false;
     return new Date(todo.dueDate) < new Date();
   };
-
   const formatDueDate = (dueDate: string) => {
     const date = new Date(dueDate);
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
-
     if (date.toDateString() === today.toDateString()) {
       return 'Today';
     } else if (date.toDateString() === tomorrow.toDateString()) {
@@ -247,7 +218,6 @@ const TodoList = () => {
       return date.toLocaleDateString();
     }
   };
-
   return (
     <DashboardLayout>
       {}
@@ -259,7 +229,6 @@ const TodoList = () => {
           onSnooze={snoozeAlert}
         />
       )}
-
       <div className={`container mx-auto p-6 space-y-6 ${currentAlert ? 'pointer-events-none opacity-50' : ''}`}>
         {}
         <div className="flex items-center justify-between">
@@ -270,7 +239,6 @@ const TodoList = () => {
             </h1>
             <p className="text-muted-foreground">Manage your tasks and stay productive</p>
           </div>
-
           <div className="flex items-center gap-3">
             {}
             <Button
@@ -285,7 +253,6 @@ const TodoList = () => {
                 <><BellOff className="h-4 w-4 mr-2" /> Alerts Paused</>
               )}
             </Button>
-
             <Button
               variant="outline"
               size="sm"
@@ -294,7 +261,6 @@ const TodoList = () => {
             >
               <Settings className="h-4 w-4" />
             </Button>
-
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -380,7 +346,6 @@ const TodoList = () => {
             </Dialog>
           </div>
         </div>
-
         {}
         {isMonitoring && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 text-sm text-blue-800">
@@ -388,7 +353,6 @@ const TodoList = () => {
             <span>Todo alerts are active - you'll receive notifications for tasks due within 15 minutes</span>
           </div>
         )}
-
         {}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
@@ -442,7 +406,6 @@ const TodoList = () => {
             </Card>
           </div>
         )}
-
         {}
         <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
           <TabsList className="grid w-full max-w-sm grid-cols-2">
@@ -455,7 +418,6 @@ const TodoList = () => {
               Calendar View
             </TabsTrigger>
           </TabsList>
-
           <TabsContent value="list" className="space-y-4">
             {}
             <div className="flex gap-4">
@@ -471,7 +433,6 @@ const TodoList = () => {
                   <SelectItem value="overdue">Overdue</SelectItem>
                 </SelectContent>
               </Select>
-
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Priority" />
@@ -484,7 +445,6 @@ const TodoList = () => {
                 </SelectContent>
               </Select>
             </div>
-
             {}
             <div className="space-y-3">
               {loading ? (
@@ -512,7 +472,6 @@ const TodoList = () => {
                             <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />
                           )}
                         </button>
-
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h3 className={`font-medium ${todo.completed ? 'line-through' : ''}`}>
@@ -552,7 +511,6 @@ const TodoList = () => {
                             )}
                           </div>
                         </div>
-
                         <Button
                           variant="ghost"
                           size="sm"
@@ -568,10 +526,8 @@ const TodoList = () => {
               )}
             </div>
           </TabsContent>
-
           <TabsContent value="calendar">
             <TodoCalendar onTodoSelect={(todo) => {
-              
               console.log('Selected todo from calendar:', todo);
             }} />
           </TabsContent>
@@ -580,5 +536,4 @@ const TodoList = () => {
     </DashboardLayout>
   );
 };
-
 export default TodoList;

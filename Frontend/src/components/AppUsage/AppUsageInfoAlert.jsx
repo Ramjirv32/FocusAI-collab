@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import { AlertCircle, Check } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-
 const AppUsageInfoAlert = () => {
   const [dismissed, setDismissed] = useState(false);
-  
   if (dismissed) return null;
-  
   return (
     <Alert className="mb-4">
       <div className="flex items-start">
@@ -18,7 +15,7 @@ const AppUsageInfoAlert = () => {
           <AlertTitle className="mb-1">App Usage Data Collection</AlertTitle>
           <AlertDescription className="text-sm">
             <p className="mb-2">
-              To collect application usage data, make sure the FocusAI extension is installed and active. 
+              To collect application usage data, make sure the FocusAI extension is installed and active.
               Your data will appear automatically after using your computer for a while.
             </p>
             <div className="flex items-center gap-2 text-xs mt-1">
@@ -44,5 +41,4 @@ const AppUsageInfoAlert = () => {
     </Alert>
   );
 };
-
 export default AppUsageInfoAlert;

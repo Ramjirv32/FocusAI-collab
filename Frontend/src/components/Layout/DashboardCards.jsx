@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Activity, 
-  Clock, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Clock,
   Brain,
   Target,
   Award,
@@ -15,15 +15,13 @@ import {
   Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 const MetricCard = ({ title, value, subtitle, trend, trendValue, icon: Icon, color = "blue" }) => {
   const colorClasses = {
     blue: "text-blue-600 bg-blue-50 border-blue-200",
-    green: "text-green-600 bg-green-50 border-green-200", 
+    green: "text-green-600 bg-green-50 border-green-200",
     purple: "text-purple-600 bg-purple-50 border-purple-200",
     orange: "text-orange-600 bg-orange-50 border-orange-200"
   };
-
   return (
     <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -51,11 +49,10 @@ const MetricCard = ({ title, value, subtitle, trend, trendValue, icon: Icon, col
           )}
           <span>{subtitle}</span>
         </div>
-      </CardContent>  
+      </CardContent>
     </Card>
   );
 };
-
 const SessionChannelChart = ({ data }) => (
   <Card>
     <CardHeader>
@@ -108,7 +105,6 @@ const SessionChannelChart = ({ data }) => (
     </CardContent>
   </Card>
 );
-
 const RecentEvents = () => (
   <Card>
     <CardHeader>
@@ -144,7 +140,6 @@ const RecentEvents = () => (
     </CardContent>
   </Card>
 );
-
 const DeviceStats = () => (
   <Card>
     <CardHeader>
@@ -160,7 +155,6 @@ const DeviceStats = () => (
           <div className="bg-green-500 h-2 rounded-full" style={{ width: '98.5%' }}></div>
         </div>
       </div>
-      
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Last seen</span>
@@ -170,7 +164,6 @@ const DeviceStats = () => (
           <div className="bg-blue-500 h-2 rounded-full" style={{ width: '100%' }}></div>
         </div>
       </div>
-      
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Memory Space</span>
@@ -183,7 +176,6 @@ const DeviceStats = () => (
     </CardContent>
   </Card>
 );
-
 const SaleAnalytics = () => (
   <Card className="col-span-2">
     <CardHeader className="flex flex-row items-center justify-between">
@@ -214,7 +206,7 @@ const SaleAnalytics = () => (
         {}
         {[30, 45, 35, 50, 40, 60, 55, 70, 45, 65, 50, 75].map((height, index) => (
           <div key={index} className="flex-1 flex flex-col items-center gap-1">
-            <div 
+            <div
               className="w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t-sm min-h-[20px]"
               style={{ height: `${height}%` }}
             ></div>
@@ -224,7 +216,6 @@ const SaleAnalytics = () => (
     </CardContent>
   </Card>
 );
-
 const DashboardCards = ({ focusStats, summary }) => {
   return (
     <div className="space-y-6">
@@ -267,18 +258,15 @@ const DashboardCards = ({ focusStats, summary }) => {
           color="orange"
         />
       </div>
-
       {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <SessionChannelChart />
         <RecentEvents />
         <DeviceStats />
       </div>
-
       {}
       <SaleAnalytics />
     </div>
   );
 };
-
 export default DashboardCards;

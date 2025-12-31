@@ -1,5 +1,4 @@
 "use client"
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -43,14 +42,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import LeetCodeStyleHeatmap from '@/components/Gamification/LeetCodeStyleHeatmap';
 import StreakAchievements from '@/components/Gamification/StreakAchievements';
-
-
 const API_BASE_URL = 'http://localhost:5001';
-
-
 type BadgeType = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'master' | 'legendary';
-
-
 interface Achievement {
   id: string;
   name: string;
@@ -65,8 +58,6 @@ interface Achievement {
   category: string;
   claimed?: boolean;
 }
-
-
 interface Challenge {
   id: string;
   name: string;
@@ -82,8 +73,6 @@ interface Challenge {
   category: string;
   isActive: boolean;
 }
-
-
 interface LeaderboardEntry {
   id: string;
   name: string;
@@ -97,8 +86,6 @@ interface LeaderboardEntry {
   sessionsCount?: number;
   isCurrentUser?: boolean;
 }
-
-
 interface GamificationStats {
   level: number;
   points: number;
@@ -127,8 +114,6 @@ interface GamificationStats {
     legendary: number;
   };
 }
-
-
 interface TimelineEvent {
   id: string;
   type: 'badge' | 'challenge' | 'improvement' | 'streak' | 'level';
@@ -144,12 +129,10 @@ interface TimelineEvent {
   improvement?: number;
   streak?: number;
 }
-
 const getLevelName = (level: number) => {
   const names = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond'];
   return names[Math.min(level - 1, 4)] || 'Bronze';
 };
-
 const Gamification = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -163,14 +146,10 @@ const Gamification = () => {
   const [backendStatus, setBackendStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [showingFallbackData, setShowingFallbackData] = useState(false);
   const [heatmapData, setHeatmapData] = useState<{ date: string; score: number }[]>([]);
-
-  
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
-
-  
   const checkBackendConnection = async () => {
     try {
       await axios.get(`${API_BASE_URL}/api/health`, { timeout: 3000 });
@@ -182,47 +161,34 @@ const Gamification = () => {
       return false;
     }
   };
-
-  
   const fetchGamificationData = async () => {
     try {
       setIsLoading(true);
       setError('');
       setShowingFallbackData(false);
-
-      
       const isConnected = await checkBackendConnection();
       if (!isConnected) {
         throw new Error('Cannot connect to backend server. Please ensure the server is running at ' + API_BASE_URL);
       }
-
       console.log('Fetching gamification data...');
-
-      
       const statsResponse = await axios.get(`${API_BASE_URL}/api/gamification/stats`, {
         headers: getAuthHeader(),
         timeout: 5000
       });
       console.log('Stats data fetched successfully');
-
       const achievementsResponse = await axios.get(`${API_BASE_URL}/api/gamification/achievements`, {
         headers: getAuthHeader(),
         timeout: 5000
       });
       console.log('Achievements data fetched successfully');
-
       const challengesResponse = await axios.get(`${API_BASE_URL}/api/gamification/challenges`, {
         headers: getAuthHeader(),
         timeout: 5000
       });
       console.log('Challenges data fetched successfully');
-
-      
       setStats(statsResponse.data.stats);
       setAchievements(achievementsResponse.data.achievements || []);
       setChallenges(challengesResponse.data.challenges || []);
-
-      
       try {
         const heatmapResponse = await axios.get(`${API_BASE_URL}/api/gamification/heatmap`, {
           headers: getAuthHeader(),
@@ -234,8 +200,6 @@ const Gamification = () => {
       } catch (hmErr) {
         console.error('Error fetching heatmap data:', hmErr);
       }
-
-      
       try {
         const timelineResponse = await axios.get(`${API_BASE_URL}/api/gamification/timeline`, {
           headers: getAuthHeader(),
@@ -247,15 +211,10 @@ const Gamification = () => {
         console.log("Timeline endpoint not available, using empty timeline");
         setTimeline([]);
       }
-
-      
       setBackendStatus('connected');
       setShowingFallbackData(false);
-
     } catch (err) {
       console.error('Failed to fetch gamification data:', err);
-
-      
       if (axios.isAxiosError(err)) {
         if (err.code === 'ECONNABORTED') {
           setError('Request timed out. The server is taking too long to respond.');
@@ -269,11 +228,8 @@ const Gamification = () => {
       } else {
         setError(err.message || 'An unknown error occurred');
       }
-
-      
       generateFallbackData();
       setShowingFallbackData(true);
-
       toast({
         title: "Showing Sample Data",
         description: "Unable to connect to the server. Displaying sample data for demonstration.",
@@ -283,12 +239,9 @@ const Gamification = () => {
       setIsLoading(false);
     }
   };
-
-  
   const claimAchievementReward = async (achievementId: string) => {
     try {
       if (backendStatus === 'disconnected') {
-        
         setAchievements(achievements.map(achievement => {
           if (achievement.id === achievementId) {
             return {
@@ -298,23 +251,17 @@ const Gamification = () => {
           }
           return achievement;
         }));
-
         toast({
           title: "Achievement Claimed (Demo)",
           description: `This is a demo action since the server is disconnected.`,
         });
         return;
       }
-
-      
-      
       await axios.post(
         `${API_BASE_URL}/api/gamification/challenge/complete`,
         { challengeId: achievementId },
         { headers: getAuthHeader() }
       );
-
-      
       setAchievements(achievements.map(achievement => {
         if (achievement.id === achievementId) {
           return {
@@ -324,13 +271,10 @@ const Gamification = () => {
         }
         return achievement;
       }));
-
       toast({
         title: "Achievement Claimed!",
         description: `You've earned ${achievements.find(a => a.id === achievementId)?.pointsAwarded || 0} points!`,
       });
-
-      
       fetchGamificationData();
     } catch (err) {
       console.error('Failed to claim achievement reward:', err);
@@ -341,12 +285,9 @@ const Gamification = () => {
       });
     }
   };
-
-  
   const joinChallenge = async (challengeId: string) => {
     try {
       if (backendStatus === 'disconnected') {
-        
         setChallenges(challenges.map(challenge => {
           if (challenge.id === challengeId) {
             return {
@@ -356,30 +297,22 @@ const Gamification = () => {
           }
           return challenge;
         }));
-
         toast({
           title: "Challenge Joined (Demo)",
           description: "This is a demo action since the server is disconnected.",
         });
         return;
       }
-
-      
       toast({
         title: "Joining Challenge...",
         description: "Please wait while we process your request.",
       });
-
-      
       const response = await axios.post(
         `${API_BASE_URL}/api/gamification/challenges/${challengeId}/join`,
         {},
         { headers: getAuthHeader() }
       );
-
-      
       if (response.data.success) {
-        
         setChallenges(challenges.map(challenge => {
           if (challenge.id === challengeId) {
             return {
@@ -389,16 +322,12 @@ const Gamification = () => {
           }
           return challenge;
         }));
-
         toast({
           title: "Challenge Joined!",
           description: "You've successfully joined the challenge. Good luck!",
         });
-
-        
         fetchGamificationData();
       } else {
-        
         toast({
           title: "Error",
           description: response.data.error || "Failed to join challenge for an unknown reason.",
@@ -407,8 +336,6 @@ const Gamification = () => {
       }
     } catch (err) {
       console.error('Failed to join challenge:', err);
-
-      
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 404) {
           toast({
@@ -438,12 +365,9 @@ const Gamification = () => {
       }
     }
   };
-
-  
   const completeChallenge = async (challengeId: string) => {
     try {
       if (backendStatus === 'disconnected') {
-        
         setChallenges(challenges.map(challenge => {
           if (challenge.id === challengeId) {
             return {
@@ -454,23 +378,18 @@ const Gamification = () => {
           }
           return challenge;
         }));
-
         toast({
           title: "Challenge Completed (Demo)",
           description: `This is a demo action since the server is disconnected.`,
         });
         return;
       }
-
-      
       const response = await axios.post(
         `${API_BASE_URL}/api/gamification/challenge/complete`,
         { challengeId },
         { headers: getAuthHeader() }
       );
-
       if (response.data.success || response.status === 200) {
-        
         setChallenges(challenges.map(challenge => {
           if (challenge.id === challengeId) {
             return {
@@ -481,14 +400,10 @@ const Gamification = () => {
           }
           return challenge;
         }));
-
-        
         toast({
           title: "Challenge Completed!",
           description: `You've earned ${response.data.pointsAwarded} points!`,
         });
-
-        
         if (response.data.leveledUp) {
           toast({
             title: "Level Up!",
@@ -496,8 +411,6 @@ const Gamification = () => {
             variant: "default",
           });
         }
-
-        
         fetchGamificationData();
       }
     } catch (err) {
@@ -509,10 +422,7 @@ const Gamification = () => {
       });
     }
   };
-
-  
   const generateFallbackData = () => {
-    
     setStats({
       level: 5,
       points: 2750,
@@ -541,8 +451,6 @@ const Gamification = () => {
         legendary: 0,
       }
     });
-
-    
     setAchievements([
       {
         id: 'a1',
@@ -621,8 +529,6 @@ const Gamification = () => {
         category: 'Learning',
       },
     ]);
-
-    
     setChallenges([
       {
         id: 'c1',
@@ -696,8 +602,6 @@ const Gamification = () => {
       },
     ]);
   };
-
-  
   useEffect(() => {
     if (user) {
       fetchGamificationData();
@@ -707,16 +611,12 @@ const Gamification = () => {
       setIsLoading(false);
     }
   }, [user]);
-
-  
   const filteredChallenges = challenges.filter(challenge => {
     if (activeChallengeFilter === 'all') return true;
     if (activeChallengeFilter === 'active') return challenge.isActive && !challenge.completed;
     if (activeChallengeFilter === 'completed') return challenge.completed;
     return true;
   });
-
-  
   const renderBadge = (type: BadgeType) => {
     const badgeColors = {
       bronze: 'bg-amber-200 text-amber-800',
@@ -727,15 +627,12 @@ const Gamification = () => {
       master: 'bg-purple-200 text-purple-800',
       legendary: 'bg-rose-200 text-rose-800',
     };
-
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeColors[type]}`}>
         {type.charAt(0).toUpperCase() + type.slice(1)}
       </span>
     );
   };
-
-  
   const renderIcon = (iconName: string) => {
     const icons: { [key: string]: JSX.Element } = {
       Trophy: <Trophy className="h-5 w-5" />,
@@ -754,11 +651,8 @@ const Gamification = () => {
       BookOpen: <ShieldCheck className="h-5 w-5" />,
       Book: <ShieldCheck className="h-5 w-5" />,
     };
-
     return icons[iconName] || <Award className="h-5 w-5" />;
   };
-
-  
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -770,7 +664,6 @@ const Gamification = () => {
             </div>
             <Skeleton className="h-10 w-10 rounded-full" />
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
               <Card key={i}>
@@ -785,7 +678,6 @@ const Gamification = () => {
               </Card>
             ))}
           </div>
-
           <Card>
             <CardHeader>
               <Skeleton className="h-6 w-40 mb-2" />
@@ -806,10 +698,7 @@ const Gamification = () => {
       </DashboardLayout>
     );
   }
-
-  
   const showConnectionError = backendStatus === 'disconnected' && showingFallbackData;
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -825,7 +714,6 @@ const Gamification = () => {
             Refresh
           </Button>
         </div>
-
         {showConnectionError && (
           <Alert variant="destructive">
             <ServerOff className="h-4 w-4" />
@@ -845,7 +733,6 @@ const Gamification = () => {
             </AlertDescription>
           </Alert>
         )}
-
         {error && !showConnectionError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -853,7 +740,6 @@ const Gamification = () => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
         {showingFallbackData && !showConnectionError && !error && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
@@ -863,14 +749,12 @@ const Gamification = () => {
             </AlertDescription>
           </Alert>
         )}
-
         {}
         <LeetCodeStyleHeatmap
           data={heatmapData}
           title="Focus Activity Heatmap"
           description="Your 1-year contribution graph - Track your daily focus streaks"
         />
-
         {}
         <StreakAchievements
           currentStreak={stats?.streak.current || 0}
@@ -884,5 +768,4 @@ const Gamification = () => {
     </DashboardLayout>
   );
 };
-
 export default Gamification;

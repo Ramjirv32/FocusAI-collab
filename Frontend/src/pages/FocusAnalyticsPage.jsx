@@ -4,23 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import AIRecommendations from '@/components/FocusAnalysis/AIRecommendations';
 import { useAuth } from '@/context/AuthContext';
-
 const FocusAnalyticsPage = () => {
   const { user } = useAuth();
   const [focusData, setFocusData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeFrame, setTimeFrame] = useState('daily');
-  
   useEffect(() => {
     const fetchFocusData = async () => {
       if (!user) return;
-      
       setIsLoading(true);
-      
       try {
-        
         const response = await fetch(`http://localhost:5000/api/focus/analytics?timeFrame=${timeFrame}&userId=${user.id}`);
-        
         if (response.ok) {
           const data = await response.json();
           setFocusData(data);
@@ -35,25 +29,18 @@ const FocusAnalyticsPage = () => {
         setIsLoading(false);
       }
     };
-    
     fetchFocusData();
   }, [user, timeFrame]);
-  
-  
   const hasData = focusData && focusData.focusPercentage !== undefined;
-  
-  
   const demoFocusData = {
     focusPercentage: 65,
     productiveApps: ['VS Code', 'Microsoft Word', 'Figma'],
     distractingApps: ['YouTube', 'Twitter', 'Instagram']
   };
-  
   return (
     <DashboardLayout>
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Focus Analytics</h1>
-        
         <Tabs value={timeFrame} onValueChange={setTimeFrame} className="mb-6">
           <TabsList>
             <TabsTrigger value="daily">Daily</TabsTrigger>
@@ -61,10 +48,8 @@ const FocusAnalyticsPage = () => {
             <TabsTrigger value="monthly">Monthly</TabsTrigger>
           </TabsList>
         </Tabs>
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {}
-          
           {}
           <div className="md:col-span-1">
             <AIRecommendations
@@ -79,5 +64,4 @@ const FocusAnalyticsPage = () => {
     </DashboardLayout>
   );
 };
-
 export default FocusAnalyticsPage;

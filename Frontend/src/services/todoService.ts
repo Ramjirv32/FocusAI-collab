@@ -1,5 +1,4 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-
 export interface Todo {
   _id: string;
   title: string;
@@ -13,7 +12,6 @@ export interface Todo {
   updatedAt: string;
   isOverdue?: boolean;
 }
-
 export interface TodoStats {
   total: number;
   completed: number;
@@ -22,7 +20,6 @@ export interface TodoStats {
   overdue: number;
   dueToday: number;
 }
-
 export interface CreateTodoData {
   title: string;
   description?: string;
@@ -30,7 +27,6 @@ export interface CreateTodoData {
   dueDate?: string;
   category?: string;
 }
-
 export interface UpdateTodoData {
   title?: string;
   description?: string;
@@ -39,11 +35,9 @@ export interface UpdateTodoData {
   dueDate?: string;
   category?: string;
 }
-
 export interface CalendarTodos {
   [date: string]: Todo[];
 }
-
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
@@ -51,12 +45,10 @@ const getAuthHeaders = () => {
     'Authorization': `Bearer ${token}`
   };
 };
-
 export const todoService = {
-  
-  async getTodos(params?: { 
-    completed?: boolean; 
-    category?: string; 
+  async getTodos(params?: {
+    completed?: boolean;
+    category?: string;
     priority?: string;
     startDate?: string;
     endDate?: string;
@@ -69,112 +61,85 @@ export const todoService = {
     if (params?.startDate) queryParams.append('startDate', params.startDate);
     if (params?.endDate) queryParams.append('endDate', params.endDate);
     if (params?.overdue) queryParams.append('overdue', params.overdue.toString());
-
     const response = await fetch(`${API_URL}/api/todos?${queryParams}`, {
       headers: getAuthHeaders()
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to fetch todos');
     }
-
     const data = await response.json();
     return data.data;
   },
-
-  
   async createTodo(todoData: CreateTodoData): Promise<Todo> {
     const response = await fetch(`${API_URL}/api/todos`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(todoData)
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to create todo');
     }
-
     const data = await response.json();
     return data.data;
   },
-
-  
   async updateTodo(id: string, updates: UpdateTodoData): Promise<Todo> {
     const response = await fetch(`${API_URL}/api/todos/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(updates)
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to update todo');
     }
-
     const data = await response.json();
     return data.data;
   },
-
-  
   async deleteTodo(id: string): Promise<void> {
     const response = await fetch(`${API_URL}/api/todos/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to delete todo');
     }
   },
-
-  
   async getTodoStats(): Promise<TodoStats> {
     const response = await fetch(`${API_URL}/api/todos/stats`, {
       headers: getAuthHeaders()
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to fetch todo statistics');
     }
-
     const data = await response.json();
     return data.data;
   },
-
-  
   async getTodosForCalendar(year?: number, month?: number): Promise<CalendarTodos> {
     const queryParams = new URLSearchParams();
     if (year !== undefined) queryParams.append('year', year.toString());
     if (month !== undefined) queryParams.append('month', month.toString());
-
     const response = await fetch(`${API_URL}/api/todos/calendar?${queryParams}`, {
       headers: getAuthHeaders()
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to fetch calendar todos');
     }
-
     const data = await response.json();
     return data.data;
   },
-
-  
   async getUpcomingTodos(): Promise<Todo[]> {
     const response = await fetch(`${API_URL}/api/todos/upcoming`, {
       headers: getAuthHeaders()
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to fetch upcoming todos');
     }
-
     const data = await response.json();
     return data.data;
   }

@@ -10,10 +10,8 @@ import { Label } from '@/components/ui/label';
 import { AlertCircle, Chrome, Download, RefreshCw, Settings, Shield, Clock, ToggleLeft } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
 const Extension = () => {
   const [isConnected, setIsConnected] = useState(true);
-  
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -25,8 +23,8 @@ const Extension = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge 
-              variant={isConnected ? "outline" : "destructive"} 
+            <Badge
+              variant={isConnected ? "outline" : "destructive"}
               className={isConnected ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
             >
               {isConnected ? "Connected" : "Disconnected"}
@@ -36,7 +34,6 @@ const Extension = () => {
             </Button>
           </div>
         </div>
-
         {!isConnected && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -46,7 +43,6 @@ const Extension = () => {
             </AlertDescription>
           </Alert>
         )}
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -68,7 +64,6 @@ const Extension = () => {
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -89,7 +84,6 @@ const Extension = () => {
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -108,7 +102,6 @@ const Extension = () => {
             </CardContent>
           </Card>
         </div>
-        
         <Tabs defaultValue="general" className="w-full">
           <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
             <TabsTrigger value="general">General</TabsTrigger>
@@ -116,7 +109,6 @@ const Extension = () => {
             <TabsTrigger value="focus">Focus</TabsTrigger>
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
           </TabsList>
-          
           <TabsContent value="general" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
@@ -131,7 +123,6 @@ const Extension = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Show notifications</Label>
@@ -139,7 +130,6 @@ const Extension = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Auto-sync data</Label>
@@ -147,7 +137,6 @@ const Extension = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
                 <div className="space-y-2">
                   <Label>Sync interval (minutes)</Label>
                   <Input type="number" defaultValue="15" min="5" max="60" className="w-full max-w-[200px]" />
@@ -156,7 +145,6 @@ const Extension = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
           <TabsContent value="websites" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
@@ -166,22 +154,20 @@ const Extension = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label>Productivity websites</Label>
-                  <Input 
-                    placeholder="Add comma-separated domains (e.g., docs.google.com, github.com)" 
+                  <Input
+                    placeholder="Add comma-separated domains (e.g., docs.google.com, github.com)"
                     defaultValue="github.com, stackoverflow.com, docs.google.com, notion.so"
                   />
                   <p className="text-sm text-muted-foreground">Websites that boost your productivity</p>
                 </div>
-                
                 <div className="space-y-2">
                   <Label>Distracting websites</Label>
-                  <Input 
-                    placeholder="Add comma-separated domains (e.g., facebook.com, twitter.com)" 
+                  <Input
+                    placeholder="Add comma-separated domains (e.g., facebook.com, twitter.com)"
                     defaultValue="facebook.com, twitter.com, instagram.com, reddit.com, youtube.com"
                   />
                   <p className="text-sm text-muted-foreground">Websites that may reduce your focus</p>
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Auto-categorize new websites</Label>
@@ -189,7 +175,6 @@ const Extension = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Track time by domain</Label>
@@ -200,7 +185,6 @@ const Extension = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
           <TabsContent value="focus" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
@@ -213,13 +197,11 @@ const Extension = () => {
                   <Input type="number" defaultValue="25" min="5" max="120" className="w-full max-w-[200px]" />
                   <p className="text-sm text-muted-foreground">Default length of focus sessions</p>
                 </div>
-                
                 <div className="space-y-2">
                   <Label>Break duration (minutes)</Label>
                   <Input type="number" defaultValue="5" min="1" max="30" className="w-full max-w-[200px]" />
                   <p className="text-sm text-muted-foreground">Default length of breaks between sessions</p>
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Block distracting sites during focus</Label>
@@ -227,7 +209,6 @@ const Extension = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Show timer in browser</Label>
@@ -235,7 +216,6 @@ const Extension = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Play sound notifications</Label>
@@ -246,7 +226,6 @@ const Extension = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
           <TabsContent value="advanced" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
@@ -261,7 +240,6 @@ const Extension = () => {
                   </div>
                   <Switch defaultChecked />
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Debug mode</Label>
@@ -269,7 +247,6 @@ const Extension = () => {
                   </div>
                   <Switch />
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Track incognito browsing</Label>
@@ -277,14 +254,12 @@ const Extension = () => {
                   </div>
                   <Switch />
                 </div>
-                
                 <div className="space-y-4">
                   <Button variant="destructive" className="w-full sm:w-auto">Reset All Settings</Button>
                   <Button variant="outline" className="w-full sm:w-auto">Export Data</Button>
                 </div>
               </CardContent>
             </Card>
-            
             <Card>
               <CardHeader>
                 <CardTitle>Developer Options</CardTitle>
@@ -296,7 +271,6 @@ const Extension = () => {
                   <Input defaultValue="https://api.focusai.app/v1" />
                   <p className="text-sm text-muted-foreground">The server endpoint for API communication</p>
                 </div>
-                
                 <div className="space-y-2">
                   <Label>Connection Key</Label>
                   <div className="flex gap-2">
@@ -307,7 +281,6 @@ const Extension = () => {
                   </div>
                   <p className="text-sm text-muted-foreground">Your unique API connection key</p>
                 </div>
-                
                 <div className="space-y-4">
                   <Button variant="outline" className="w-full sm:w-auto flex items-center gap-2">
                     <Download className="h-4 w-4" />
@@ -322,5 +295,4 @@ const Extension = () => {
     </DashboardLayout>
   );
 };
-
 export default Extension;

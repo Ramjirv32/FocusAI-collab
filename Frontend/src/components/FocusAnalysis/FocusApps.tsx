@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, X } from 'lucide-react';
-
 interface AppCategoryItem {
   category: string;
   total_duration: number;
@@ -9,30 +8,25 @@ interface AppCategoryItem {
   apps: string[];
   avg_confidence: number;
 }
-
 interface FocusAppsProps {
   focusAreas: AppCategoryItem[];
   distractionAreas: AppCategoryItem[];
   timeFrame?: string;
 }
-
-const FocusApps: React.FC<FocusAppsProps> = ({ 
-  focusAreas, 
+const FocusApps: React.FC<FocusAppsProps> = ({
+  focusAreas,
   distractionAreas,
   timeFrame = 'Today'
 }) => {
-  
   const formatDuration = (seconds: number) => {
     const minutes = seconds / 60;
     if (minutes < 60) {
       return `${Math.round(minutes)}m`;
     }
-    
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = Math.round(minutes % 60);
     return `${hours}h ${remainingMinutes}m`;
   };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {}
@@ -71,7 +65,6 @@ const FocusApps: React.FC<FocusAppsProps> = ({
           )}
         </CardContent>
       </Card>
-      
       {}
       <Card className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-l-red-500">
         <CardHeader className="pb-2">
@@ -111,5 +104,4 @@ const FocusApps: React.FC<FocusAppsProps> = ({
     </div>
   );
 };
-
 export default FocusApps;

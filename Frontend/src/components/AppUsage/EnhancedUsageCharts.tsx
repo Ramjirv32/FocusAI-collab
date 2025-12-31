@@ -26,11 +26,9 @@ import {
   ReferenceLine,
   ReferenceDot
 } from 'recharts';
-
 interface EnhancedUsageChartsProps {
   className?: string;
 }
-
 const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) => {
   const [usageData, setUsageData] = useState({
     appUsage: {},
@@ -43,47 +41,35 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
   const [includeSampleData, setIncludeSampleData] = useState(true);
   const [hasSampleData, setHasSampleData] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  
-  
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
-
   useEffect(() => {
     fetchUsageData();
   }, [timeFrame, includeSampleData]);
-  
   const fetchUsageData = async () => {
     setIsLoading(true);
     try {
       const headers = getAuthHeader();
-      
-      
       const response = await axios.get('http://localhost:5001/raw-usage', { 
         headers,
         params: { timeFrame }
       });
-      
       console.log(`Raw usage data for ${timeFrame} timeframe:`, response.data);
-      
-      
       const appData = response.data.appUsage || {};
       const tabData = response.data.tabUsage || {};
-      
-      const hasSampleApps = Object.entries(appData).some(([name, duration]) => 
-        (name === 'VS Code' && Number(duration) === 1800) || 
+      const hasSampleApps = Object.entries(appData).some(([name, duration]) =>
+        (name === 'VS Code' && Number(duration) === 1800) ||
         (name === 'Chrome' && Number(duration) === 1200) ||
         (name === 'Terminal' && Number(duration) === 600) ||
         (name === 'Slack' && Number(duration) === 300)
       );
-      
-      const hasSampleTabs = Object.keys(tabData).some(domain => 
-        domain === 'github.com' || 
-        domain === 'stackoverflow.com' || 
+      const hasSampleTabs = Object.keys(tabData).some(domain =>
+        domain === 'github.com' ||
+        domain === 'stackoverflow.com' ||
         domain === 'developer.mozilla.org'
       );
-      
       setHasSampleData(hasSampleApps || hasSampleTabs);
       setUsageData(response.data);
       setError('');
@@ -94,15 +80,11 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       setIsLoading(false);
     }
   };
-
-  
   const formatDuration = (seconds: number) => {
     if (!seconds) return '0s';
-    
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
-    
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     } else if (minutes > 0) {
@@ -111,15 +93,11 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       return `${remainingSeconds}s`;
     }
   };
-  
-  
   const appChartData = Object.entries(usageData.appUsage || {})
-    
     .filter(([name, duration]) => {
       if (!includeSampleData) {
-        
-        const isSampleData = 
-          (name === 'VS Code' && Number(duration) === 1800) || 
+        const isSampleData =
+          (name === 'VS Code' && Number(duration) === 1800) ||
           (name === 'Chrome' && Number(duration) === 1200) ||
           (name === 'Terminal' && Number(duration) === 600) ||
           (name === 'Slack' && Number(duration) === 300);
@@ -131,22 +109,18 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       name: name.length > 15 ? `${name.substring(0, 12)}...` : name,
       fullName: name,
       duration: Number(duration),
-      isSample: (name === 'VS Code' && Number(duration) === 1800) || 
+      isSample: (name === 'VS Code' && Number(duration) === 1800) ||
                 (name === 'Chrome' && Number(duration) === 1200) ||
                 (name === 'Terminal' && Number(duration) === 600) ||
                 (name === 'Slack' && Number(duration) === 300)
     }))
     .sort((a, b) => b.duration - a.duration);
-  
-  
   const tabChartData = Object.entries(usageData.tabUsage || {})
-    
     .filter(([name, duration]) => {
       if (!includeSampleData) {
-        
-        const isSampleDomain = 
-          name === 'github.com' || 
-          name === 'stackoverflow.com' || 
+        const isSampleDomain =
+          name === 'github.com' ||
+          name === 'stackoverflow.com' ||
           name === 'developer.mozilla.org';
         return !isSampleDomain;
       }
@@ -156,21 +130,17 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       name: name.length > 15 ? `${name.substring(0, 12)}...` : name,
       fullName: name,
       duration: Number(duration),
-      isSample: name === 'github.com' || 
-                name === 'stackoverflow.com' || 
+      isSample: name === 'github.com' ||
+                name === 'stackoverflow.com' ||
                 name === 'developer.mozilla.org'
     }))
     .sort((a, b) => b.duration - a.duration);
-  
-  
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a05195', '#d45087', '#f95d6a', '#ff7c43', '#ffa600'];
-  
-  
   const combinedData = [
     ...appChartData.map(app => ({
       ...app,
       type: 'App',
-      name: `App: ${app.name}`, 
+      name: `App: ${app.name}`,
       fullName: `App: ${app.fullName}`,
     })),
     ...tabChartData.map(tab => ({
@@ -180,22 +150,16 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       fullName: `Web: ${tab.fullName}`,
     }))
   ];
-
-  
   const appTotal = Object.values(usageData.appUsage || {})
     .map(val => Number(val))
     .reduce((sum: number, val: number) => sum + val, 0);
-  
   const webTotal = Object.values(usageData.tabUsage || {})
     .map(val => Number(val))
     .reduce((sum: number, val: number) => sum + val, 0);
-
   const appVsWebData = [
     { name: 'Applications', value: appTotal },
     { name: 'Websites', value: webTotal }
   ];
-
-  
   const renderActiveShape = (props: any) => {
     const RADIAN = Math.PI / 180;
     const {
@@ -211,7 +175,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     const ex = mx + (cos >= 0 ? 1 : -1) * 22;
     const ey = my;
     const textAnchor = cos >= 0 ? 'start' : 'end';
-
     return (
       <g>
         <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
@@ -246,11 +209,9 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       </g>
     );
   };
-
   const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
   };
-
   if (isLoading) {
     return (
       <Card className={className}>
@@ -263,16 +224,15 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       </Card>
     );
   }
-  
   if (error) {
     return (
       <Alert variant="destructive" className={className}>
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>
           {error}
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="mt-2"
             onClick={fetchUsageData}
           >
@@ -282,10 +242,8 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       </Alert>
     );
   }
-  
   const hasAppData = appChartData.length > 0;
   const hasTabData = tabChartData.length > 0;
-  
   if (!hasAppData && !hasTabData) {
     return (
       <Card className={className}>
@@ -303,39 +261,31 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
       </Card>
     );
   }
-
   const clearSampleData = async () => {
     try {
       const headers = getAuthHeader();
       const response = await axios.post('http://localhost:5001/api/clear-sample-data', {}, { headers });
-      
-      
       setIncludeSampleData(false);
-      
       alert(`Sample data cleared successfully. Removed:
       - ${response.data.deletedCounts?.appUsage || 0} sample app entries
       - ${response.data.deletedCounts?.tabUsage || 0} sample website entries`);
-      
     } catch (err) {
       console.error('Failed to clear sample data:', err);
       alert('Failed to clear sample data. Please try again.');
     }
   };
-  
   const timeFrameDisplay = {
     'daily': 'Today',
     'weekly': 'This Week',
     'monthly': 'This Month'
   };
-
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <h2 className="text-2xl font-bold">Detailed Usage Analysis</h2>
-        
         <div className="mt-2 sm:mt-0">
-          <Tabs 
-            value={timeFrame} 
+          <Tabs
+            value={timeFrame}
             onValueChange={(value) => setTimeFrame(value as 'daily' | 'weekly' | 'monthly')}
             className="w-[300px]"
           >
@@ -347,13 +297,11 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
           </Tabs>
         </div>
       </div>
-      
       {usageData.userEmail && (
         <p className="text-muted-foreground mb-4">
           Showing {timeFrameDisplay[timeFrame]} data for user: <strong>{usageData.userEmail}</strong>
         </p>
       )}
-      
       {hasSampleData && (
         <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
           <div className="flex items-center justify-between">
@@ -363,7 +311,7 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                 Your dashboard includes sample data for demonstration purposes.
               </p>
             </div>
-            <Button 
+            <Button
               variant="outline"
               size="sm"
               onClick={clearSampleData}
@@ -373,7 +321,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
           </div>
         </div>
       )}
-      
       {}
       <Card className="mb-6">
         <CardHeader>
@@ -390,11 +337,11 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" tickFormatter={(value) => formatDuration(value)} />
                   <YAxis dataKey="name" type="category" width={120} />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value, name, props) => {
                       const isSample = props.payload.isSample;
                       return [
-                        formatDuration(Number(value)), 
+                        formatDuration(Number(value)),
                         `${props.payload.fullName}${isSample ? ' (Sample)' : ''}`
                       ];
                     }}
@@ -403,9 +350,9 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   <Legend />
                   <Bar dataKey="duration" name="Time Spent" fill="#8884d8">
                     {appChartData.slice(0, 10).map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.isSample ? '#d3d3d3' : COLORS[index % COLORS.length]} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.isSample ? '#d3d3d3' : COLORS[index % COLORS.length]}
                         strokeWidth={entry.isSample ? 1 : 0}
                         stroke="#888"
                       />
@@ -421,7 +368,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
           )}
         </CardContent>
       </Card>
-    
       {}
       {hasTabData && (
         <Card className="mb-6">
@@ -438,11 +384,11 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" tickFormatter={(value) => formatDuration(value)} />
                   <YAxis dataKey="name" type="category" width={120} />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value, name, props) => {
                       const isSample = props.payload.isSample;
                       return [
-                        formatDuration(Number(value)), 
+                        formatDuration(Number(value)),
                         `${props.payload.fullName}${isSample ? ' (Sample)' : ''}`
                       ];
                     }}
@@ -451,9 +397,9 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   <Legend />
                   <Bar dataKey="duration" name="Time Spent" fill="#82ca9d">
                     {tabChartData.slice(0, 10).map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.isSample ? '#d3d3d3' : COLORS[(index + 3) % COLORS.length]} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.isSample ? '#d3d3d3' : COLORS[(index + 3) % COLORS.length]}
                         strokeWidth={entry.isSample ? 1 : 0}
                         stroke="#888"
                       />
@@ -465,7 +411,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
           </CardContent>
         </Card>
       )}
-     
       <Card>
         <CardHeader>
           <CardTitle>Activity Distribution - {timeFrameDisplay[timeFrame]}</CardTitle>
@@ -478,7 +423,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
             <div className="space-y-4">
               <div className="border p-4 rounded-md">
                 <h4 className="font-medium mb-3">App Usage Forecast</h4>
-                
                 {}
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
@@ -494,8 +438,8 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     >
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="name" />
-                      <YAxis 
-                        tickFormatter={(value) => formatDuration(value)} 
+                      <YAxis
+                        tickFormatter={(value) => formatDuration(value)}
                         domain={['dataMin - 100', 'dataMax + 200']}
                         axisLine={false}
                       />
@@ -524,7 +468,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   </ResponsiveContainer>
                 </div>
               </div>
-
               {}
               <div className="border p-4 rounded-md mt-4">
                 <div className="flex justify-between mb-3">
@@ -535,7 +478,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     {appTotal > webTotal ? "↑" : "↓"}{Math.abs(Math.round((appTotal - webTotal) / (appTotal + webTotal) * 100))}% balance
                   </div>
                 </div>
-                
                 <div className="flex items-center mb-6">
                   <div className="relative w-24 h-24">
                     <svg viewBox="0 0 120 120" className="w-full h-full">
@@ -572,7 +514,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     <div className="text-sm text-gray-500">Total Activity</div>
                   </div>
                 </div>
-                
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
                     <div className="text-xs text-gray-500">Apps</div>
@@ -591,11 +532,9 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                 </div>
               </div>
             </div>
-            
             <div className="space-y-4">
               <div className="border p-4 rounded-md">
                 <h4 className="font-medium mb-2">12 Hour Activity Forecast</h4>
-                
                 {}
                 <div className="h-64 relative">
                   <div className="absolute right-0 top-0 flex flex-col space-y-1 text-xs">
@@ -603,27 +542,20 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     <div className="text-gray-500">Average<br/>{formatDuration((appTotal + webTotal) / (appChartData.length + tabChartData.length))}</div>
                     <div className="text-red-500">Low<br/>{formatDuration(Math.min(...appChartData.filter(d => d.duration > 0).map(d => d.duration)))}</div>
                   </div>
-                  
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={
-                        
                         [...Array(12)].map((_, i) => {
                           const baseValue = (appTotal + webTotal) / (appChartData.length + tabChartData.length);
                           const hour = new Date();
                           hour.setHours(hour.getHours() + i);
                           const hourStr = hour.getHours() + ':00';
-                          
-                          
                           let value;
                           if (i < 4) {
-                            
                             value = baseValue * (0.8 + (i * 0.1));
                           } else {
-                            
                             value = baseValue * (1 + ((Math.sin(i) * 0.3) + (Math.random() * 0.2 - 0.1)));
                           }
-                          
                           return {
                             hour: hourStr,
                             value: value,
@@ -646,17 +578,17 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis 
+                      <XAxis
                         dataKey="hour"
                         axisLine={{ stroke: '#e2e8f0' }}
                         tickLine={false}
                       />
-                      <YAxis 
+                      <YAxis
                         tickFormatter={(value) => formatDuration(value)}
                         axisLine={false}
                         tickLine={false}
                       />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value) => formatDuration(Number(value))}
                         labelFormatter={(label) => `Time: ${label}`}
                       />
@@ -670,15 +602,13 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                         name="Activity"
                         activeDot={{ r: 6 }}
                       />
-                      
                       {}
-                      <ReferenceLine 
-                        x="3:00" 
-                        stroke="#718096" 
-                        strokeDasharray="3 3" 
-                        label={{ value: 'Current', position: 'insideTopRight', fill: '#718096' }} 
+                      <ReferenceLine
+                        x="3:00"
+                        stroke="#718096"
+                        strokeDasharray="3 3"
+                        label={{ value: 'Current', position: 'insideTopRight', fill: '#718096' }}
                       />
-                      
                       {}
                       {[...Array(12)].map((_, i) => {
                         const hour = new Date();
@@ -698,7 +628,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                
                 {}
                 <div className="flex justify-center mt-2 space-x-6 text-sm">
                   <div className="flex items-center">
@@ -711,11 +640,9 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                   </div>
                 </div>
               </div>
-              
               {}
               <div className="border p-4 rounded-md mt-4">
                 <h4 className="font-medium mb-4">Detailed Activity Forecast</h4>
-                
                 <table className="min-w-full">
                   <thead>
                     <tr className="border-b text-xs text-gray-500">
@@ -729,7 +656,6 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
                     {combinedData.slice(0, 5).map((item, index) => {
                       const forecastValue = item.duration * (1 + (Math.random() * 0.3 - 0.1));
                       const change = ((forecastValue - item.duration) / item.duration) * 100;
-                      
                       return (
                         <tr key={`forecast-${index}`} className="border-b">
                           <td className="py-2">
@@ -756,5 +682,4 @@ const EnhancedUsageCharts: React.FC<EnhancedUsageChartsProps> = ({ className }) 
     </div>
   );
 };
-
 export default EnhancedUsageCharts;

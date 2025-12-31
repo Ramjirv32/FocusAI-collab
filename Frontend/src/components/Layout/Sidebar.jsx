@@ -23,12 +23,10 @@ import {
   ListTodo
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-
 const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-
   const menuItems = [
     {
       title: 'Dashboard',
@@ -72,8 +70,6 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       path: '/notifications',
       description: 'Alerts & Updates'
     },
-
-
     {
       title: 'Settings',
       icon: Settings,
@@ -88,11 +84,8 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       isLogout: true
     }
   ];
-
   const bottomMenuItems = [
-
   ];
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -101,15 +94,12 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       console.error('Logout error:', error);
     }
   };
-
   const handleMenuClick = (path) => {
     navigate(path);
-    
     if (isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000)) {
       onToggle();
     }
   };
-
   const MenuItem = ({ item, isActive }) => (
     <button
       onClick={() => item.isLogout ? handleLogout() : handleMenuClick(item.path)}
@@ -134,16 +124,13 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
       )}
     </button>
   );
-
   return (
     <aside className={cn(
       "bg-background border-r transition-all duration-300 ease-in-out flex flex-col",
-      
       isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000)
         ? "fixed left-0 top-0 z-40 h-screen"
         : "relative h-screen",
       collapsed ? "w-16" : "w-64",
-      
       (isMobile || (isElectron && typeof window !== 'undefined' && window.innerWidth < 1000)) && collapsed && "translate-x-[-100%]"
     )}>
       <div className="flex h-full flex-col">
@@ -169,7 +156,6 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
         </div>
-
         {}
         {!collapsed && user && (
           <div className="p-4 border-b">
@@ -191,7 +177,6 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
             </div>
           </div>
         )}
-
         {}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <div className="space-y-1">
@@ -204,7 +189,6 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
             ))}
           </div>
         </nav>
-
         {}
         <div className="p-4 border-t space-y-1 flex-shrink-0">
           {bottomMenuItems.map((item) => (
@@ -219,5 +203,4 @@ const Sidebar = ({ collapsed, onToggle, isMobile, isElectron }) => {
     </aside>
   );
 };
-
 export default Sidebar;

@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,7 +16,6 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, Clock, Plus, Monitor, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-
 interface CalendarEvent {
   _id?: string
   id?: string
@@ -29,7 +27,6 @@ interface CalendarEvent {
   linkedTabs: string[]
   description?: string
 }
-
 interface UsageData {
   date: string
   apps: Array<{ name: string; duration: number; category: string }>
@@ -39,7 +36,6 @@ interface UsageData {
     distractionHours: number
   }
 }
-
 interface EnhancedCalendarProps {
   events: CalendarEvent[]
   usageData: UsageData[] | null
@@ -47,7 +43,6 @@ interface EnhancedCalendarProps {
   userId: string
   apiBaseUrl?: string
 }
-
 export function EnhancedCalendar({
   events,
   usageData,
@@ -67,7 +62,6 @@ export function EnhancedCalendar({
     linkedTabs: [] as string[],
     description: "",
   })
-
   const categories = [
     { value: "work", label: "Work", color: "bg-blue-500" },
     { value: "personal", label: "Personal", color: "bg-green-500" },
@@ -75,7 +69,6 @@ export function EnhancedCalendar({
     { value: "break", label: "Break", color: "bg-orange-500" },
     { value: "meeting", label: "Meeting", color: "bg-red-500" },
   ]
-
   const popularApps = ["VS Code", "Chrome", "Slack", "Notion", "Figma", "Terminal", "Photoshop", "Excel"]
   const popularTabs = [
     "github.com",
@@ -85,15 +78,12 @@ export function EnhancedCalendar({
     "linkedin.com",
     "twitter.com",
   ]
-
   const createEvent = async () => {
     if (!newEvent.eventName || !newEvent.startTime || !newEvent.endTime) {
       toast.error("Please fill in all required fields")
       return
     }
-
     setCreating(true)
-
     try {
       const response = await fetch(`${apiBaseUrl}/api/calendar/events`, {
         method: "POST",
@@ -108,12 +98,10 @@ export function EnhancedCalendar({
           userId: userId,
         }),
       })
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
       }
-
       const result = await response.json()
       toast.success("Event created successfully!")
       setShowEventDialog(false)
@@ -134,7 +122,6 @@ export function EnhancedCalendar({
       setCreating(false)
     }
   }
-
   const deleteEvent = async (eventId: string) => {
     try {
       const response = await fetch(`${apiBaseUrl}/api/calendar/events/${eventId}`, {
@@ -143,11 +130,9 @@ export function EnhancedCalendar({
           Accept: "application/json",
         },
       })
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-
       toast.success("Event deleted successfully!")
       onEventUpdate()
     } catch (error) {
@@ -155,45 +140,36 @@ export function EnhancedCalendar({
       toast.error("Failed to delete event")
     }
   }
-
   const getEventsForDate = (date: string) => {
     return events.filter((event) => {
       const eventDate = new Date(event.startTime).toISOString().split("T")[0]
       return eventDate === date
     })
   }
-
   const getUsageForDate = (date: string) => {
     return usageData?.find((usage) => usage.date === date)
   }
-
   const generateCalendarDays = () => {
     const today = new Date()
     const currentMonth = today.getMonth()
     const currentYear = today.getFullYear()
-
     const firstDay = new Date(currentYear, currentMonth, 1)
     const lastDay = new Date(currentYear, currentMonth + 1, 0)
     const startDate = new Date(firstDay)
     startDate.setDate(startDate.getDate() - firstDay.getDay())
-
     const days = []
     const current = new Date(startDate)
-
     for (let i = 0; i < 42; i++) {
       days.push(new Date(current))
       current.setDate(current.getDate() + 1)
     }
-
     return days
   }
-
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const mins = minutes % 60
     return `${hours}h ${mins}m`
   }
-
   const formatDateTime = (dateTimeString: string) => {
     try {
       return new Date(dateTimeString).toLocaleTimeString("en-US", {
@@ -204,7 +180,6 @@ export function EnhancedCalendar({
       return "Invalid time"
     }
   }
-
   return (
     <div className="space-y-6">
       {}
@@ -240,7 +215,6 @@ export function EnhancedCalendar({
                       placeholder="e.g., Work on Project X"
                     />
                   </div>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="startTime">Start Time *</Label>
@@ -261,7 +235,6 @@ export function EnhancedCalendar({
                       />
                     </div>
                   </div>
-
                   <div>
                     <Label htmlFor="category">Category</Label>
                     <Select
@@ -280,7 +253,6 @@ export function EnhancedCalendar({
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div>
                     <Label>Linked Apps (Optional)</Label>
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -301,7 +273,6 @@ export function EnhancedCalendar({
                       ))}
                     </div>
                   </div>
-
                   <div>
                     <Label>Linked Websites (Optional)</Label>
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -322,7 +293,6 @@ export function EnhancedCalendar({
                       ))}
                     </div>
                   </div>
-
                   <Button onClick={createEvent} className="w-full" disabled={creating}>
                     {creating ? (
                       <>
@@ -339,7 +309,6 @@ export function EnhancedCalendar({
           </div>
         </CardHeader>
       </Card>
-
       {}
       <Card>
         <CardContent className="p-6">
@@ -350,7 +319,6 @@ export function EnhancedCalendar({
               </div>
             ))}
           </div>
-
           <div className="grid grid-cols-7 gap-2">
             {generateCalendarDays().map((day, index) => {
               const dateStr = day.toISOString().split("T")[0]
@@ -358,7 +326,6 @@ export function EnhancedCalendar({
               const dayUsage = getUsageForDate(dateStr)
               const isToday = dateStr === new Date().toISOString().split("T")[0]
               const isSelected = dateStr === selectedDate
-
               return (
                 <div
                   key={index}
@@ -374,7 +341,6 @@ export function EnhancedCalendar({
                   >
                     {day.getDate()}
                   </div>
-
                   {}
                   {dayUsage && (
                     <div className="flex gap-1 mb-1">
@@ -392,7 +358,6 @@ export function EnhancedCalendar({
                       />
                     </div>
                   )}
-
                   {}
                   <div className="space-y-1">
                     {dayEvents.slice(0, 2).map((event, eventIndex) => {
@@ -415,7 +380,6 @@ export function EnhancedCalendar({
           </div>
         </CardContent>
       </Card>
-
       {}
       <Card>
         <CardHeader>
@@ -487,7 +451,6 @@ export function EnhancedCalendar({
                 )}
               </div>
             </div>
-
             {}
             <div>
               <h4 className="font-medium mb-3 flex items-center gap-2">
@@ -499,7 +462,6 @@ export function EnhancedCalendar({
                 if (!usage) {
                   return <div className="text-gray-500 text-center py-4">No usage data available for this date</div>
                 }
-
                 return (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -516,7 +478,6 @@ export function EnhancedCalendar({
                         <div className="text-sm text-red-700">Distracting</div>
                       </div>
                     </div>
-
                     <div>
                       <h5 className="font-medium mb-2">Top Apps</h5>
                       <div className="space-y-1">
@@ -542,7 +503,6 @@ export function EnhancedCalendar({
                         ))}
                       </div>
                     </div>
-
                     <div>
                       <h5 className="font-medium mb-2">Top Websites</h5>
                       <div className="space-y-1">

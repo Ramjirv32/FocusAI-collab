@@ -6,42 +6,31 @@ import { Progress } from '../../components/ui/progress';
 import { RefreshCw, ArrowUpRight, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { getConsolidatedFocusData } from '../../services/activityDataService';
 import { useAuth } from '../../context/AuthContext';
-
 const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
   const { user } = useAuth();
   const [focusData, setFocusData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
- 
   const formatTime = (minutes) => {
     if (!minutes) return '0m';
-    
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    
     if (hours === 0) return `${mins}m`;
     return `${hours}h ${mins}m`;
   };
-  
- 
   const loadFocusData = async () => {
-    
     if (!user) {
       setError('User not authenticated');
       return;
     }
-
     try {
       setIsLoading(true);
       setError(null);
-      
       const data = await getConsolidatedFocusData(date);
       setFocusData(data);
-      
       if (onSyncComplete) {
         onSyncComplete(data);
       }
-      
     } catch (err) {
       console.error('Error loading focus data:', err);
       setError('Failed to load focus data. Please try again.');
@@ -54,8 +43,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
       setIsLoading(false);
     }
   };
-  
-
   const handleSync = async () => {
     if (!user) {
       toast({
@@ -65,22 +52,17 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
       });
       return;
     }
-
     await loadFocusData();
     toast({
       title: 'Focus Data Synced',
       description: 'Your productivity analysis has been updated.',
     });
   };
-  
-
   useEffect(() => {
     if (user) {
       loadFocusData();
     }
   }, [date, user]);
-  
-  
   if (!user) {
     return (
       <Card className="w-full bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
@@ -101,8 +83,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
       </Card>
     );
   }
-  
-  
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -115,7 +95,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
       </Card>
     );
   }
-  
   if (error) {
     return (
       <Card className="w-full border-destructive/50 bg-destructive/10">
@@ -137,50 +116,43 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
       </Card>
     );
   }
-  
-  
   const productivityScore = focusData?.quickStats?.quick_stats?.productivity_score || 0;
   const focusTime = focusData?.quickStats?.quick_stats?.focus_time_minutes || 0;
   const distractionTime = focusData?.quickStats?.quick_stats?.distraction_time_minutes || 0;
   const totalTime = focusData?.quickStats?.quick_stats?.total_time_minutes || 0;
-  
-  
   const focusAreas = focusData?.focusAnalysis?.productive_apps?.map(app => ({
     category: app.category || "Productive",
-    total_duration: app.duration_minutes * 60, 
+    total_duration: app.duration_minutes * 60,
     apps: [app.app_name]
   })) || [];
-  
   const distractionAreas = focusData?.focusAnalysis?.distraction_apps?.map(app => ({
     category: app.category || "Distraction",
-    total_duration: app.duration_minutes * 60, 
+    total_duration: app.duration_minutes * 60,
     apps: [app.app_name]
   })) || [];
-  
   return (
     <div className="space-y-6">
       <Card className="w-full bg-gradient-to-r from-indigo-50 to-blue-50">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <CardTitle className="text-xl font-semibold">Focus Analysis</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 gap-1" 
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1"
               onClick={handleSync}
               disabled={isLoading}
             >
-              <RefreshCw className="h-3 w-3" /> 
+              <RefreshCw className="h-3 w-3" />
               {isLoading ? 'Syncing...' : 'Sync Now'}
             </Button>
           </div>
           <CardDescription>
-            Analysis for {new Date(date).toLocaleDateString(undefined, { 
-              year: 'numeric', month: 'long', day: 'numeric' 
+            Analysis for {new Date(date).toLocaleDateString(undefined, {
+              year: 'numeric', month: 'long', day: 'numeric'
             })}
           </CardDescription>
         </CardHeader>
-        
         <CardContent>
           {}
           <div className="mb-6">
@@ -190,7 +162,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
             </div>
             <Progress value={productivityScore} className="h-2" />
           </div>
-          
           {}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -200,7 +171,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
               </div>
               <p className="text-2xl font-bold">{formatTime(totalTime)}</p>
             </div>
-            
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-muted-foreground">Focus Time</span>
@@ -208,7 +178,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
               </div>
               <p className="text-2xl font-bold text-green-600">{formatTime(focusTime)}</p>
             </div>
-            
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm text-muted-foreground">Distraction Time</span>
@@ -217,7 +186,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
               <p className="text-2xl font-bold text-red-600">{formatTime(distractionTime)}</p>
             </div>
           </div>
-          
           {}
           <div className="mb-4">
             <h3 className="text-sm font-medium mb-2">Focus Areas ({focusAreas.length})</h3>
@@ -247,7 +215,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
               )}
             </div>
           </div>
-          
           {}
           <div>
             <h3 className="text-sm font-medium mb-2">Distraction Areas ({distractionAreas.length})</h3>
@@ -279,7 +246,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
           </div>
         </CardContent>
       </Card>
-      
       {}
       <Card>
         <CardHeader>
@@ -291,7 +257,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
             {focusData?.appUsage?.slice(0, 5).map((app, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full mr-2" 
+                  <div className="w-2 h-2 rounded-full mr-2"
                     style={{ backgroundColor: index % 2 === 0 ? '#4ade80' : '#f87171' }}></div>
                   <span className="font-medium">{app.appName || app.app_name}</span>
                 </div>
@@ -300,14 +266,12 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
                 </span>
               </div>
             ))}
-            
             {(!focusData?.appUsage || focusData.appUsage.length === 0) && (
               <p className="text-sm text-muted-foreground py-2">No app usage data found</p>
             )}
           </div>
         </CardContent>
       </Card>
-      
       {}
       <Card>
         <CardHeader>
@@ -319,7 +283,7 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
             {focusData?.tabUsage?.slice(0, 5).map((tab, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 rounded-full mr-2" 
+                  <div className="w-2 h-2 rounded-full mr-2"
                     style={{ backgroundColor: index % 2 === 0 ? '#818cf8' : '#fbbf24' }}></div>
                   <span className="font-medium">{tab.domain || extractDomain(tab.url)}</span>
                 </div>
@@ -328,7 +292,6 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
                 </span>
               </div>
             ))}
-            
             {(!focusData?.tabUsage || focusData.tabUsage.length === 0) && (
               <p className="text-sm text-muted-foreground py-2">No tab usage data found</p>
             )}
@@ -338,11 +301,8 @@ const FocusAnalysisComponent = ({ date, onSyncComplete }) => {
     </div>
   );
 };
-
-
 function extractDomain(url) {
   if (!url) return 'unknown';
-  
   try {
     const domain = new URL(url);
     return domain.hostname;
@@ -350,5 +310,4 @@ function extractDomain(url) {
     return url.split('/')[2] || 'unknown';
   }
 }
-
 export default FocusAnalysisComponent;

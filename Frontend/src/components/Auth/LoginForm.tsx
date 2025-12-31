@@ -5,23 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from '@/context/AuthContext'; 
-
+import { useAuth } from '@/context/AuthContext';
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login } = useAuth(); 
-  
+  const { login } = useAuth();
   const fetchUserInfoAndSendToExtension = async () => {
     try {
-  
       const response = await axios.get('http://localhost:5001/api/user'); 
       const user = response.data.user;
-  
-      
       if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage('jjjokkpobnafkfomfojdnhgndanjihpl', {
           action: 'userInfo',
@@ -30,28 +25,21 @@ const LoginForm = () => {
           token: user.token,
         });
       }
-  
       console.log('Sent user info to extension:', { id: user.id, email: user.email , token: user.token });
     } catch (error) {
       console.error('Error fetching user info:', error);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
     try {
-      
       await login(email, password);
-      
-      
       fetchUserInfoAndSendToExtension();
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
-      
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -63,9 +51,6 @@ const LoginForm = () => {
       setIsLoading(false);
     }
   };
-
-  
-
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -117,7 +102,7 @@ const LoginForm = () => {
       <CardFooter className="flex justify-center border-t p-4">
         <p className="text-sm text-muted-foreground">
           Don't have an account?{" "}
-          <a 
+          <a
             onClick={() => navigate("/register")}
             className="underline cursor-pointer text-primary"
           >
@@ -128,5 +113,4 @@ const LoginForm = () => {
     </Card>
   );
 };
-
 export default LoginForm;

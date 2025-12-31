@@ -1,11 +1,8 @@
 import requests
 import json
 import time
-
 AI_SERVICE_URL = "http://localhost:8000/predict"
-
 test_cases = [
-    # === DEVELOPMENT & CODING (1-20) ===
     {"app": "VS Code", "tab": "main.js - FocusAI", "duration": 1200, "desc": "JavaScript Coding"},
     {"app": "PyCharm", "tab": "train.py", "duration": 3000, "desc": "Python Development"},
     {"app": "IntelliJ IDEA", "tab": "BackendController.java", "duration": 2400, "desc": "Java Backend Dev"},
@@ -26,8 +23,6 @@ test_cases = [
     {"app": "Sourcetree", "tab": "Rebase develop", "duration": 300, "desc": "Git GUI Admin"},
     {"app": "Fork", "tab": "Merge Request Review", "duration": 400, "desc": "Git Workflow"},
     {"app": "GitHub Desktop", "tab": "Publish Branch", "duration": 100, "desc": "Git Client"},
-
-    # === TECHNICAL DOCUMENTATION & RESEARCH (21-40) ===
     {"app": "Chrome", "tab": "https://stackoverflow.com/questions/123", "duration": 300, "desc": "StackOverflow Research"},
     {"app": "Chrome", "tab": "https://github.com/microsoft/vscode/issues/99", "duration": 600, "desc": "GitHub Issue Debugging"},
     {"app": "Chrome", "tab": "https://developer.mozilla.org/en-US/docs/Web/API", "duration": 900, "desc": "MDN Documentation"},
@@ -48,8 +43,6 @@ test_cases = [
     {"app": "Chrome", "tab": "https://news.ycombinator.com/", "duration": 300, "desc": "Hacker News (Industry News)"},
     {"app": "Chrome", "tab": "https://arxiv.org/abs/1234.5678", "duration": 2400, "desc": "Reading Research Paper"},
     {"app": "Chrome", "tab": "https://scholar.google.com/search", "duration": 600, "desc": "Academic Search"},
-
-    # === AI & PRODUCTIVITY TOOLS (41-60) ===
     {"app": "Chrome", "tab": "https://chatgpt.com/", "duration": 600, "desc": "ChatGPT Assistant"},
     {"app": "Chrome", "tab": "https://claude.ai/", "duration": 900, "desc": "Claude AI Development"},
     {"app": "Chrome", "tab": "https://grok.com/", "duration": 300, "desc": "Grok AI Research"},
@@ -70,8 +63,6 @@ test_cases = [
     {"app": "Microsoft Teams", "tab": "Teams | General", "duration": 3600, "desc": "Work Meeting"},
     {"app": "Discord", "tab": "FocusAI Dev Server", "duration": 900, "desc": "Community Dev"},
     {"app": "Zoom", "tab": "Daily Standup Meeting", "duration": 1800, "desc": "Video Call"},
-
-    # === LEARNING & EDUCATION (61-80) ===
     {"app": "Chrome", "tab": "https://www.youtube.com/watch?v=algorithm_basics", "duration": 2400, "desc": "Algorithm Lecture"},
     {"app": "Chrome", "tab": "https://www.youtube.com/watch?v=system_design_101", "duration": 3600, "desc": "System Design Course"},
     {"app": "Chrome", "tab": "https://udemy.com/course/web-dev", "duration": 5400, "desc": "Online Coding Course"},
@@ -92,8 +83,6 @@ test_cases = [
     {"app": "Kindle", "tab": "Clean Code - Robert C. Martin", "duration": 1800, "desc": "Reading Technical Book"},
     {"app": "Books", "tab": "Design Patterns - GoF", "duration": 1200, "desc": "Studying Architecture"},
     {"app": "Calibre", "tab": "Programming in Rust.pdf", "duration": 3000, "desc": "E-book Reference"},
-
-    # === DISTRACTIONS & ENTERTAINMENT (81-110) ===
     {"app": "Chrome", "tab": "https://www.facebook.com/", "duration": 60, "desc": "Social Media Browsing"},
     {"app": "Chrome", "tab": "https://www.instagram.com/reels/", "duration": 120, "desc": "Watching Reels"},
     {"app": "Chrome", "tab": "https://www.tiktok.com/", "duration": 300, "desc": "TikTok Scrolling"},
@@ -124,8 +113,6 @@ test_cases = [
     {"app": "Chrome", "tab": "https://9gag.com/trending", "duration": 450, "desc": "Looking at Funny Memes"},
     {"app": "Chrome", "tab": "https://www.pinterest.com/home", "duration": 600, "desc": "Pinterest Scrolling"},
     {"app": "Chrome", "tab": "https://www.behance.net/", "duration": 300, "desc": "Art Browsing (Distraction)"},
-
-    # === SYSTEM & UTILITIES (111-125) ===
     {"app": "Calculator", "tab": "Calculator", "duration": 30, "desc": "Simple Calculation"},
     {"app": "Control Panel", "tab": "System Settings", "duration": 60, "desc": "Adjusting PC Config"},
     {"app": "Settings", "tab": "Windows Update", "duration": 300, "desc": "Maintenance Update"},
@@ -142,15 +129,12 @@ test_cases = [
     {"app": "Chrome", "tab": "https://www.google.com/search?q=weather", "duration": 30, "desc": "Quick Google Search"},
     {"app": "Chrome", "tab": "https://www.google.com/maps", "duration": 300, "desc": "Looking for Route"},
 ]
-
 def run_tests():
     print(f"{'#' : <3} | {'Description':<30} | {'App / Tab':<40} | {'Result':<15} | {'Conf':<6} | {'Method'}")
     print("-" * 125)
-    
     results = {"Productive": 0, "Non-Productive": 0, "Neutral": 0}
     errors = 0
     start_time = time.time()
-    
     for i, case in enumerate(test_cases, 1):
         params = {
             "app": case["app"],
@@ -164,13 +148,9 @@ def run_tests():
                 label = data.get("label", "Unknown")
                 conf = data.get("confidence", 0.0)
                 method = data.get("method", "N/A")
-                
-                # Visual feedback for errors/uncertainties
                 status_icon = "✅" if (i <= 80 and label == "Productive") or (i > 80 and i <= 110 and label == "Non-Productive") else "⚠️"
-                
                 display_app = f"{case['app']} ({case['tab'][:20]}...)"
                 print(f"{i: <3} | {case['desc']:<30} | {display_app:<40} | {label:<15} | {conf:.2f} | {method}")
-                
                 results[label] = results.get(label, 0) + 1
             else:
                 print(f"{i: <3} | ❌ Error: {case['desc']} failed (Status {response.status_code})")
@@ -178,7 +158,6 @@ def run_tests():
         except Exception as e:
             print(f"{i: <3} | ❌ Connection Error for {case['desc']}")
             errors += 1
-
     duration = time.time() - start_time
     print("\n" + "="*40)
     print(f"🚀 STRESS TEST SUMMARY ({len(test_cases)} cases)")
@@ -189,7 +168,6 @@ def run_tests():
         print(f"{color} {label:<15}: {count}")
     print(f"❌ ERRORS         : {errors}")
     print("="*40)
-
 if __name__ == "__main__":
     print(f"�️ Initializing 125+ Critical AI Model Validation Tests...")
     print(f"🔗 Target: {AI_SERVICE_URL}")

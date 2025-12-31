@@ -3,16 +3,14 @@ import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  AlertCircle, Bug, Cpu, FileJson, HardDrive, 
+import {
+  AlertCircle, Bug, Cpu, FileJson, HardDrive,
   Layers, Database, Zap, RefreshCw, BarChart, Activity
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-
-
 const systemData = {
   os: 'Windows 10 Pro 64-bit',
   browser: 'Chrome 119.0.6045.124',
@@ -39,7 +37,6 @@ const systemData = {
     latency: 25
   }
 };
-
 const extensionData = {
   version: '2.1.0',
   status: 'Connected',
@@ -63,19 +60,15 @@ const extensionData = {
     { time: '12:30:18', level: 'error', message: 'Failed to sync data with server: Timeout' }
   ]
 };
-
 const Diagnostics = () => {
   const [isRunningDiagnostics, setIsRunningDiagnostics] = useState(false);
   const [hasError, setHasError] = useState(true);
-  
   const runDiagnostics = () => {
     setIsRunningDiagnostics(true);
-    
     setTimeout(() => {
       setIsRunningDiagnostics(false);
     }, 2000);
   };
-  
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -86,8 +79,8 @@ const Diagnostics = () => {
               Troubleshoot and monitor your system performance
             </p>
           </div>
-          <Button 
-            onClick={runDiagnostics} 
+          <Button
+            onClick={runDiagnostics}
             disabled={isRunningDiagnostics}
             className="flex items-center gap-2"
           >
@@ -104,7 +97,6 @@ const Diagnostics = () => {
             )}
           </Button>
         </div>
-
         {hasError && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -114,14 +106,12 @@ const Diagnostics = () => {
             </AlertDescription>
           </Alert>
         )}
-        
         <Tabs defaultValue="system" className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
             <TabsTrigger value="system">System</TabsTrigger>
             <TabsTrigger value="extension">Extension</TabsTrigger>
             <TabsTrigger value="logs">Logs</TabsTrigger>
           </TabsList>
-          
           <TabsContent value="system" className="space-y-4 mt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
@@ -141,7 +131,6 @@ const Diagnostics = () => {
                   </div>
                 </CardContent>
               </Card>
-              
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -159,7 +148,6 @@ const Diagnostics = () => {
                   </div>
                 </CardContent>
               </Card>
-              
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -178,7 +166,6 @@ const Diagnostics = () => {
                 </CardContent>
               </Card>
             </div>
-            
             <Card>
               <CardHeader>
                 <CardTitle>System Information</CardTitle>
@@ -191,25 +178,21 @@ const Diagnostics = () => {
                       <h3 className="text-sm font-medium text-muted-foreground mb-2">Operating System</h3>
                       <p className="font-medium">{systemData.os}</p>
                     </div>
-                    
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-2">Browser</h3>
                       <p className="font-medium">{systemData.browser}</p>
                     </div>
-                    
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-2">Device Type</h3>
                       <p className="font-medium">{systemData.device}</p>
                     </div>
                   </div>
-                  
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-2">CPU</h3>
                       <p className="font-medium">{systemData.cpu.model}</p>
                       <p className="text-sm text-muted-foreground">{systemData.cpu.cores} cores / {systemData.cpu.threads} threads</p>
                     </div>
-                    
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground mb-2">Network</h3>
                       <p className="font-medium">{systemData.network.type} ({systemData.network.speed})</p>
@@ -219,7 +202,6 @@ const Diagnostics = () => {
                 </div>
               </CardContent>
             </Card>
-            
             <Card>
               <CardHeader>
                 <CardTitle>Performance Metrics</CardTitle>
@@ -236,7 +218,6 @@ const Diagnostics = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
           <TabsContent value="extension" className="space-y-4 mt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
@@ -248,8 +229,8 @@ const Diagnostics = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold flex items-center gap-2">
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className="bg-green-100 text-green-800 hover:bg-green-100"
                     >
                       {extensionData.status}
@@ -267,7 +248,6 @@ const Diagnostics = () => {
                   </div>
                 </CardContent>
               </Card>
-              
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -287,7 +267,6 @@ const Diagnostics = () => {
                   </div>
                 </CardContent>
               </Card>
-              
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -297,17 +276,17 @@ const Diagnostics = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold flex items-center gap-2">
-                    <Badge 
-                      variant={hasError ? "destructive" : "outline"} 
+                    <Badge
+                      variant={hasError ? "destructive" : "outline"}
                       className={!hasError ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
                     >
                       {hasError ? "Issues Detected" : "Healthy"}
                     </Badge>
                   </div>
                   <div className="mt-3">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="w-full"
                       onClick={() => setHasError(!hasError)}
                     >
@@ -317,7 +296,6 @@ const Diagnostics = () => {
                 </CardContent>
               </Card>
             </div>
-            
             <Card>
               <CardHeader>
                 <CardTitle>Extension Permissions</CardTitle>
@@ -336,7 +314,6 @@ const Diagnostics = () => {
                 </div>
               </CardContent>
             </Card>
-            
             <Card>
               <CardHeader>
                 <CardTitle>Troubleshooting</CardTitle>
@@ -373,7 +350,6 @@ const Diagnostics = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
           <TabsContent value="logs" className="space-y-4 mt-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -389,23 +365,23 @@ const Diagnostics = () => {
               <CardContent>
                 <div className="space-y-2 max-h-[400px] overflow-y-auto border rounded-md p-3">
                   {extensionData.logs.map((log, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className={`text-sm p-2 rounded ${
-                        log.level === 'error' 
-                          ? 'bg-red-50 text-red-800' 
-                          : log.level === 'warning' 
-                            ? 'bg-yellow-50 text-yellow-800' 
+                        log.level === 'error'
+                          ? 'bg-red-50 text-red-800'
+                          : log.level === 'warning'
+                            ? 'bg-yellow-50 text-yellow-800'
                             : 'bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-mono">[{log.time}]</span>
                         <Badge variant="outline" className={`uppercase ${
-                          log.level === 'error' 
-                            ? 'bg-red-100 text-red-800 border-red-200' 
-                            : log.level === 'warning' 
-                              ? 'bg-yellow-100 text-yellow-800 border-yellow-200' 
+                          log.level === 'error'
+                            ? 'bg-red-100 text-red-800 border-red-200'
+                            : log.level === 'warning'
+                              ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
                               : 'bg-blue-100 text-blue-800 border-blue-200'
                         }`}>
                           {log.level}
@@ -417,7 +393,6 @@ const Diagnostics = () => {
                     </div>
                   ))}
                 </div>
-                
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-muted-foreground">
                     Showing 5 of 124 log entries
@@ -428,7 +403,6 @@ const Diagnostics = () => {
                 </div>
               </CardContent>
             </Card>
-            
             <Card>
               <CardHeader>
                 <CardTitle>Server Communication Logs</CardTitle>
@@ -450,5 +424,4 @@ const Diagnostics = () => {
     </DashboardLayout>
   );
 };
-
 export default Diagnostics;

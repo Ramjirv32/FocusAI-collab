@@ -3,20 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Monitor, 
-  Chrome, 
-  Server, 
-  Database, 
-  Wifi, 
-  RefreshCw, 
-  CheckCircle, 
+import {
+  Monitor,
+  Chrome,
+  Server,
+  Database,
+  Wifi,
+  RefreshCw,
+  CheckCircle,
   XCircle,
   AlertTriangle,
   Info
 } from 'lucide-react';
 import { runDiagnostics } from '@/utils/diagnostics';
-
 const DiagnosticInfo = () => {
   const [screenInfo, setScreenInfo] = useState({
     width: 0,
@@ -26,16 +25,14 @@ const DiagnosticInfo = () => {
   });
   const [diagnostics, setDiagnostics] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
-
   useEffect(() => {
     const updateScreenInfo = () => {
       const checkElectron = () => {
-        return typeof window !== 'undefined' && 
+        return typeof window !== 'undefined' &&
                (window.process && window.process.type === 'renderer') ||
                window.electronAPI ||
                navigator.userAgent.toLowerCase().indexOf('electron') > -1;
       };
-
       setScreenInfo({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -43,13 +40,10 @@ const DiagnosticInfo = () => {
         userAgent: navigator.userAgent
       });
     };
-
     updateScreenInfo();
     window.addEventListener('resize', updateScreenInfo);
-    
     return () => window.removeEventListener('resize', updateScreenInfo);
   }, []);
-
   const runFullDiagnostics = async () => {
     setIsRunning(true);
     try {
@@ -65,15 +59,12 @@ const DiagnosticInfo = () => {
       setIsRunning(false);
     }
   };
-
   const getStatusColor = (success) => {
     return success ? 'text-green-600' : 'text-red-600';
   };
-
   const getStatusIcon = (success) => {
     return success ? CheckCircle : XCircle;
   };
-
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
@@ -101,26 +92,22 @@ const DiagnosticInfo = () => {
             <TabsTrigger value="extension">Extension</TabsTrigger>
             <TabsTrigger value="storage">Storage</TabsTrigger>
           </TabsList>
-
           <TabsContent value="display" className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-2">
                 <div className="font-medium">Screen Resolution:</div>
                 <div className="text-muted-foreground">{screenInfo.width} × {screenInfo.height}px</div>
               </div>
-              
               <div className="space-y-2">
                 <div className="font-medium">Environment:</div>
                 <Badge variant={screenInfo.isElectron ? "default" : "secondary"}>
                   {screenInfo.isElectron ? "Electron App" : "Web Browser"}
                 </Badge>
               </div>
-              
               <div className="space-y-2">
                 <div className="font-medium">Mobile Threshold:</div>
                 <div className="text-muted-foreground">{screenInfo.isElectron ? "900px" : "768px"}</div>
               </div>
-              
               <div className="space-y-2">
                 <div className="font-medium">Layout Mode:</div>
                 <Badge variant={screenInfo.width < (screenInfo.isElectron ? 900 : 768) ? "destructive" : "default"}>
@@ -128,7 +115,6 @@ const DiagnosticInfo = () => {
                 </Badge>
               </div>
             </div>
-            
             <div className="pt-4 border-t">
               <div className="font-medium text-sm mb-2">User Agent:</div>
               <div className="text-xs text-muted-foreground break-all p-2 bg-muted rounded">
@@ -136,7 +122,6 @@ const DiagnosticInfo = () => {
               </div>
             </div>
           </TabsContent>
-
           <TabsContent value="servers" className="space-y-4">
             {diagnostics ? (
               <div className="space-y-3">
@@ -154,7 +139,6 @@ const DiagnosticInfo = () => {
                     </Badge>
                   </div>
                 </div>
-                
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-2">
                     <Database className="h-4 w-4" />
@@ -169,7 +153,6 @@ const DiagnosticInfo = () => {
                     </Badge>
                   </div>
                 </div>
-                
                 {diagnostics.timestamp && (
                   <div className="text-xs text-muted-foreground">
                     Last checked: {new Date(diagnostics.timestamp).toLocaleString()}
@@ -183,7 +166,6 @@ const DiagnosticInfo = () => {
               </div>
             )}
           </TabsContent>
-
           <TabsContent value="extension" className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -195,7 +177,6 @@ const DiagnosticInfo = () => {
                   {typeof window !== 'undefined' && window.chrome ? "Available" : "Not Available"}
                 </Badge>
               </div>
-              
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center gap-2">
                   <Wifi className="h-4 w-4" />
@@ -207,7 +188,6 @@ const DiagnosticInfo = () => {
               </div>
             </div>
           </TabsContent>
-
           <TabsContent value="storage" className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -219,7 +199,6 @@ const DiagnosticInfo = () => {
                   {localStorage.getItem('token') ? "Token Found" : "No Token"}
                 </Badge>
               </div>
-              
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4" />
@@ -236,5 +215,4 @@ const DiagnosticInfo = () => {
     </Card>
   );
 };
-
 export default DiagnosticInfo;

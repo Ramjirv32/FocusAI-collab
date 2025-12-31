@@ -1,10 +1,8 @@
 "use client"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, Monitor, Globe, Clock, AlertCircle } from "lucide-react"
-
 interface UsageData {
   date: string
   apps: Array<{ name: string; duration: number; category: string }>
@@ -17,11 +15,9 @@ interface UsageData {
     focusScore: number
   }
 }
-
 interface UsageStatsProps {
   usageData: UsageData[] | null
 }
-
 export function UsageStats({ usageData }: UsageStatsProps) {
   if (!usageData || usageData.length === 0) {
     return (
@@ -42,24 +38,19 @@ export function UsageStats({ usageData }: UsageStatsProps) {
       </Card>
     )
   }
-
-  const today = usageData[0] 
+  const today = usageData[0]
   const yesterday = usageData[1]
-
   const productiveChange =
     yesterday && yesterday.summary.productiveHours > 0
       ? ((today.summary.productiveHours - yesterday.summary.productiveHours) / yesterday.summary.productiveHours) * 100
       : 0
-
   const focusScoreChange =
     yesterday && yesterday.summary.focusScore > 0 ? today.summary.focusScore - yesterday.summary.focusScore : 0
-
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const mins = minutes % 60
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
   }
-
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "productive":
@@ -72,7 +63,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
         return "bg-gray-500"
     }
   }
-
   const getCategoryTextColor = (category: string) => {
     switch (category) {
       case "productive":
@@ -85,7 +75,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
         return "text-gray-600"
     }
   }
-
   return (
     <div className="space-y-6">
       {}
@@ -113,12 +102,10 @@ export function UsageStats({ usageData }: UsageStatsProps) {
                 </div>
               )}
             </div>
-
             <div className="text-center p-4 bg-red-50 rounded-lg">
               <div className="text-2xl font-bold text-red-600">{formatTime(today.summary.distractionHours * 60)}</div>
               <div className="text-sm text-red-700">Distraction Time</div>
             </div>
-
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">{today.summary.focusScore.toFixed(1)}%</div>
               <div className="text-sm text-blue-700">Focus Score</div>
@@ -134,7 +121,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
                 </div>
               )}
             </div>
-
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">
                 {formatTime(today.summary.totalActiveHours * 60)}
@@ -144,7 +130,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
           </div>
         </CardContent>
       </Card>
-
       {}
       {usageData.length > 1 && (
         <Card>
@@ -157,7 +142,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
               {usageData.slice(0, 7).map((dayData, index) => {
                 const date = new Date(dayData.date)
                 const isToday = index === 0
-
                 return (
                   <div key={dayData.date} className="flex items-center gap-4">
                     <div className="w-20 text-sm">
@@ -188,7 +172,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
           </CardContent>
         </Card>
       )}
-
       {}
       <Card>
         <CardHeader>
@@ -206,7 +189,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
               {today.apps.slice(0, 8).map((app, index) => {
                 const totalTime = today.apps.reduce((sum, a) => sum + a.duration, 0)
                 const percentage = totalTime > 0 ? (app.duration / totalTime) * 100 : 0
-
                 return (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
@@ -231,7 +213,6 @@ export function UsageStats({ usageData }: UsageStatsProps) {
           )}
         </CardContent>
       </Card>
-
       {}
       <Card>
         <CardHeader>
@@ -249,15 +230,12 @@ export function UsageStats({ usageData }: UsageStatsProps) {
               {today.tabs.slice(0, 8).map((tab, index) => {
                 const totalTime = today.tabs.reduce((sum, t) => sum + t.duration, 0)
                 const percentage = totalTime > 0 ? (tab.duration / totalTime) * 100 : 0
-
                 let domain = tab.url
                 try {
                   domain = new URL(`https://${tab.url}`).hostname.replace("www.", "")
                 } catch {
-                  
                   domain = tab.url.replace("www.", "")
                 }
-
                 return (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">

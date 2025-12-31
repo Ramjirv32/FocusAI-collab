@@ -21,35 +21,26 @@ import {
 } from 'recharts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
-
 interface TabUsageData {
   domain: string;
   duration: number;
   visits: number;
   averageDuration: number;
 }
-
 const TabUsageAnalytics: React.FC = () => {
   const [tabData, setTabData] = useState<TabUsageData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-  
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-  
   useEffect(() => {
     const fetchTabUsageData = async () => {
       setIsLoading(true);
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        
-        
         const response = await axios.get(`http://localhost:5001/tabs?timeFrame=${timeRange}`, { headers });
-        
-        
         const domainsMap = new Map<string, TabUsageData>();
-        
         response.data.forEach((tab: any) => {
           const domain = tab.domain || 'unknown';
           if (!domainsMap.has(domain)) {
@@ -60,21 +51,15 @@ const TabUsageAnalytics: React.FC = () => {
               averageDuration: 0
             });
           }
-          
           const domainData = domainsMap.get(domain)!;
           domainData.duration += tab.duration || 0;
           domainData.visits += 1;
         });
-        
-        
         domainsMap.forEach(data => {
           data.averageDuration = data.visits > 0 ? Math.round(data.duration / data.visits) : 0;
         });
-        
-        
         const processedData = Array.from(domainsMap.values())
           .sort((a, b) => b.duration - a.duration);
-          
         setTabData(processedData);
         setError(null);
       } catch (err) {
@@ -84,14 +69,10 @@ const TabUsageAnalytics: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
     fetchTabUsageData();
-    
-    
     const interval = setInterval(fetchTabUsageData, 60000);
     return () => clearInterval(interval);
   }, [timeRange]);
-  
   const formatDuration = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
@@ -99,7 +80,6 @@ const TabUsageAnalytics: React.FC = () => {
     const hours = Math.floor(minutes / 60);
     return `${hours}h ${minutes % 60}m`;
   };
-  
   if (isLoading) {
     return (
       <Card>
@@ -115,7 +95,6 @@ const TabUsageAnalytics: React.FC = () => {
       </Card>
     );
   }
-  
   if (error) {
     return (
       <Card className="bg-destructive/10 border-destructive/20">
@@ -128,7 +107,6 @@ const TabUsageAnalytics: React.FC = () => {
       </Card>
     );
   }
-  
   return (
     <Card>
       <CardHeader>
@@ -165,7 +143,6 @@ const TabUsageAnalytics: React.FC = () => {
             <TabsTrigger value="average">Avg Time</TabsTrigger>
             <TabsTrigger value="pie">Distribution</TabsTrigger>
           </TabsList>
-          
           <TabsContent value="duration" className="space-y-4">
             <h3 className="text-sm font-medium mb-2">Time Spent by Website</h3>
             <div className="h-80">
@@ -177,10 +154,10 @@ const TabUsageAnalytics: React.FC = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={formatDuration} />
-                  <YAxis 
-                    dataKey="domain" 
-                    type="category" 
-                    width={100} 
+                  <YAxis
+                    dataKey="domain"
+                    type="category"
+                    width={100}
                     tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
                   />
                   <Tooltip formatter={(value) => [formatDuration(Number(value)), "Time Spent"]} />
@@ -193,7 +170,6 @@ const TabUsageAnalytics: React.FC = () => {
               </ResponsiveContainer>
             </div>
           </TabsContent>
-          
           <TabsContent value="visits" className="space-y-4">
             <h3 className="text-sm font-medium mb-2">Most Frequently Visited Websites</h3>
             <div className="h-80">
@@ -205,10 +181,10 @@ const TabUsageAnalytics: React.FC = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" />
-                  <YAxis 
-                    dataKey="domain" 
-                    type="category" 
-                    width={100} 
+                  <YAxis
+                    dataKey="domain"
+                    type="category"
+                    width={100}
                     tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
                   />
                   <Tooltip />
@@ -221,7 +197,6 @@ const TabUsageAnalytics: React.FC = () => {
               </ResponsiveContainer>
             </div>
           </TabsContent>
-          
           <TabsContent value="average" className="space-y-4">
             <h3 className="text-sm font-medium mb-2">Average Time per Visit</h3>
             <div className="h-80">
@@ -233,10 +208,10 @@ const TabUsageAnalytics: React.FC = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" tickFormatter={formatDuration} />
-                  <YAxis 
-                    dataKey="domain" 
-                    type="category" 
-                    width={100} 
+                  <YAxis
+                    dataKey="domain"
+                    type="category"
+                    width={100}
                     tickFormatter={(value) => value.length > 15 ? `${value.substring(0, 15)}...` : value}
                   />
                   <Tooltip formatter={(value) => [formatDuration(Number(value)), "Avg Time/Visit"]} />
@@ -249,7 +224,6 @@ const TabUsageAnalytics: React.FC = () => {
               </ResponsiveContainer>
             </div>
           </TabsContent>
-          
           <TabsContent value="pie" className="space-y-4">
             <h3 className="text-sm font-medium mb-2">Website Usage Distribution</h3>
             <div className="h-80">
@@ -265,7 +239,7 @@ const TabUsageAnalytics: React.FC = () => {
                     paddingAngle={2}
                     dataKey="duration"
                     nameKey="domain"
-                    label={({domain, percent}) => 
+                    label={({domain, percent}) =>
                       `${domain.length > 15 ? domain.substring(0, 15) + '...' : domain} (${(percent * 100).toFixed(0)}%)`
                     }
                   >
@@ -279,7 +253,6 @@ const TabUsageAnalytics: React.FC = () => {
             </div>
           </TabsContent>
         </Tabs>
-        
         <div className="mt-4 border-t pt-4">
           <h3 className="text-sm font-medium mb-2">Summary</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -315,5 +288,4 @@ const TabUsageAnalytics: React.FC = () => {
     </Card>
   );
 };
-
 export default TabUsageAnalytics;

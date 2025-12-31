@@ -1,6 +1,4 @@
-
 import { TabLog } from '@/types';
-
 const domains = [
   'github.com',
   'stackoverflow.com',
@@ -13,7 +11,6 @@ const domains = [
   'netflix.com',
   'amazon.com'
 ];
-
 const titles = [
   'GitHub - Your coding projects',
   'Stack Overflow - Where Developers Learn & Share',
@@ -26,23 +23,17 @@ const titles = [
   'Netflix - Streaming platform',
   'Amazon - Online shopping'
 ];
-
-
 export const generateMockTabLogs = (count: number): TabLog[] => {
   const now = new Date();
   const logs: TabLog[] = [];
-
   for (let i = 0; i < count; i++) {
     const randomIndex = Math.floor(Math.random() * domains.length);
     const domain = domains[randomIndex];
     const title = titles[randomIndex];
-    const randomDuration = Math.floor(Math.random() * 600) + 10; 
-    
-    
+    const randomDuration = Math.floor(Math.random() * 600) + 10;
     const randomTime = new Date(
       now.getTime() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)
     );
-    
     logs.push({
       id: `tab-${i}`,
       title,
@@ -52,12 +43,8 @@ export const generateMockTabLogs = (count: number): TabLog[] => {
       favicon: `https://${domain}/favicon.ico`
     });
   }
-
-  
-  return logs.sort((a, b) => 
+  return logs.sort((a, b) =>
     new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 };
-
-
 export const mockTabLogs = generateMockTabLogs(100);

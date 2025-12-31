@@ -1,7 +1,5 @@
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
-
 const Label = React.forwardRef(({ className, htmlFor, ...props }, ref) => {
   return (
     <label
@@ -15,7 +13,5 @@ const Label = React.forwardRef(({ className, htmlFor, ...props }, ref) => {
     />
   )
 })
-
 Label.displayName = "Label"
-
 export { Label }

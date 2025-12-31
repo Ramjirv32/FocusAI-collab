@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Trophy, Star, Target, Zap, Award, TrendingUp, Crown, Medal, Users, Camera } from 'lucide-react'
 import { toast } from "sonner"
 import { useAuth } from "@/context/AuthContext"
-
 interface LeaderboardUser {
   userId: string
   points: {
@@ -40,7 +38,6 @@ interface LeaderboardUser {
     company: string
   }>
 }
-
 interface GamificationData {
   userId: string
   points: {
@@ -84,15 +81,13 @@ interface GamificationData {
     bestFocusScore: number
   }
 }
-
 interface GamificationDashboardProps {
   compact?: boolean
   onDataUpdate?: () => void
   apiBaseUrl?: string
 }
-
-export function GamificationDashboard({ 
-  compact = false, 
+export function GamificationDashboard({
+  compact = false,
   onDataUpdate,
   apiBaseUrl = "http://localhost:5001"
 }: GamificationDashboardProps) {
@@ -104,21 +99,16 @@ export function GamificationDashboard({
   const [claimingReward, setClaimingReward] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedTimeFrame, setSelectedTimeFrame] = useState<'total' | 'daily' | 'weekly' | 'monthly'>('total')
-
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token')
     return token ? { Authorization: `Bearer ${token}` } : {}
   }
-
   const fetchGamificationData = async () => {
     if (!user) return
-
     try {
       const headers = getAuthHeaders()
       const response = await fetch(`${apiBaseUrl}/api/gamification/data`, { headers })
-      
       if (!response.ok) throw new Error('Failed to fetch gamification data')
-      
       const data = await response.json()
       setGamificationData(data)
     } catch (error) {
@@ -126,16 +116,12 @@ export function GamificationDashboard({
       toast.error('Failed to load gamification data')
     }
   }
-
   const fetchLeaderboard = async () => {
     if (!user) return
-
     try {
       const headers = getAuthHeaders()
       const response = await fetch(`${apiBaseUrl}/api/gamification/leaderboard?timeFrame=${selectedTimeFrame}&limit=10`, { headers })
-      
       if (!response.ok) throw new Error('Failed to fetch leaderboard')
-      
       const data = await response.json()
       setLeaderboard(data)
     } catch (error) {
@@ -143,23 +129,18 @@ export function GamificationDashboard({
       toast.error('Failed to load leaderboard')
     }
   }
-
   const fetchUserRank = async () => {
     if (!user) return
-
     try {
       const headers = getAuthHeaders()
       const response = await fetch(`${apiBaseUrl}/api/gamification/rank?timeFrame=${selectedTimeFrame}`, { headers })
-      
       if (!response.ok) throw new Error('Failed to fetch user rank')
-      
       const data = await response.json()
       setUserRank(data)
     } catch (error) {
       console.error('Error fetching user rank:', error)
     }
   }
-
   useEffect(() => {
     if (user) {
       const loadData = async () => {
@@ -174,7 +155,6 @@ export function GamificationDashboard({
       loadData()
     }
   }, [user, selectedTimeFrame])
-
   const badgeIcons = {
     "Focus Master": Trophy,
     "Distraction Slayer": Target,
@@ -188,30 +168,25 @@ export function GamificationDashboard({
     "Marathon Runner": Zap,
     "Perfectionist": Award
   }
-
   const claimReward = async (challengeId: string) => {
     if (claimingReward) return
-    
     setClaimingReward(challengeId)
-    
     try {
       const response = await fetch(`${apiBaseUrl}/api/gamification/claim-reward`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: JSON.stringify({ 
-          challengeId, 
-          userId: gamificationData?.userId 
+        body: JSON.stringify({
+          challengeId,
+          userId: gamificationData?.userId
         }),
       })
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
       }
-
       const result = await response.json()
       toast.success(`Reward claimed! +${result.pointsAwarded} points`)
       onDataUpdate?.()
@@ -222,12 +197,11 @@ export function GamificationDashboard({
       setClaimingReward(null)
     }
   }
-
   const testGamificationAPI = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/api/gamification/award`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
@@ -240,11 +214,9 @@ export function GamificationDashboard({
           }
         }),
       })
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-
       const result = await response.json()
       toast.success(`Test completed! Earned ${result.pointsEarned} points`)
       onDataUpdate?.()
@@ -253,7 +225,6 @@ export function GamificationDashboard({
       toast.error("Failed to test gamification system")
     }
   }
-
   if (!gamificationData) {
     return (
       <Card>
@@ -267,7 +238,6 @@ export function GamificationDashboard({
       </Card>
     )
   }
-
   if (compact) {
     return (
       <Card>
@@ -282,17 +252,14 @@ export function GamificationDashboard({
             <div className="text-3xl font-bold text-blue-600">{gamificationData.points}</div>
             <div className="text-sm text-gray-500">Total Points</div>
           </div>
-
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">Level {gamificationData.level}</div>
             <div className="text-sm text-gray-500">Current Level</div>
           </div>
-
           <div className="text-center">
             <div className="text-xl font-bold text-orange-600">{gamificationData.streaks?.current || 0}</div>
             <div className="text-sm text-gray-500">Day Streak</div>
           </div>
-
           <div className="flex justify-center gap-2 flex-wrap">
             {gamificationData.badges.slice(0, 3).map((badge, index) => {
               const IconComponent = badgeIcons[badge.badgeName as keyof typeof badgeIcons] || Trophy
@@ -307,11 +274,10 @@ export function GamificationDashboard({
               <div className="text-xs text-gray-500">+{gamificationData.badges.length - 3} more</div>
             )}
           </div>
-
           {}
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={testGamificationAPI}
             className="w-full"
           >
@@ -321,7 +287,6 @@ export function GamificationDashboard({
       </Card>
     )
   }
-
   return (
     <div className="space-y-6">
       {}
@@ -332,21 +297,18 @@ export function GamificationDashboard({
             <div className="text-sm text-gray-500">Total Points</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-purple-600">Level {gamificationData.level}</div>
             <div className="text-sm text-gray-500">Current Level</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-green-600">{gamificationData.badges.length}</div>
             <div className="text-sm text-gray-500">Badges Earned</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6 text-center">
             <div className="text-3xl font-bold text-orange-600">{gamificationData.streaks?.current || 0}</div>
@@ -355,7 +317,6 @@ export function GamificationDashboard({
           </CardContent>
         </Card>
       </div>
-
       {}
       <Card>
         <CardHeader>
@@ -400,7 +361,6 @@ export function GamificationDashboard({
           )}
         </CardContent>
       </Card>
-
       {}
       <Card>
         <CardHeader>
@@ -429,7 +389,6 @@ export function GamificationDashboard({
                       {challenge.reward} pts
                     </Badge>
                   </div>
-
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Progress</span>
@@ -439,18 +398,16 @@ export function GamificationDashboard({
                     </div>
                     <Progress value={(challenge.progress / challenge.target) * 100} className="h-2" />
                   </div>
-
                   {challenge.completed && !challenge.claimed && (
-                    <Button 
-                      size="sm" 
-                      className="mt-3" 
+                    <Button
+                      size="sm"
+                      className="mt-3"
                       onClick={() => claimReward(challenge.id)}
                       disabled={claimingReward === challenge.id}
                     >
                       {claimingReward === challenge.id ? "Claiming..." : "Claim Reward"}
                     </Button>
                   )}
-
                   {challenge.claimed && (
                     <Badge variant="outline" className="mt-3">
                       Reward Claimed
@@ -462,7 +419,6 @@ export function GamificationDashboard({
           )}
         </CardContent>
       </Card>
-
       {}
       <Card>
         <CardHeader>

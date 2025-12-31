@@ -3,19 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Chrome, 
-  CheckCircle, 
-  XCircle, 
-  Download, 
-  RefreshCw, 
+import {
+  Chrome,
+  CheckCircle,
+  XCircle,
+  Download,
+  RefreshCw,
   Settings,
   Eye,
   EyeOff,
   Info
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-
 const ChromeExtensionStatus = () => {
   const [extensionStatus, setExtensionStatus] = useState({
     installed: false,
@@ -26,20 +25,15 @@ const ChromeExtensionStatus = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
-
-  
   const checkExtensionStatus = async () => {
     setIsLoading(true);
     try {
-      
       if (typeof window !== 'undefined' && window.chrome && window.chrome.runtime) {
-        const extensionId = 'jjjokkpobnafkfomfojdnhgndanjihpl'; 
-        
-        
+        const extensionId = 'jjjokkpobnafkfomfojdnhgndanjihpl';
         try {
           await new Promise((resolve, reject) => {
-            window.chrome.runtime.sendMessage(extensionId, 
-              { action: 'ping' }, 
+            window.chrome.runtime.sendMessage(extensionId,
+              { action: 'ping' },
               (response) => {
                 if (window.chrome.runtime.lastError) {
                   reject(window.chrome.runtime.lastError);
@@ -49,7 +43,6 @@ const ChromeExtensionStatus = () => {
               }
             );
           });
-          
           setExtensionStatus(prev => ({
             ...prev,
             installed: true,
@@ -78,14 +71,10 @@ const ChromeExtensionStatus = () => {
       setIsLoading(false);
     }
   };
-
-  
   const syncUserWithExtension = async () => {
     if (!user || !extensionStatus.connected) return;
-    
     try {
       const extensionId = 'jjjokkpobnafkfomfojdnhgndanjihpl';
-      
       if (window.chrome && window.chrome.runtime) {
         window.chrome.runtime.sendMessage(extensionId, {
           action: 'userInfo',
@@ -105,20 +94,16 @@ const ChromeExtensionStatus = () => {
       console.error('Error syncing with extension:', error);
     }
   };
-
   useEffect(() => {
     checkExtensionStatus();
-    
     const interval = setInterval(checkExtensionStatus, 30000);
     return () => clearInterval(interval);
   }, []);
-
   useEffect(() => {
     if (extensionStatus.connected && user) {
       syncUserWithExtension();
     }
-  }, [extensionStatus.connected, user]); 
-
+  }, [extensionStatus.connected, user]);
   if (!isVisible) {
     return (
       <Button
@@ -132,7 +117,6 @@ const ChromeExtensionStatus = () => {
       </Button>
     );
   }
-
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="pb-3">
@@ -174,7 +158,6 @@ const ChromeExtensionStatus = () => {
               {extensionStatus.installed ? 'Installed' : 'Not Installed'}
             </Badge>
           </div>
-          
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Connection</span>
             <Badge variant={extensionStatus.connected ? "default" : "secondary"}>
@@ -186,7 +169,6 @@ const ChromeExtensionStatus = () => {
               {extensionStatus.connected ? 'Connected' : 'Disconnected'}
             </Badge>
           </div>
-          
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Tab Tracking</span>
             <Badge variant={extensionStatus.tracking ? "default" : "secondary"}>
@@ -199,14 +181,12 @@ const ChromeExtensionStatus = () => {
             </Badge>
           </div>
         </div>
-
         {}
         {extensionStatus.lastSync && (
           <div className="text-xs text-muted-foreground">
             Last sync: {new Date(extensionStatus.lastSync).toLocaleString()}
           </div>
         )}
-
         {}
         <div className="space-y-2">
           {!extensionStatus.installed && (
@@ -217,17 +197,15 @@ const ChromeExtensionStatus = () => {
               </AlertDescription>
             </Alert>
           )}
-          
           {!extensionStatus.installed && (
             <Button className="w-full" variant="default">
               <Download className="h-4 w-4 mr-2" />
               Install Extension
             </Button>
           )}
-          
           {extensionStatus.installed && !extensionStatus.connected && (
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               variant="outline"
               onClick={checkExtensionStatus}
             >
@@ -235,10 +213,9 @@ const ChromeExtensionStatus = () => {
               Reconnect
             </Button>
           )}
-          
           {extensionStatus.connected && (
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               variant="outline"
               onClick={syncUserWithExtension}
             >
@@ -247,7 +224,6 @@ const ChromeExtensionStatus = () => {
             </Button>
           )}
         </div>
-
         {}
         {extensionStatus.tracking && (
           <div className="pt-2 border-t text-xs text-muted-foreground">
@@ -261,5 +237,4 @@ const ChromeExtensionStatus = () => {
     </Card>
   );
 };
-
 export default ChromeExtensionStatus;

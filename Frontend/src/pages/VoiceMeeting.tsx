@@ -2,7 +2,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
-
 export default function MeetingPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -21,42 +20,31 @@ export default function MeetingPage() {
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [dataError, setDataError] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
   const recognitionRef = useRef(null);
   const videoRef = useRef(null);
   const messagesEndRef = useRef(null);
   const localStreamRef = useRef(null);
   const isRecognitionActive = useRef(false);
   const utteranceRef = useRef(null);
-
-
   const AI_API_KEY = import.meta.env.VITE_GROQ_API_KEY || '';
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-
-
   useEffect(() => {
     const initializeSpeechRecognition = () => {
       if ('webkitSpeechRecognition' in window) {
         const SpeechRecognition = window.webkitSpeechRecognition;
         recognitionRef.current = new SpeechRecognition();
-
-
         recognitionRef.current.continuous = true;
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = 'en-US';
         recognitionRef.current.maxAlternatives = 1;
-
         setSpeechSupported(true);
-
         recognitionRef.current.onstart = () => {
           console.log("Speech recognition started");
           isRecognitionActive.current = true;
         };
-
         recognitionRef.current.onresult = (event) => {
           let interimTranscript = '';
           let finalTranscript = '';
-
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
@@ -65,28 +53,21 @@ export default function MeetingPage() {
               interimTranscript += transcript;
             }
           }
-
-
           setTranscript(interimTranscript);
-
-
           if (finalTranscript.trim()) {
             console.log("Final transcript:", finalTranscript);
             setTranscript("");
             handleUserMessage(finalTranscript.trim());
           }
         };
-
         recognitionRef.current.onerror = (event) => {
           console.error("Speech recognition error:", event.error);
           isRecognitionActive.current = false;
-
           if (event.error === 'not-allowed') {
             alert("Microphone access denied. Please allow microphone access and try again.");
             setIsListening(false);
           } else if (event.error === 'no-speech') {
             console.log("No speech detected, continuing...");
-
             if (isListening) {
               setTimeout(() => {
                 startRecognition();
@@ -103,35 +84,26 @@ export default function MeetingPage() {
             setIsListening(false);
           }
         };
-
         recognitionRef.current.onend = () => {
           console.log("Speech recognition ended");
           isRecognitionActive.current = false;
-
-
           if (isListening && isMicrophoneEnabled) {
             setTimeout(() => {
               startRecognition();
             }, 100);
           }
         };
-
       } else if ('SpeechRecognition' in window) {
-
         const SpeechRecognition = window.SpeechRecognition;
         recognitionRef.current = new SpeechRecognition();
-
         setSpeechSupported(true);
       } else {
         console.warn("Speech recognition not supported in this browser");
         setSpeechSupported(false);
       }
     };
-
     initializeSpeechRecognition();
-
     return () => {
-
       if (recognitionRef.current && isRecognitionActive.current) {
         try {
           recognitionRef.current.stop();
@@ -142,31 +114,24 @@ export default function MeetingPage() {
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => track.stop());
       }
-
-
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
     };
   }, []);
-
-
   const fetchProductivityData = async () => {
     setIsLoadingData(true);
     setDataError(null);
-
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error("Authentication token not found");
       }
-
       const response = await axios.get(`${API_BASE_URL}/ch`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-
       console.log("Productivity data fetched:", response.data);
       setProductivityData(response.data);
     } catch (error) {
@@ -176,33 +141,26 @@ export default function MeetingPage() {
       setIsLoadingData(false);
     }
   };
-
-
   const startRecognition = () => {
     if (!recognitionRef.current || !speechSupported || !isMicrophoneEnabled) {
       console.log("Cannot start recognition: missing requirements");
       return false;
     }
-
     if (isRecognitionActive.current) {
       console.log("Recognition already active");
       return true;
     }
-
     try {
       recognitionRef.current.start();
       return true;
     } catch (error) {
       console.error("Error starting speech recognition:", error);
       if (error.name === 'InvalidStateError') {
-
         return true;
       }
       return false;
     }
   };
-
-
   const stopRecognition = () => {
     if (recognitionRef.current && isRecognitionActive.current) {
       try {
@@ -213,13 +171,11 @@ export default function MeetingPage() {
     }
     isRecognitionActive.current = false;
   };
-
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
-
   useEffect(() => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = () => {
@@ -227,40 +183,29 @@ export default function MeetingPage() {
       };
     }
   }, []);
-
   const startMeeting = async () => {
     try {
-
       await fetchProductivityData();
-
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true
       });
-
       localStreamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-
       setMeetingStarted(true);
-
       let welcomeMessage = 'Hello! I\'m your FocusAI assistant. I can help you understand your productivity data and provide insights on improving your focus.';
-
       if (productivityData && productivityData.length > 0) {
         const latestData = productivityData[productivityData.length - 1];
         welcomeMessage += ` I see that your current focus score is ${Math.round(latestData.focusScore)}%. How can I help you today?`;
       }
-
       setMessages([{
         sender: 'ai',
         text: welcomeMessage,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
-
       speakText(welcomeMessage);
-
-
       setTimeout(() => {
         if (speechSupported) {
           toggleListening();
@@ -271,18 +216,15 @@ export default function MeetingPage() {
       alert("Unable to start meeting. Please check your camera and microphone permissions.");
     }
   };
-
   const toggleListening = () => {
     if (!speechSupported) {
       alert("Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.");
       return;
     }
-
     if (!isMicrophoneEnabled) {
       alert("Please enable your microphone first.");
       return;
     }
-
     if (isListening) {
       console.log("Stopping speech recognition");
       stopRecognition();
@@ -298,32 +240,18 @@ export default function MeetingPage() {
       }
     }
   };
-
-
   const analyzeProductivityData = () => {
     if (!productivityData || productivityData.length === 0) {
       return null;
     }
-
-
     const latestData = productivityData[productivityData.length - 1];
     console.log("Latest productivity data:", latestData);
-
-
     const focusScore = Math.round(latestData.focusScore || 0);
-
-
     const productiveTime = (latestData.totalProductiveTime || 0) / 3600;
     const distractionTime = (latestData.totalNonProductiveTime || 0) / 3600;
-
-
     const mostUsedApp = latestData.mostUsedApp || latestData.maxUsedApp || "Unknown";
     const mostVisitedTab = latestData.mostVisitedTab || latestData.maxVisitedTab || "Unknown";
-
-
     const weekAgoData = productivityData.length > 7 ? productivityData[productivityData.length - 8] : null;
-
-
     let focusTrend = null;
     if (weekAgoData && weekAgoData.focusScore !== undefined) {
       const scoreDifference = focusScore - Math.round(weekAgoData.focusScore || 0);
@@ -332,7 +260,6 @@ export default function MeetingPage() {
         percentage: Math.abs(scoreDifference)
       };
     }
-
     return {
       focusScore,
       productiveTime: productiveTime.toFixed(1),
@@ -346,26 +273,20 @@ export default function MeetingPage() {
       mostUsedApp
     };
   };
-
-
   const getTopDistractionApp = (distractionApps) => {
     if (!distractionApps) return "Unknown";
-
     try {
-
       if (distractionApps.entries && typeof distractionApps.entries === 'function') {
         const distractionEntries = Array.from(distractionApps.entries());
         if (distractionEntries.length > 0) {
           return distractionEntries.sort((a, b) => b[1] - a[1])[0][0];
         }
       }
-
       else if (Array.isArray(distractionApps)) {
         if (distractionApps.length > 0) {
           return distractionApps.sort((a, b) => b.duration - a.duration)[0].name;
         }
       }
-
       else if (typeof distractionApps === 'object') {
         const entries = Object.entries(distractionApps);
         if (entries.length > 0) {
@@ -375,75 +296,54 @@ export default function MeetingPage() {
     } catch (error) {
       console.error("Error parsing distraction apps:", error);
     }
-
     return "Social media";
   };
-
-
   const getTotalApps = (data) => {
     let count = 0;
-
-
     if (data.productiveContent && typeof data.productiveContent.size === 'number') {
       count += data.productiveContent.size;
     } else if (data.productiveApps && Array.isArray(data.productiveApps)) {
       count += data.productiveApps.length;
     }
-
     if (data.nonProductiveContent && typeof data.nonProductiveContent.size === 'number') {
       count += data.nonProductiveContent.size;
     } else if (data.distractionApps && Array.isArray(data.distractionApps)) {
       count += data.distractionApps.length;
     }
-
     return count || 'Unknown';
   };
-
   const handleUserMessage = async (text) => {
     if (!text || text.trim() === '') return;
-
     console.log("Processing user message:", text);
-
     const userMessage = {
       sender: 'user',
       text: text,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-
     setMessages(prev => [...prev, userMessage]);
     setTranscript("");
-
     setIsAiResponding(true);
     try {
-
       const productivityAnalysis = analyzeProductivityData();
-
-
       const aiResponse = await getAiResponse(text, productivityAnalysis);
-
       const aiMessage = {
         sender: 'ai',
         text: aiResponse,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-
       setMessages(prev => [...prev, aiMessage]);
-
       if (!isMuted) {
         speakText(aiResponse);
       }
     } catch (error) {
       console.error("Error getting AI response:", error);
-
       const errorMessage = {
         sender: 'ai',
         text: "I'm sorry, I had trouble processing your request. Could you try again?",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isError: true
       };
-
       setMessages(prev => [...prev, errorMessage]);
-
       if (!isMuted) {
         speakText("I'm sorry, I had trouble processing your request. Could you try again?");
       }
@@ -451,41 +351,25 @@ export default function MeetingPage() {
       setIsAiResponding(false);
     }
   };
-
-
-
   const getAiResponse = async (userInput, productivityAnalysis) => {
     console.log("Getting AI response for:", userInput);
-
     try {
-
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error("Authentication token not found");
       }
-
-
       console.log("Fetching fresh productivity data from /ch endpoint");
       const dataResponse = await axios.get(`${API_BASE_URL}/ch`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-
-
       if (!dataResponse.data || !Array.isArray(dataResponse.data) || dataResponse.data.length === 0) {
         throw new Error("Invalid or empty productivity data received from server");
       }
-
       console.log("Fresh productivity data fetched:", dataResponse.data);
-
-
       setProductivityData(dataResponse.data);
-
-
       console.log("Sending raw productivity data to Groq");
-
-
       const groqResponse = await axios.post(
         "https://api.groq.com/openai/v1/chat/completions",
         {
@@ -493,15 +377,13 @@ export default function MeetingPage() {
           messages: [
             {
               role: "system",
-              content: `You are FocusAI, a productivity assistant that helps users understand their productivity data and 
+              content: `You are FocusAI, a productivity assistant that helps users understand their productivity data and
               improve their focus and work habits. You have access to the user's complete productivity data.
-              
               Your tone should be helpful, encouraging, and data-driven. Focus on actionable insights.
               Give specific advice based on the exact data you see. Do not use generic responses.
               If the data shows unexpected patterns, point them out. Be specific about applications,
               focus scores, and time spent on different activities.
-              
-              Respond directly to the user's question using their productivity data. 
+              Respond directly to the user's question using their productivity data.
               Be conversational but precise with numbers and insights.`
             },
             {
@@ -519,59 +401,43 @@ export default function MeetingPage() {
           }
         }
       );
-
       if (!groqResponse.data ||
         !groqResponse.data.choices ||
         !groqResponse.data.choices.length ||
         !groqResponse.data.choices[0].message) {
         throw new Error("Invalid response format from Groq API");
       }
-
       const aiResponseContent = groqResponse.data.choices[0].message.content;
-
-
       return aiResponseContent;
     } catch (error) {
       console.error("Error in AI response generation:", error);
-
-
       return "I'm having trouble accessing your productivity data right now. Could you try asking your question again in a moment?";
     }
   };
-
   const generateLocalResponse = (userInput, productivityData) => {
     const input = userInput.toLowerCase();
-
-
     if (input.match(/\b(focus score|productivity|productive|focus|stats|statistics)\b/)) {
       if (!productivityData) {
         return "I don't have your productivity data available right now. Please check your connection or try again later.";
       }
-
       return `Your current focus score is ${productivityData.focusScore}%. ${productivityData.focusTrend
         ? `This is ${productivityData.focusTrend.percentage}% ${productivityData.focusTrend.direction} compared to last week. `
         : ''
         }You've spent ${productivityData.productiveTime} hours on productive activities and ${productivityData.distractionTime} hours on distractions today. Your most productive application is ${productivityData.topProductiveApp}.`;
     }
-
-
     if (input.match(/\b(distract|distracting|distractions|wasting time|time wasters)\b/)) {
       if (!productivityData) {
         return "I don't have your distraction data available right now. Please check your connection or try again later.";
       }
-
       return `Your main source of distraction is ${productivityData.mostDistractionApp}. You've spent ${productivityData.distractionTime} hours on non-productive activities today. ${parseFloat(productivityData.distractionTime) > 2
         ? "That's quite significant. Consider using focus mode or website blockers to minimize these distractions."
         : "You're doing well at managing distractions."
         }`;
     }
-
-
     if (input.match(/\b(improve|better|increase|enhance|tips|advice|suggestion|help me)\b/)) {
       if (!productivityData) {
         return "Here are some general productivity tips: break your work into 25-minute focused sessions, minimize distractions by turning off notifications, prioritize your most important tasks first, and take regular short breaks.";
       }
-
       if (productivityData.focusScore < 50) {
         return `With a focus score of ${productivityData.focusScore}%, you have room for improvement. Try limiting time on ${productivityData.mostDistractionApp}, use the Pomodoro technique (25 minutes of focused work followed by 5-minute breaks), and consider blocking distracting websites during work hours.`;
       } else if (productivityData.focusScore < 75) {
@@ -580,110 +446,77 @@ export default function MeetingPage() {
         return `Great job maintaining a high focus score of ${productivityData.focusScore}%! To maintain this level, keep using ${productivityData.topProductiveApp} and continue your current workflow. Remember that regular breaks are still important for sustained productivity.`;
       }
     }
-
-
     if (input.match(/\b(app|application|program|software|using|use most|used most)\b/)) {
       if (!productivityData) {
         return "I don't have your application usage data available right now. Please check your connection or try again later.";
       }
-
       return `Your most used application is ${productivityData.mostUsedApp}, and your most productive application is ${productivityData.topProductiveApp}. Your most visited website is ${productivityData.mostVisitedTab || "not recorded"}.`;
     }
-
-
     if (productivityData) {
       return `I'm your FocusAI assistant. Your current focus score is ${productivityData.focusScore}%. You can ask me about your productivity stats, distractions, most used apps, or for tips to improve your focus. How can I help you today?`;
     } else {
       return "I'm your FocusAI assistant. I can help analyze your productivity data and provide tips to improve your focus. However, I don't have access to your data right now. Would you like to know some general productivity tips?";
     }
   };
-
-
-
   const speakText = (text) => {
     if (!text || text.trim() === '') return;
-
     if ('speechSynthesis' in window) {
       console.log("Preparing to speak:", text.substring(0, 50) + "...");
-
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
-
-      // Small delay to ensure the previous speech is fully cancelled
       setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(text);
-        utteranceRef.current = utterance; // Keep a reference to prevent garbage collection
-
+        utteranceRef.current = utterance;
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
         utterance.volume = 1.0;
-
         let voices = window.speechSynthesis.getVoices();
-
         if (voices.length === 0) {
           console.log("Voices not loaded yet, waiting...");
-          // Fallback if voices are not yet loaded
           voices = window.speechSynthesis.getVoices();
         }
-
-        // Find best possible English voice
         let preferredVoice = voices.find(voice =>
           voice.name.includes('Google') && voice.name.includes('Female') && voice.lang.includes('en-US')
         );
-
         if (!preferredVoice) {
           preferredVoice = voices.find(voice =>
             voice.name.includes('Google') && voice.name.includes('en-US')
           );
         }
-
         if (!preferredVoice) {
           preferredVoice = voices.find(voice => voice.lang.includes('en-US'));
         }
-
         if (!preferredVoice && voices.length > 0) {
           preferredVoice = voices[0];
         }
-
         if (preferredVoice) {
           utterance.voice = preferredVoice;
         }
-
         console.log("Speaking with voice:", utterance.voice?.name || "Default");
-
         utterance.onstart = () => {
           console.log("Speech synthesis started firing onstart event");
           setIsPlaying(true);
         };
-
         utterance.onend = () => {
           console.log("Speech synthesis ended firing onend event");
           setIsPlaying(false);
           utteranceRef.current = null;
-
           if (isListening && isMicrophoneEnabled) {
             setTimeout(() => {
               startRecognition();
             }, 500);
           }
         };
-
         utterance.onerror = (event) => {
           console.error("Speech synthesis error event:", event);
           setIsPlaying(false);
           utteranceRef.current = null;
-
-          // If it failed shadowed, try one more time without a specific voice
           if (event.error === 'network' || event.error === 'not-allowed') {
             console.warn("Retrying speech without preferred voice...");
             const retryUtterance = new SpeechSynthesisUtterance(text);
             window.speechSynthesis.speak(retryUtterance);
           }
         };
-
         window.speechSynthesis.speak(utterance);
-
-        // Forced resume for Chrome bug
         if (window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
         }
@@ -692,22 +525,18 @@ export default function MeetingPage() {
       console.warn("Speech synthesis not supported in this browser");
     }
   };
-
   const toggleMicrophone = () => {
     if (localStreamRef.current) {
       const audioTracks = localStreamRef.current.getAudioTracks();
       if (audioTracks.length > 0) {
         audioTracks[0].enabled = !isMicrophoneEnabled;
         setIsMicrophoneEnabled(!isMicrophoneEnabled);
-
-
         if (isMicrophoneEnabled && isListening) {
           toggleListening();
         }
       }
     }
   };
-
   const toggleCamera = () => {
     if (localStreamRef.current) {
       const videoTracks = localStreamRef.current.getVideoTracks();
@@ -717,34 +546,26 @@ export default function MeetingPage() {
       }
     }
   };
-
   const toggleMute = () => {
     setIsMuted(!isMuted);
-
     if (!isMuted) {
       window.speechSynthesis.cancel();
     }
   };
-
   const endMeeting = () => {
     stopRecognition();
     setIsListening(false);
-
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
     }
-
     window.speechSynthesis.cancel();
     setMeetingStarted(false);
     navigate('/');
   };
-
-
   const formatProductivityData = () => {
     if (!productivityData || productivityData.length === 0) {
       return null;
     }
-
     const latestData = productivityData[productivityData.length - 1];
     return {
       focusScore: Math.round(latestData.focusScore),
@@ -755,7 +576,6 @@ export default function MeetingPage() {
       date: new Date(latestData.date).toLocaleDateString()
     };
   };
-
   return (
     <div style={{
       height: "100vh",
@@ -800,9 +620,7 @@ export default function MeetingPage() {
           </span>
         </div>
       </header>
-
       {!meetingStarted ? (
-
         <div style={{
           flex: 1,
           display: "flex",
@@ -825,19 +643,16 @@ export default function MeetingPage() {
           }}>
             👤
           </div>
-
           <h2 style={{ fontSize: "24px", marginBottom: "8px" }}>Ready to discuss your productivity?</h2>
           <p style={{ fontSize: "16px", color: "#9aa0a6", marginBottom: "30px", textAlign: "center" }}>
             Your FocusAI assistant is ready to help you understand your productivity data
             and provide personalized insights.
           </p>
-
           {isLoadingData && (
             <div style={{ marginBottom: "20px", textAlign: "center" }}>
               <p style={{ color: "#8ab4f8" }}>Loading your productivity data...</p>
             </div>
           )}
-
           {dataError && (
             <div style={{
               backgroundColor: "#5c3836",
@@ -851,7 +666,6 @@ export default function MeetingPage() {
               </p>
             </div>
           )}
-
           {!speechSupported && (
             <div style={{
               backgroundColor: "#5c3836",
@@ -866,7 +680,6 @@ export default function MeetingPage() {
               </p>
             </div>
           )}
-
           <button
             onClick={startMeeting}
             disabled={isLoadingData}
@@ -886,7 +699,6 @@ export default function MeetingPage() {
           </button>
         </div>
       ) : (
-
         <div style={{
           flex: 1,
           display: "flex",
@@ -933,7 +745,6 @@ export default function MeetingPage() {
                   background: "radial-gradient(circle at center, #1a237e 0%, #0d1117 70%)",
                   opacity: 0.3
                 }}></div>
-
                 { }
                 <div style={{
                   width: "280px",
@@ -972,7 +783,6 @@ export default function MeetingPage() {
                       letterSpacing: "-1px",
                       zIndex: 2
                     }}>AI</span>
-
                     { }
                     <span style={{
                       fontSize: "20px",
@@ -983,7 +793,6 @@ export default function MeetingPage() {
                       letterSpacing: "3px",
                       zIndex: 2
                     }}>FOCUS</span>
-
                     { }
                     {(isAiResponding || isPlaying) && (
                       <>
@@ -997,7 +806,6 @@ export default function MeetingPage() {
                             animation: `ripple ${2 + i * 0.5}s infinite ease-out ${i * 0.5}s`
                           }}></div>
                         ))}
-
                         { }
                         <div style={{
                           position: "absolute",
@@ -1023,7 +831,6 @@ export default function MeetingPage() {
                         </div>
                       </>
                     )}
-
                     { }
                     <div style={{
                       position: "absolute",
@@ -1035,7 +842,6 @@ export default function MeetingPage() {
                     }}></div>
                   </div>
                 </div>
-
                 { }
                 <div style={{
                   zIndex: 1,
@@ -1049,7 +855,6 @@ export default function MeetingPage() {
                   }}>
                     FocusAI Assistant
                   </h2>
-
                   <div style={{
                     backgroundColor: isAiResponding ? "rgba(74, 108, 255, 0.3)" : "rgba(255, 255, 255, 0.1)",
                     padding: "10px 20px",
@@ -1106,7 +911,6 @@ export default function MeetingPage() {
                     )}
                   </div>
                 </div>
-
                 { }
                 {transcript && (
                   <div style={{
@@ -1133,7 +937,6 @@ export default function MeetingPage() {
                     </p>
                   </div>
                 )}
-
                 { }
                 <div style={{
                   position: "absolute",
@@ -1159,7 +962,6 @@ export default function MeetingPage() {
                 </div>
               </div>
             </div>
-
             { }
             <div style={{
               flex: "1 1 30%",
@@ -1179,7 +981,6 @@ export default function MeetingPage() {
               }}>
                 Conversation History
               </h3>
-
               <div style={{
                 flex: 1,
                 overflowY: "auto",
@@ -1244,7 +1045,6 @@ export default function MeetingPage() {
                 )}
                 <div ref={messagesEndRef} />
               </div>
-
               <div style={{
                 backgroundColor: isAiResponding ? "#4a6cff33" : "#3c4043",
                 padding: "8px 12px",
@@ -1272,7 +1072,6 @@ export default function MeetingPage() {
                   </>
                 )}
               </div>
-
               <div style={{
                 display: "flex",
                 flexDirection: "column",
@@ -1286,7 +1085,6 @@ export default function MeetingPage() {
                 }}>
                   Suggestions
                 </h4>
-
                 <button
                   onClick={() => handleUserMessage("What's my focus score?")}
                   disabled={isAiResponding}
@@ -1306,7 +1104,6 @@ export default function MeetingPage() {
                 >
                   📊 Focus score?
                 </button>
-
                 <button
                   onClick={() => handleUserMessage("How can I improve?")}
                   disabled={isAiResponding}
@@ -1329,7 +1126,6 @@ export default function MeetingPage() {
               </div>
             </div>
           </div>
-
           { }
           <div style={{
             padding: "16px",
@@ -1358,7 +1154,6 @@ export default function MeetingPage() {
             >
               {isMicrophoneEnabled ? "🎙️" : "🚫"}
             </button>
-
             <button
               onClick={toggleCamera}
               style={{
@@ -1378,7 +1173,6 @@ export default function MeetingPage() {
             >
               {isCameraEnabled ? "📹" : "🚫"}
             </button>
-
             <button
               onClick={toggleListening}
               disabled={!speechSupported}
@@ -1400,7 +1194,6 @@ export default function MeetingPage() {
             >
               {isListening ? "👂" : "🔊"}
             </button>
-
             <button
               onClick={toggleMute}
               style={{
@@ -1420,7 +1213,6 @@ export default function MeetingPage() {
             >
               {isMuted ? "🔇" : "🔊"}
             </button>
-
             <button
               onClick={endMeeting}
               style={{
@@ -1443,7 +1235,6 @@ export default function MeetingPage() {
           </div>
         </div>
       )}
-
       { }
       <style>
         {`
@@ -1452,28 +1243,23 @@ export default function MeetingPage() {
             50% { opacity: 0.5; }
             100% { opacity: 1; }
           }
-          
           @keyframes bounce {
             0%, 80%, 100% { transform: scale(0); }
             40% { transform: scale(1.0); }
           }
-          
           @keyframes soundWave {
             0% { height: 10px; }
             100% { height: 30px; }
           }
-          
           @keyframes pulse-glow {
             0% { box-shadow: 0 0 20px rgba(74, 108, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1); }
             100% { box-shadow: 0 0 60px rgba(74, 108, 255, 0.8), inset 0 0 40px rgba(255, 255, 255, 0.2); }
           }
-          
           @keyframes float {
             0% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
             50% { transform: translate(20px, -20px) rotate(180deg); opacity: 0.6; }
             100% { transform: translate(0, 0) rotate(360deg); opacity: 0.3; }
           }
-          
           @keyframes ripple {
             0% { transform: scale(0.8); opacity: 1; }
             100% { transform: scale(1.2); opacity: 0; }

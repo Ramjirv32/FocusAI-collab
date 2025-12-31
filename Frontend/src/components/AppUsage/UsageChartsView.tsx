@@ -14,11 +14,9 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import axios from 'axios';
-
 interface UsageChartsViewProps {
   className?: string;
 }
-
 const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
   const [rawData, setRawData] = useState<{
     appUsage: Record<string, number>;
@@ -27,36 +25,22 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
     appUsage: {},
     tabUsage: {}
   });
-
   const [productivityData, setProductivityData] = useState({
     productive: 0,
     unproductive: 0,
   });
-
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-
       try {
-        
         const rawResponse = await axios.get('http://localhost:5001/raw-usage');
         setRawData(rawResponse.data);
-
-        
         const focusResponse = await axios.get('http://localhost:5001/focus-data');
-
-        
-        
-        
         const tabs = focusResponse.data.tabs || [];
-
-        
         const productive = tabs
           .filter((tab: any) => {
             try {
@@ -69,7 +53,6 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
             }
           })
           .reduce((sum: number, tab: any) => sum + (tab.duration || 0), 0);
-
         const unproductive = tabs
           .filter((tab: any) => {
             try {
@@ -83,7 +66,6 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
             }
           })
           .reduce((sum: number, tab: any) => sum + (tab.duration || 0), 0);
-
         setProductivityData({ productive, unproductive });
       } catch (e) {
         console.error("Error fetching usage data:", e);
@@ -92,25 +74,18 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
         setIsLoading(false);
       }
     };
-
     fetchData();
-
-    
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, []);
-
   const formatDuration = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
-
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
-
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     return `${hours}h ${remainingMinutes}m`;
   };
-
   if (isLoading) {
     return (
       <div className="p-8 text-center">
@@ -119,7 +94,6 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
       </div>
     );
   }
-
   if (error) {
     return (
       <Card className={`${className} bg-destructive/10`}>
@@ -138,29 +112,21 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
       </Card>
     );
   }
-
-  
   const appUsageData = Object.entries(rawData.appUsage).map(([name, duration]) => ({
     name,
     duration
   })).sort((a, b) => b.duration - a.duration);
-
-  
   const tabUsageData = Object.entries(rawData.tabUsage).map(([name, duration]) => ({
     name,
     duration
-  })).sort((a, b) => b.duration - a.duration).slice(0, 10); 
-
-  
+  })).sort((a, b) => b.duration - a.duration).slice(0, 10);
   const productivityChartData = [
     { name: 'Productive', value: productivityData.productive },
     { name: 'Unproductive', value: productivityData.unproductive }
   ];
-
   return (
     <div className={className}>
       <h2 className="text-2xl font-bold mb-4">Activity Visualizations</h2>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {}
         <Card>
@@ -193,7 +159,6 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-
         {}
         <Card>
           <CardHeader>
@@ -226,7 +191,6 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
           </CardContent>
         </Card>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Productivity Analysis</CardTitle>
@@ -254,7 +218,6 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
                 <Tooltip formatter={(value) => [formatDuration(Number(value)), "Time"]} />
               </PieChart>
             </ResponsiveContainer>
-
             <div className="flex flex-col justify-center">
               <h3 className="text-lg font-medium mb-4">Summary</h3>
               <ul className="space-y-2">
@@ -276,7 +239,6 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
                   </span>
                 </li>
               </ul>
-
               <button
                 className="mt-6 px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md"
                 onClick={async () => {
@@ -301,5 +263,4 @@ const UsageChartsView: React.FC<UsageChartsViewProps> = ({ className }) => {
     </div>
   );
 };
-
 export default UsageChartsView;

@@ -6,7 +6,6 @@ import { Flame, Trophy, Star } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import BadgeCelebrationModal from './BadgeCelebrationModal';
 import axios from 'axios';
-
 interface StreakBadge {
   id: string;
   days: number;
@@ -18,13 +17,11 @@ interface StreakBadge {
   bgColor: string;
   borderColor: string;
 }
-
 interface StreakAchievementsProps {
   currentStreak: number;
   claimedBadges?: string[];
   onBadgeClaimed?: () => void;
 }
-
 const StreakAchievements: React.FC<StreakAchievementsProps> = ({
   currentStreak = 0,
   claimedBadges = [],
@@ -123,20 +120,16 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
       borderColor: 'border-red-400'
     }
   ];
-
   const handleClaimBadge = async (badge: StreakBadge) => {
     try {
       setIsClaimingBadge(badge.id);
       const token = localStorage.getItem('token');
-
       const response = await axios.post(
         'http://localhost:5001/api/gamification/streak/claim',
         { streakDays: badge.days },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       if (response.data.success) {
-        
         setCelebrationBadge({
           name: badge.label,
           days: badge.days,
@@ -144,12 +137,9 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
           focusScore: response.data.badge.focusScore,
           points: response.data.pointsAwarded
         });
-
-        
         if (onBadgeClaimed) {
           onBadgeClaimed();
         }
-
         toast({
           title: '🎉 Badge Claimed!',
           description: `You earned ${response.data.pointsAwarded} points!`,
@@ -166,7 +156,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
       setIsClaimingBadge(null);
     }
   };
-
   return (
     <Card className="w-full border-primary/10 shadow-sm overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50">
@@ -186,7 +175,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
           </div>
         </div>
       </CardHeader>
-
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {streakBadges.map((badge) => (
@@ -201,7 +189,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
               {badge.isUnlocked && (
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               )}
-
               <div className="relative z-10">
                 {}
                 <div className="flex justify-center mb-3">
@@ -209,12 +196,10 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                     <Flame className={`h-6 w-6 ${badge.color} ${badge.isUnlocked ? 'fill-current' : ''}`} />
                   </div>
                 </div>
-
                 {}
                 <div className="text-center space-y-2">
                   <h3 className="font-bold text-sm">{badge.label}</h3>
                   <p className="text-xs text-muted-foreground">{badge.description}</p>
-
                   {}
                   <div className="flex items-center justify-center gap-2 pt-2">
                     <span className={`text-lg font-bold ${badge.color}`}>
@@ -222,7 +207,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                     </span>
                     <span className="text-xs text-muted-foreground">days</span>
                   </div>
-
                   {}
                   <div className="pt-2 space-y-2">
                     {badge.isClaimed ? (
@@ -256,7 +240,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                       </Badge>
                     )}
                   </div>
-
                   {}
                   {!badge.isUnlocked && (
                     <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2 overflow-hidden">
@@ -270,7 +253,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
                   )}
                 </div>
               </div>
-
               {}
               {badge.isUnlocked && (
                 <div className="absolute top-1 right-1">
@@ -283,7 +265,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
             </div>
           ))}
         </div>
-
         {}
         <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
@@ -291,7 +272,6 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
           </p>
         </div>
       </CardContent>
-
       {}
       <BadgeCelebrationModal
         isOpen={celebrationBadge !== null}
@@ -301,5 +281,4 @@ const StreakAchievements: React.FC<StreakAchievementsProps> = ({
     </Card>
   );
 };
-
 export default StreakAchievements;

@@ -1,39 +1,29 @@
-
-
-
 export const filterByTimeFrame = (tabLogs, timeFrame) => {
   if (!tabLogs || tabLogs.length === 0) return [];
-  
   const now = new Date();
   const startDate = new Date();
-  
   switch (timeFrame) {
     case 'daily':
-      startDate.setHours(0, 0, 0, 0); 
+      startDate.setHours(0, 0, 0, 0);
       break;
     case 'weekly':
-      startDate.setDate(now.getDate() - 7); 
+      startDate.setDate(now.getDate() - 7);
       break;
     case 'monthly':
-      startDate.setMonth(now.getMonth() - 1); 
+      startDate.setMonth(now.getMonth() - 1);
       break;
     default:
-      startDate.setHours(0, 0, 0, 0); 
+      startDate.setHours(0, 0, 0, 0);
   }
-  
   return tabLogs.filter(log => {
     const logDate = new Date(log.timestamp);
     return logDate >= startDate && logDate <= now;
   });
 };
-
-
 export const groupByDomain = (logs) => {
   const domains = {};
-  
   logs.forEach(log => {
     const domainName = extractDomain(log.url) || 'unknown';
-    
     if (!domains[domainName]) {
       domains[domainName] = {
         domain: domainName,
@@ -42,11 +32,8 @@ export const groupByDomain = (logs) => {
         tabs: []
       };
     }
-    
     domains[domainName].visits++;
     domains[domainName].totalTime += log.duration || 0;
-    
-    
     const tabExists = domains[domainName].tabs.some(tab => tab.url === log.url);
     if (!tabExists) {
       domains[domainName].tabs.push({
@@ -56,20 +43,15 @@ export const groupByDomain = (logs) => {
         time: log.duration || 0
       });
     } else {
-      
       const tabIndex = domains[domainName].tabs.findIndex(tab => tab.url === log.url);
       domains[domainName].tabs[tabIndex].visits++;
       domains[domainName].tabs[tabIndex].time += log.duration || 0;
     }
   });
-  
   return domains;
 };
-
-
 const extractDomain = (url) => {
   if (!url) return 'unknown';
-  
   try {
     const domain = new URL(url);
     return domain.hostname;
@@ -77,8 +59,6 @@ const extractDomain = (url) => {
     return 'unknown';
   }
 };
-
-
 export const generateSummary = (logs) => {
   if (!logs || logs.length === 0) {
     return {
@@ -89,17 +69,11 @@ export const generateSummary = (logs) => {
       totalTabs: 0
     };
   }
-  
-  
   const totalTime = logs.reduce((acc, log) => acc + (log.duration || 0), 0);
-  
-  
   const tabFrequency = {};
   const tabTimes = {};
-  
   logs.forEach(log => {
     if (!log.url) return;
-    
     if (!tabFrequency[log.url]) {
       tabFrequency[log.url] = 0;
       tabTimes[log.url] = {
@@ -107,12 +81,9 @@ export const generateSummary = (logs) => {
         time: 0
       };
     }
-    
     tabFrequency[log.url]++;
     tabTimes[log.url].time += log.duration || 0;
   });
-  
-  
   let mostVisitedUrl = '';
   let mostVisits = 0;
   Object.entries(tabFrequency).forEach(([url, count]) => {
@@ -121,8 +92,6 @@ export const generateSummary = (logs) => {
       mostVisitedUrl = url;
     }
   });
-  
-  
   let mostTimeUrl = '';
   let mostTime = 0;
   Object.entries(tabTimes).forEach(([url, data]) => {
@@ -131,13 +100,8 @@ export const generateSummary = (logs) => {
       mostTimeUrl = url;
     }
   });
-  
-  
   const averageSessionDuration = totalTime / logs.length;
-  
-  
   const uniqueTabs = new Set(logs.map(log => log.url)).size;
-  
   return {
     totalTime,
     mostVisitedTab: tabTimes[mostVisitedUrl]?.title || 'None',
@@ -146,16 +110,12 @@ export const generateSummary = (logs) => {
     totalTabs: uniqueTabs
   };
 };
-
-
 export const fetchTabLogs = async () => {
   try {
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    
     const response = await fetch('http://localhost:5001/tabs', { headers });
     if (!response.ok) throw new Error('Failed to fetch tab logs');
-    
     return await response.json();
   } catch (error) {
     console.error('Error fetching tab logs:', error);

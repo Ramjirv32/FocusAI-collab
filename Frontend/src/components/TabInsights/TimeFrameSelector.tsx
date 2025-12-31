@@ -1,16 +1,13 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { TimeFrame } from '@/types';
-
 interface TimeFrameSelectorProps {
   selectedTimeFrame: TimeFrame;
   onTimeFrameChange: (timeFrame: TimeFrame) => void;
 }
-
-const TimeFrameSelector: React.FC<TimeFrameSelectorProps> = ({ 
-  selectedTimeFrame, 
-  onTimeFrameChange 
+const TimeFrameSelector: React.FC<TimeFrameSelectorProps> = ({
+  selectedTimeFrame,
+  onTimeFrameChange
 }) => {
   return (
     <div className="flex space-x-2 mb-4">
@@ -38,5 +35,4 @@ const TimeFrameSelector: React.FC<TimeFrameSelectorProps> = ({
     </div>
   );
 };
-
 export default TimeFrameSelector;

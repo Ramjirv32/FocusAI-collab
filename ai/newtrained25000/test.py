@@ -4,126 +4,82 @@ from scipy.sparse import hstack
 from collections import Counter
 import json
 import os
-
-# =========================
-# CONFIG
-# =========================
 THRESHOLD = 0.75
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_FILE = os.path.join(BASE_DIR, "xgb_productivity.pkl")
 VEC_FILE = os.path.join(BASE_DIR, "xgb_vectorizer.pkl")
-
-# =========================
-# HELPER TO LOAD LISTS
-# =========================
 def load_list_from_file(filename):
     filepath = os.path.join(os.path.dirname(__file__), filename)
     if not os.path.exists(filepath):
         print(f"⚠️ Warning: {filename} not found.")
         return []
-    
     try:
         with open(filepath, 'r') as f:
             return json.load(f)
     except Exception as e:
         print(f"❌ Error loading {filename}: {e}")
         return []
-
-# Load hard rules from files
 FORCE_NON_PROD = load_list_from_file("FORCE_UNPROD.json")
 FORCE_PROD = load_list_from_file("FORCE_PROD.json")
-
 print(f"Loaded {len(FORCE_NON_PROD)} non-productive and {len(FORCE_PROD)} productive rules.")
-
-# =========================
-# LOAD MODEL
-# =========================
 print(f"Loading model (threshold={THRESHOLD})...")
-
 model = joblib.load(MODEL_FILE)
 vectorizer = joblib.load(VEC_FILE)
-
 import re
 from functools import lru_cache
-
-# Compile regex patterns for URL/domain matching
 FORCE_PROD_SET = set(FORCE_PROD)
 FORCE_UNPROD_SET = set(FORCE_NON_PROD)
-
 FORCE_PROD_PATTERNS = [
     re.compile(re.escape(str(k).lower())) 
     for k in FORCE_PROD 
     if '.' in str(k) or '/' in str(k)
 ]
-
 FORCE_UNPROD_PATTERNS = [
     re.compile(re.escape(str(k).lower())) 
     for k in FORCE_NON_PROD 
     if '.' in str(k) or '/' in str(k)
 ]
-
 def smart_keyword_match(text_combined: str):
     text_lower = text_combined.lower()
-    
     if text_lower in FORCE_PROD_SET:
         return "PRODUCTIVE", 0.95, [text_lower]
     if text_lower in FORCE_UNPROD_SET:
         return "NON-PROD", 0.95, [text_lower]
-    
     tokens = set(re.split(r'[\s\-_\.\:\/\?\#\&\=\@]+', text_lower))
     tokens = {t for t in tokens if len(t) >= 2}
-    
     prod_matches = []
     unprod_matches = []
-
     for phrase in FORCE_PROD_SET:
         if len(phrase) > 4 and phrase in text_lower:
             if re.search(r'\b' + re.escape(phrase) + r'\b', text_lower):
                 prod_matches.append(phrase)
-
     for phrase in FORCE_UNPROD_SET:
         if len(phrase) > 4 and phrase in text_lower:
             if re.search(r'\b' + re.escape(phrase) + r'\b', text_lower):
                 unprod_matches.append(phrase)
-
     for token in tokens:
         if token in FORCE_PROD_SET:
             prod_matches.append(token)
         if token in FORCE_UNPROD_SET:
             unprod_matches.append(token)
-    
     if prod_matches:
         return "PRODUCTIVE", 0.98, list(set(prod_matches))
     if unprod_matches:
         return "NON-PROD", 0.98, list(set(unprod_matches))
-
     return None, 0, []
-
 def predict(text, duration, hour=14, is_weekend=0):
     text_l = text.lower()
-
-    # 1. Keyword check (Ground Truth)
     kw_label, kw_conf, kw_matches = smart_keyword_match(text_l)
-    
-    # 2. ML Prediction
     X_text = vectorizer.transform([text])
     X_num = np.array([[duration, hour, is_weekend]])
     X = hstack([X_text, X_num]).tocsr()
     prob = model.predict_proba(X)[0][1]
-    
     ml_label = "PRODUCTIVE" if prob >= THRESHOLD else "NON-PROD"
     ml_conf = prob if prob >= 0.5 else (1.0 - prob)
-
     if kw_label:
         return kw_label, max(kw_conf, ml_conf), kw_matches
-    
     return ml_label, ml_conf, []
-
-# =========================
-# TEST INPUT (EXPANDED 144+ CASES)
-# =========================
 test_cases = [
-    # === DEVELOPMENT & CODING ===
     {"app": "VS Code", "tab": "main.js - FocusAI", "duration": 1200, "desc": "JavaScript Coding"},
     {"app": "PyCharm", "tab": "train.py", "duration": 3000, "desc": "Python Development"},
     {"app": "IntelliJ IDEA", "tab": "BackendController.java", "duration": 2400, "desc": "Java Backend Dev"},
@@ -144,8 +100,6 @@ test_cases = [
     {"app": "Sourcetree", "tab": "Rebase develop", "duration": 300, "desc": "Git GUI Admin"},
     {"app": "Fork", "tab": "Merge Request Review", "duration": 400, "desc": "Git Workflow"},
     {"app": "GitHub Desktop", "tab": "Publish Branch", "duration": 100, "desc": "Git Client"},
-
-    # === TECHNICAL DOCUMENTATION & RESEARCH ===
     {"app": "Chrome", "tab": "https://stackoverflow.com/questions/123", "duration": 300, "desc": "StackOverflow Research"},
     {"app": "Chrome", "tab": "https://github.com/microsoft/vscode/issues/99", "duration": 600, "desc": "GitHub Issue Debugging"},
     {"app": "Chrome", "tab": "https://developer.mozilla.org/en-US/docs/Web/API", "duration": 900, "desc": "MDN Documentation"},
@@ -166,8 +120,6 @@ test_cases = [
     {"app": "Chrome", "tab": "https://news.ycombinator.com/", "duration": 300, "desc": "Hacker News (Industry News)"},
     {"app": "Chrome", "tab": "https://arxiv.org/abs/1234.5678", "duration": 2400, "desc": "Reading Research Paper"},
     {"app": "Chrome", "tab": "https://scholar.google.com/search", "duration": 600, "desc": "Academic Search"},
-
-    # === AI & PRODUCTIVITY TOOLS ===
     {"app": "Chrome", "tab": "https://chatgpt.com/", "duration": 600, "desc": "ChatGPT Assistant"},
     {"app": "Chrome", "tab": "https://claude.ai/", "duration": 900, "desc": "Claude AI Development"},
     {"app": "Chrome", "tab": "https://grok.com/", "duration": 300, "desc": "Grok AI Research"},
@@ -188,8 +140,6 @@ test_cases = [
     {"app": "Microsoft Teams", "tab": "Teams | General", "duration": 3600, "desc": "Work Meeting"},
     {"app": "Discord", "tab": "FocusAI Dev Server", "duration": 900, "desc": "Community Dev"},
     {"app": "Zoom", "tab": "Daily Standup Meeting", "duration": 1800, "desc": "Video Call"},
-
-    # === LEARNING & EDUCATION ===
     {"app": "Chrome", "tab": "https://www.youtube.com/watch?v=algorithm_basics", "duration": 2400, "desc": "Algorithm Lecture"},
     {"app": "Chrome", "tab": "https://www.youtube.com/watch?v=system_design_101", "duration": 3600, "desc": "System Design Course"},
     {"app": "Chrome", "tab": "https://udemy.com/course/web-dev", "duration": 5400, "desc": "Online Coding Course"},
@@ -210,8 +160,6 @@ test_cases = [
     {"app": "Kindle", "tab": "Clean Code - Robert C. Martin", "duration": 1800, "desc": "Reading Technical Book"},
     {"app": "Books", "tab": "Design Patterns - GoF", "duration": 1200, "desc": "Studying Architecture"},
     {"app": "Calibre", "tab": "Programming in Rust.pdf", "duration": 3000, "desc": "E-book Reference"},
-
-    # === DISTRACTIONS & ENTERTAINMENT ===
     {"app": "Chrome", "tab": "https://www.facebook.com/", "duration": 60, "desc": "Social Media Browsing"},
     {"app": "Chrome", "tab": "https://www.instagram.com/reels/", "duration": 120, "desc": "Watching Reels"},
     {"app": "Chrome", "tab": "https://www.tiktok.com/", "duration": 300, "desc": "TikTok Scrolling"},
@@ -242,8 +190,6 @@ test_cases = [
     {"app": "Chrome", "tab": "https://9gag.com/trending", "duration": 450, "desc": "Looking at Funny Memes"},
     {"app": "Chrome", "tab": "https://www.pinterest.com/home", "duration": 600, "desc": "Pinterest Scrolling"},
     {"app": "Chrome", "tab": "https://www.behance.net/", "duration": 300, "desc": "Art Browsing (Distraction)"},
-
-    # === SYSTEM & UTILITIES ===
     {"app": "Calculator", "tab": "Calculator", "duration": 30, "desc": "Simple Calculation"},
     {"app": "Control Panel", "tab": "System Settings", "duration": 60, "desc": "Adjusting PC Config"},
     {"app": "Settings", "tab": "Windows Update", "duration": 300, "desc": "Maintenance Update"},
@@ -259,7 +205,6 @@ test_cases = [
     {"app": "Chrome", "tab": "http://127.0.0.1:8000/", "duration": 600, "desc": "Internal API Testing"},
     {"app": "Chrome", "tab": "https://www.google.com/search?q=weather", "duration": 30, "desc": "Quick Google Search"},
     {"app": "Chrome", "tab": "https://www.google.com/maps", "duration": 300, "desc": "Looking for Route"},
-    # === ADDITIONAL CRITICAL CASES ===
     {"app": "Wireshark", "tab": "Capturing on eth0", "duration": 600, "desc": "Network Analysis"},
     {"app": "Burp Suite", "tab": "Proxy Intercept", "duration": 1200, "desc": "Security Auditing"},
     {"app": "IDA Pro", "tab": "Reversing binary", "duration": 3600, "desc": "Reverse Engineering"},
@@ -284,32 +229,19 @@ test_cases = [
     {"app": "Chrome", "tab": "https://news.google.com/", "duration": 600, "desc": "News Reading (Mixed)"},
     {"app": "Chrome", "tab": "https://quora.com/", "duration": 900, "desc": "Knowledge Sharing (Mixed)"},
 ]
-
-
-# =========================
-# EXECUTION
-# =========================
 print("\n=== PREDICTIONS ===")
 results = []
-
 print(f"{'#' : <3} | {'Description':<30} | {'App / Tab':<40} | {'Result':<12} | {'Conf'} | {'Matches'}")
 print("-" * 140)
-
 for i, case in enumerate(test_cases, 1):
     combined_text = f"{case['app']} {case['tab']}"
     label, conf, matches = predict(combined_text, case['duration'])
     results.append(label)
-    
     display_text = f"{case['app']} ({case['tab'][:20]}...)"
     print(f"{i: <3} | {case['desc']:<30} | {display_text:<40} | {label:<12} | {conf:.1%} | {matches}")
-
-# =========================
-# SUMMARY
-# =========================
 print("\n" + "=" * 40)
 print("SUMMARY")
 print("=" * 40)
-
 counts = Counter(results)
 print(f"Total items      : {len(results)}")
 print(f"PRODUCTIVE       : {counts['PRODUCTIVE']}")

@@ -1,29 +1,20 @@
 import axios from 'axios';
-
-
 const AI_API_BASE_URL = 'http://localhost:8000';
-
-
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
-
-
 const getUserId = () => {
   try {
     const userStr = localStorage.getItem('user');
     if (!userStr) return null;
-    
     const user = JSON.parse(userStr);
-    return user._id || user.id; 
+    return user._id || user.id;
   } catch (error) {
     console.error('Error parsing user data:', error);
     return null;
   }
 };
-
-
 const createEmptyAnalysisData = (userId: string, date: string) => {
   return {
     user_id: userId,
@@ -44,8 +35,6 @@ const createEmptyAnalysisData = (userId: string, date: string) => {
     }
   };
 };
-
-
 const createEmptyQuickStats = (userId: string, date: string) => {
   return {
     user_id: userId,
@@ -60,37 +49,29 @@ const createEmptyQuickStats = (userId: string, date: string) => {
     distraction_areas_count: 0
   };
 };
-
-
 export const getFocusAnalysis = async (date: string | null = null) => {
   try {
     const userId = getUserId();
     if (!userId) {
       throw new Error('User ID not found');
     }
-    
     const headers = getAuthHeader();
     const formattedDate = date || new Date().toISOString().split('T')[0];
     const params = { date: formattedDate };
-    
     try {
       const response = await axios.get(
-        `${AI_API_BASE_URL}/user/${userId}/focus-analysis`, 
+        `${AI_API_BASE_URL}/user/${userId}/focus-analysis`,
         { headers, params }
       );
       return response.data;
     } catch (apiError: any) {
       console.warn(`API Error (${apiError.response?.status}): ${apiError.message}`);
-      
-      
-      if (apiError.response?.status === 404 || 
-          (apiError.response?.status === 500 && 
+      if (apiError.response?.status === 404 ||
+          (apiError.response?.status === 500 &&
            apiError.response?.data?.detail?.includes('No usage data found'))) {
         console.info('No focus data found, returning empty structure');
         return createEmptyAnalysisData(userId, formattedDate);
       }
-      
-      
       throw apiError;
     }
   } catch (error) {
@@ -98,19 +79,15 @@ export const getFocusAnalysis = async (date: string | null = null) => {
     throw error;
   }
 };
-
-
 export const getQuickStats = async (date: string | null = null) => {
   try {
     const userId = getUserId();
     if (!userId) {
       throw new Error('User ID not found');
     }
-    
     const headers = getAuthHeader();
     const formattedDate = date || new Date().toISOString().split('T')[0];
     const params = { date: formattedDate };
-    
     try {
       const response = await axios.get(
         `${AI_API_BASE_URL}/user/${userId}/quick-stats`,
@@ -119,16 +96,12 @@ export const getQuickStats = async (date: string | null = null) => {
       return response.data;
     } catch (apiError: any) {
       console.warn(`API Error (${apiError.response?.status}): ${apiError.message}`);
-      
-      
-      if (apiError.response?.status === 404 || 
-          (apiError.response?.status === 500 && 
+      if (apiError.response?.status === 404 ||
+          (apiError.response?.status === 500 &&
            apiError.response?.data?.detail?.includes('No usage data found'))) {
         console.info('No quick stats found, returning empty structure');
         return createEmptyQuickStats(userId, formattedDate);
       }
-      
-      
       throw apiError;
     }
   } catch (error) {
@@ -136,7 +109,6 @@ export const getQuickStats = async (date: string | null = null) => {
     throw error;
   }
 };
-
 export default {
   getFocusAnalysis,
   getQuickStats

@@ -3,7 +3,6 @@ export interface ChatMessage {
   content: string;
   timestamp?: number;
 }
-
 export interface ChatHistory {
   sessionId: string;
   userId: string;

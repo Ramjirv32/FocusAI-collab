@@ -1,22 +1,18 @@
 import React, { useMemo } from 'react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, Legend, PieChart, Pie, Cell 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, PieChart, Pie, Cell
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
-
 const COLORS = {
   focused: '#22c55e',
   distracted: '#ef4444'
 };
-
 const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
-  
   const { chartData, focusTotal, distractionTotal } = useMemo(() => {
     if (isDemo || !data.productiveContent || !data.nonProductiveContent) {
-      
       const demoData = [
         { name: "VS Code", duration: 3600, type: "Focused" },
         { name: "Chrome - DSA Tutorial", duration: 1800, type: "Focused" },
@@ -25,49 +21,35 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
         { name: "LeetCode", duration: 2400, type: "Focused" },
         { name: "Facebook", duration: 600, type: "Distracted" },
       ];
-      
       const focusTotal = demoData
         .filter(item => item.type === "Focused")
         .reduce((sum, item) => sum + item.duration, 0);
-        
       const distractionTotal = demoData
         .filter(item => item.type === "Distracted")
         .reduce((sum, item) => sum + item.duration, 0);
-        
       return { chartData: demoData, focusTotal, distractionTotal };
     }
-
-    
     const productiveApps = Object.entries(data.productiveContent || {}).map(([name, duration]) => ({
       name: name || 'Unknown App',
-      duration: Math.round(duration / 60), 
+      duration: Math.round(duration / 60),
       type: 'Focused'
     }));
-
     const distractingApps = Object.entries(data.nonProductiveContent || {}).map(([name, duration]) => ({
       name: name || 'Unknown App',
-      duration: Math.round(duration / 60), 
+      duration: Math.round(duration / 60),
       type: 'Distracted'
     }));
-
-    
     const allApps = [...productiveApps, ...distractingApps]
       .sort((a, b) => b.duration - a.duration)
-      .slice(0, 6); 
-
+      .slice(0, 6);
     const focusTotal = productiveApps.reduce((sum, item) => sum + item.duration, 0);
     const distractionTotal = distractingApps.reduce((sum, item) => sum + item.duration, 0);
-
     return { chartData: allApps, focusTotal, distractionTotal };
   }, [data, isDemo]);
-
-  
   const pieData = [
     { name: 'Focused', value: focusTotal, color: COLORS.focused },
     { name: 'Distracted', value: distractionTotal, color: COLORS.distracted }
   ];
-
-  
   const formatTime = (minutes) => {
     if (!minutes) return '0m';
     const hours = Math.floor(minutes / 60);
@@ -77,11 +59,8 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
     }
     return `${mins}m`;
   };
-
-  
   const totalTime = focusTotal + distractionTotal;
   const focusPercentage = totalTime > 0 ? Math.round((focusTotal / totalTime) * 100) : 0;
-
   return (
     <Card>
       <CardHeader>
@@ -97,7 +76,6 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
             <TabsTrigger value="chart">Top Apps</TabsTrigger>
             <TabsTrigger value="pie">Distribution</TabsTrigger>
           </TabsList>
-
           <TabsContent value="chart">
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
@@ -116,35 +94,34 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
                   </Badge>
                 </div>
               </div>
-
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData} layout="vertical">
-                  <XAxis 
-                    type="number" 
+                  <XAxis
+                    type="number"
                     tickFormatter={formatTime}
                     domain={[0, 'dataMax']}
                   />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
+                  <YAxis
+                    dataKey="name"
+                    type="category"
                     width={150}
                     tickFormatter={(value) => value.length > 20 ? `${value.substring(0, 20)}...` : value}
                   />
-                  <Tooltip 
+                  <Tooltip
                     formatter={(value) => formatTime(value)}
                     labelFormatter={(value) => `${value}`}
                   />
                   <CartesianGrid strokeDasharray="3 3" />
-                  <Bar 
-                    dataKey="duration" 
+                  <Bar
+                    dataKey="duration"
                     fill="#8884d8"
                     radius={[0, 4, 4, 0]}
                     animationDuration={1000}
                   >
                     {chartData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.type === 'Focused' ? COLORS.focused : COLORS.distracted} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.type === 'Focused' ? COLORS.focused : COLORS.distracted}
                       />
                     ))}
                   </Bar>
@@ -152,7 +129,6 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
               </ResponsiveContainer>
             </div>
           </TabsContent>
-
           <TabsContent value="pie">
             <div className="flex flex-col items-center">
               <h4 className="text-sm font-medium mb-2">Focus Distribution</h4>
@@ -190,5 +166,4 @@ const FocusDistractionsChart = ({ data = {}, isDemo = false }) => {
     </Card>
   );
 };
-
 export default FocusDistractionsChart;

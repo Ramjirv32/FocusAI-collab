@@ -26,7 +26,6 @@ import {
   Cell,
   Legend
 } from 'recharts';
-
 const Statistics = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -38,11 +37,7 @@ const Statistics = () => {
   const [categoryData, setCategoryData] = useState<any[]>([]);
   const [showFallbackData, setShowFallbackData] = useState(false);
   const [backendStatus, setBackendStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
-
-  
   const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4', '#f43f5e'];
-
-  
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -52,8 +47,6 @@ const Statistics = () => {
     console.log('Using token from localStorage:', token.substring(0, 10) + '...');
     return { Authorization: `Bearer ${token}` };
   };
-
-  
   const checkBackendConnection = async () => {
     try {
       await axios.get('http://localhost:5001/api/health', { timeout: 3000 });
@@ -65,8 +58,6 @@ const Statistics = () => {
       return false;
     }
   };
-
-  
   const generateFallbackData = () => {
     const fallbackStats = {
       uniqueApps: 0,
@@ -87,7 +78,6 @@ const Statistics = () => {
       categoryBreakdown: [],
       dailyBreakdown: []
     };
-
     setStatistics(fallbackStats);
     setTimelineData(fallbackStats.dailyBreakdown.map(day => ({
       name: day.date,
@@ -95,32 +85,23 @@ const Statistics = () => {
       distraction: day.distractionTime || 0,
       score: day.focusScore || 0
     })));
-
     setCategoryData([
       { name: 'Productive', value: fallbackStats.focusTime, color: '#22c55e' },
       { name: 'Distraction', value: fallbackStats.distractionTime, color: '#ef4444' }
     ]);
-
     setShowFallbackData(true);
   };
-
-  
   const fetchStatistics = async (timeFrame = selectedTimeFrame) => {
     try {
       setIsLoading(true);
       setError(null);
       setShowFallbackData(false);
-
-      
       const isConnected = await checkBackendConnection();
       if (!isConnected) {
         throw new Error('Backend server is not running or cannot be reached');
       }
-
-      
       console.log('Fetching stats with timeframe:', timeFrame);
       console.log('Auth headers:', getAuthHeader());
-
       const response = await axios.get(
         `http://localhost:5001/api/statistics`,
         {
@@ -129,13 +110,9 @@ const Statistics = () => {
           timeout: 5001
         }
       );
-
       console.log('Statistics data:', response.data);
-
       if (response.data && Object.keys(response.data).length > 0) {
         setStatistics(response.data);
-
-        
         if (response.data.dailyBreakdown && response.data.dailyBreakdown.length > 0) {
           setTimelineData(response.data.dailyBreakdown.map((day: any) => ({
             name: day.date,
@@ -144,11 +121,8 @@ const Statistics = () => {
             score: day.focusScore || 0
           })));
         } else {
-          
           let emptyData = [];
-
           if (timeFrame === 'daily') {
-            
             emptyData = Array.from({ length: 24 }, (_, i) => ({
               name: `${i}:00`,
               focus: 0,
@@ -156,7 +130,6 @@ const Statistics = () => {
               score: 0
             }));
           } else if (timeFrame === 'weekly') {
-            
             emptyData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
               name: day,
               focus: 0,
@@ -164,7 +137,6 @@ const Statistics = () => {
               score: 0
             }));
           } else if (timeFrame === 'monthly') {
-            
             const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
             emptyData = Array.from({ length: daysInMonth }, (_, i) => ({
               name: `${i + 1}`,
@@ -173,7 +145,6 @@ const Statistics = () => {
               score: 0
             }));
           } else if (timeFrame === 'yearly') {
-            
             emptyData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => ({
               name: month,
               focus: 0,
@@ -181,11 +152,8 @@ const Statistics = () => {
               score: 0
             }));
           }
-
           setTimelineData(emptyData);
         }
-
-        
         if (response.data.categoryBreakdown && response.data.categoryBreakdown.length > 0) {
           setCategoryData(
             response.data.categoryBreakdown.map((category: any, index: number) => ({
@@ -199,7 +167,6 @@ const Statistics = () => {
             }))
           );
         } else {
-          
           setCategoryData([
             { name: 'Productive', value: response.data.focusTime || 0, color: '#22c55e' },
             { name: 'Distraction', value: response.data.distractionTime || 0, color: '#ef4444' }
@@ -210,8 +177,6 @@ const Statistics = () => {
       }
     } catch (err: any) {
       console.error('Error in statistics retrieval process:', err);
-
-      
       if (axios.isAxiosError(err)) {
         if (err.code === 'ECONNABORTED') {
           setError('Request timed out. The server is taking too long to respond.');
@@ -225,10 +190,7 @@ const Statistics = () => {
       } else {
         setError(err.message || 'An unknown error occurred');
       }
-
-      
       generateFallbackData();
-
       toast({
         title: "Showing Sample Data",
         description: "Unable to connect to the server. Displaying sample data for demonstration.",
@@ -238,7 +200,6 @@ const Statistics = () => {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     if (user) {
       console.log('User detected, fetching statistics:', user);
@@ -247,34 +208,25 @@ const Statistics = () => {
       console.log('No user detected, using fallback data');
       generateFallbackData();
     }
-    
   }, [user, selectedTimeFrame]);
-
   const handleRefresh = () => {
     fetchStatistics(selectedTimeFrame);
   };
-
   const formatTime = (seconds: number) => {
     if (seconds === undefined || seconds === null || seconds < 0) return '0m';
-
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = Math.round(seconds % 60);
-
-    
     if (hours === 0 && minutes === 0 && seconds > 0) return '1m';
-
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
   };
-
   const getTrendIndicator = (current: number, previous: number) => {
     if (!previous || previous === 0) return null;
     const change = ((current - previous) / previous) * 100;
     const isPositive = change > 0;
-
     return (
       <div className={`flex items-center gap-1 text-xs ${isPositive ? 'text-green-600' : 'text-red-600'
         }`}>
@@ -283,18 +235,13 @@ const Statistics = () => {
       </div>
     );
   };
-
-  
   const formatTimeTooltip = (value: number, name: string) => {
     const formattedValue = formatTime(value);
     const formattedName = name === 'focus' ? 'Focus Time' :
       name === 'distraction' ? 'Distraction Time' :
         name === 'score' ? 'Focus Score' : name;
-
     return [formattedValue, formattedName];
   };
-
-  
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -309,7 +256,6 @@ const Statistics = () => {
               <Skeleton className="h-10 w-24 rounded" />
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
               <Card key={i}>
@@ -326,7 +272,6 @@ const Statistics = () => {
               </Card>
             ))}
           </div>
-
           <Card>
             <CardHeader>
               <CardTitle><Skeleton className="h-6 w-36" /></CardTitle>
@@ -340,10 +285,7 @@ const Statistics = () => {
       </DashboardLayout>
     );
   }
-
-  
   const showConnectionError = backendStatus === 'disconnected' && showFallbackData;
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -371,7 +313,6 @@ const Statistics = () => {
             </Button>
           </div>
         </div>
-
         {showConnectionError && (
           <Alert variant="destructive">
             <ServerOff className="h-4 w-4" />
@@ -391,7 +332,6 @@ const Statistics = () => {
             </AlertDescription>
           </Alert>
         )}
-
         {error && !showConnectionError && (
           <Alert variant={showFallbackData ? "default" : "destructive"}>
             <AlertCircle className="h-4 w-4" />
@@ -399,7 +339,6 @@ const Statistics = () => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
         {showFallbackData && !error && !showConnectionError && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
@@ -409,7 +348,6 @@ const Statistics = () => {
             </AlertDescription>
           </Alert>
         )}
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -428,7 +366,6 @@ const Statistics = () => {
               </p>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -446,7 +383,6 @@ const Statistics = () => {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -465,7 +401,6 @@ const Statistics = () => {
             </CardContent>
           </Card>
         </div>
-
         {}
         <Card>
           <CardHeader>
@@ -535,7 +470,6 @@ const Statistics = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
@@ -580,7 +514,6 @@ const Statistics = () => {
                     )}
                   </span>
                 </div>
-
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Current Period</span>
@@ -590,7 +523,6 @@ const Statistics = () => {
                     value={statistics?.focusScore || 0}
                     className="h-2 bg-slate-100"
                   />
-
                   <div className="flex justify-between text-sm mt-4">
                     <span>Previous Period</span>
                     <span>{statistics?.previousFocusScore || 0}%</span>
@@ -600,10 +532,8 @@ const Statistics = () => {
                     className="h-2 bg-slate-100"
                   />
                 </div>
-
                 <div className="mt-6 space-y-4">
                   <h4 className="font-medium text-sm">Productivity Insights</h4>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div className="border rounded-md p-3">
                       <div className="flex items-center gap-2 mb-1">
@@ -619,7 +549,6 @@ const Statistics = () => {
                         <span>{formatTime(statistics?.previousActiveTime)}</span>
                       </div>
                     </div>
-
                     <div className="border rounded-md p-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Calendar className="h-4 w-4 text-purple-600" />
@@ -637,7 +566,6 @@ const Statistics = () => {
                   </div>
                 </div>
               </div>
-
               <div>
                 <h4 className="font-medium text-sm mb-2">Focus Score Rating</h4>
                 <div className={`p-4 rounded-md mb-4 ${statistics?.focusScore >= 80 ? 'bg-green-50 border border-green-100' :
@@ -658,7 +586,6 @@ const Statistics = () => {
                           'text-red-700'
                       }`}>{statistics?.focusScore || 0}%</span>
                   </div>
-
                   <p className="text-sm mt-2">{
                     statistics?.focusScore >= 80 ? 'Your focus performance is excellent! Keep up the great work.' :
                       statistics?.focusScore >= 60 ? 'You\'re showing good focus habits. With a few adjustments, you could reach excellence.' :
@@ -666,7 +593,6 @@ const Statistics = () => {
                           'Your focus could use improvement. Try to identify and minimize distractions.'
                   }</p>
                 </div>
-
                 <h4 className="font-medium text-sm mb-2">Productivity Tips</h4>
                 <ul className="text-sm space-y-2">
                   <li className="flex items-start gap-2">
@@ -696,14 +622,12 @@ const Statistics = () => {
             </div>
           </CardContent>
         </Card>
-
         <Tabs defaultValue="apps" className="space-y-4">
           <TabsList>
             <TabsTrigger value="apps">App Usage</TabsTrigger>
             <TabsTrigger value="websites">Website Usage</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
           </TabsList>
-
           <TabsContent value="apps" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -740,7 +664,6 @@ const Statistics = () => {
                       </div>
                     )}
                   </div>
-
                   {}
                   {statistics?.topApps?.length > 0 && (
                     <div className="h-64 mt-6">
@@ -772,7 +695,6 @@ const Statistics = () => {
                   )}
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle>Usage Patterns</CardTitle>
@@ -784,28 +706,23 @@ const Statistics = () => {
                       <span className="text-sm font-medium">Most Productive Hour</span>
                       <Badge>{statistics?.mostProductiveHour || 'N/A'}</Badge>
                     </div>
-
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Average Session Length</span>
                       <Badge variant="outline">{formatTime(statistics?.averageSessionLength)}</Badge>
                     </div>
-
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Total Sessions</span>
                       <Badge variant="outline">{statistics?.totalSessions || 0}</Badge>
                     </div>
-
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Longest Focus Session</span>
                       <Badge variant="outline">{formatTime(statistics?.longestFocusSession)}</Badge>
                     </div>
-
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Current Streak</span>
                       <Badge>{statistics?.currentStreak || 0} days</Badge>
                     </div>
                   </div>
-
                   {}
                   <div className="h-64 mt-4">
                     <ResponsiveContainer width="100%" height="100%">
@@ -834,7 +751,6 @@ const Statistics = () => {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="websites" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -872,7 +788,6 @@ const Statistics = () => {
                       </div>
                     )}
                   </div>
-
                   {}
                   {statistics?.topWebsites?.length > 0 && (
                     <div className="h-64 mt-6">
@@ -904,7 +819,6 @@ const Statistics = () => {
                   )}
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle>Website Categories</CardTitle>
@@ -944,7 +858,6 @@ const Statistics = () => {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="categories" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -977,7 +890,6 @@ const Statistics = () => {
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   </div>
-
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium flex items-center gap-2">
@@ -1005,7 +917,6 @@ const Statistics = () => {
                   </div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
                   <CardTitle>Daily Activity Distribution</CardTitle>
@@ -1035,7 +946,6 @@ const Statistics = () => {
                       <p className="text-muted-foreground">No hourly activity data available</p>
                     </div>
                   )}
-
                   <div className="mt-4">
                     <h4 className="font-medium mb-2">Activity Insights</h4>
                     <ul className="space-y-1 text-sm">
@@ -1053,5 +963,4 @@ const Statistics = () => {
     </DashboardLayout>
   );
 };
-
 export default Statistics;

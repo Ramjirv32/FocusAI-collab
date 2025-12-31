@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import { AlertCircle, Check } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-
 const FocusDataInfoAlert = () => {
   const [dismissed, setDismissed] = useState(false);
-  
   if (dismissed) return null;
-  
   return (
     <Alert className="mb-4">
       <div className="flex items-start">
@@ -18,7 +15,7 @@ const FocusDataInfoAlert = () => {
           <AlertTitle className="mb-1">Focus Data Collection</AlertTitle>
           <AlertDescription className="text-sm">
             <p className="mb-2">
-              To collect focus analysis data, make sure the FocusAI extension is installed and active. 
+              To collect focus analysis data, make sure the FocusAI extension is installed and active.
               Your focus metrics will appear automatically after using your computer for a while.
             </p>
             <div className="flex items-center gap-2 text-xs mt-1 flex-wrap">
@@ -44,5 +41,4 @@ const FocusDataInfoAlert = () => {
     </Alert>
   );
 };
-
 export default FocusDataInfoAlert;

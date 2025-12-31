@@ -2,25 +2,20 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, TrendingUp, AlertTriangle } from 'lucide-react';
 import FocusDataInfoAlert from './FocusDataInfoAlert';
-
 interface RecommendationProps {
   focusPercentage: number;
   productiveApps: string[];
   distractingApps: string[];
   hasData?: boolean;
 }
-
-const AIRecommendations: React.FC<RecommendationProps> = ({ 
-  focusPercentage, 
-  productiveApps, 
+const AIRecommendations: React.FC<RecommendationProps> = ({
+  focusPercentage,
+  productiveApps,
   distractingApps,
   hasData = true
 }) => {
-  
   const getRecommendations = () => {
     const recommendations = [];
-    
-    
     if (focusPercentage < 30) {
       recommendations.push({
         title: "Critical Focus Improvement Needed",
@@ -40,8 +35,6 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
         icon: <Lightbulb className="h-5 w-5 text-green-500" />
       });
     }
-    
-    
     if (distractingApps.length > 0) {
       const topDistractions = distractingApps.slice(0, 2).map(app => app).join(" and ");
       recommendations.push({
@@ -50,8 +43,6 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
         icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
       });
     }
-    
-    
     if (productiveApps.length > 0) {
       const topProductive = productiveApps[0];
       recommendations.push({
@@ -60,12 +51,9 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
         icon: <Lightbulb className="h-5 w-5 text-green-500" />
       });
     }
-    
     return recommendations;
   };
-  
   const recommendations = getRecommendations();
-  
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow">
       <CardHeader className="pb-2">
@@ -97,5 +85,4 @@ const AIRecommendations: React.FC<RecommendationProps> = ({
     </Card>
   );
 };
-
 export default AIRecommendations;

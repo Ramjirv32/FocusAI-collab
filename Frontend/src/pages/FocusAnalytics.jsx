@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, Area, AreaChart 
+  PieChart, Pie, Cell, LineChart, Line, Area, AreaChart
 } from 'recharts';
-import { 
-  Brain, Clock, Target, TrendingUp, Monitor, Globe, 
+import {
+  Brain, Clock, Target, TrendingUp, Monitor, Globe,
   Activity, Calendar, RefreshCw, Award, AlertCircle,
   Eye, MousePointer, Zap, X, Shield, Ban
 } from 'lucide-react';
@@ -16,10 +16,7 @@ import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/Layout/DashboardLayout';
 import AIRecommendations from '../components/FocusAnalysis/AIRecommendations';
 import FocusDistractionsChart from '../components/FocusAnalysis/FocusDistractionsChart';
-
-
 const API_BASE_URL = 'http://localhost:5001';
-
 const FocusAnalytics = () => {
   const { user } = useAuth();
   const [productivityData, setProductivityData] = useState(null);
@@ -27,34 +24,24 @@ const FocusAnalytics = () => {
   const [error, setError] = useState(null);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
-  
-  
   const [alertMessage, setAlertMessage] = useState('');
   const [isBlockingAlert, setIsBlockingAlert] = useState(false);
-  const [alertType, setAlertType] = useState(''); 
-  const [alertSeverity, setAlertSeverity] = useState('medium'); 
+  const [alertType, setAlertType] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('medium');
   const [alertTimer, setAlertTimer] = useState(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
-
-  
   const COLORS = {
     productive: '#22c55e',
     nonProductive: '#ef4444',
     neutral: '#f59e0b',
   };
-
   const pieColors = ['#22c55e', '#ef4444', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6', '#06b6d4'];
-
   const loadAnalyticsData = async () => {
     if (!user) return;
-    
     setIsLoading(true);
     setError(null);
-    
     try {
       console.log(`🔄 Loading analytics for ${user.email} on ${selectedDate}`);
-      
-      
       const productivityResponse = await fetch(
         `${API_BASE_URL}/api/productivity-summary?date=${selectedDate}`
       , {
@@ -62,16 +49,11 @@ const FocusAnalytics = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      
       if (productivityResponse.ok) {
         const productivityResult = await productivityResponse.json();
-        
-        
-        const summary = productivityResult.summaries && productivityResult.summaries.length > 0 
-          ? productivityResult.summaries[0] 
+        const summary = productivityResult.summaries && productivityResult.summaries.length > 0
+          ? productivityResult.summaries[0]
           : productivityResult;
-          
-        
         const processedData = {
           focus_score: summary.focusScore || 0,
           total_productive_time: summary.totalProductiveTime || 0,
@@ -80,18 +62,13 @@ const FocusAnalytics = () => {
           max_productive_app: summary.maxProductiveApp || 'None',
           most_used_app: summary.mostUsedApp || 'None',
           most_visited_tab: summary.mostVisitedTab || 'None',
-          total_activities: Object.keys(summary.productiveContent || {}).length + 
+          total_activities: Object.keys(summary.productiveContent || {}).length +
                            Object.keys(summary.nonProductiveContent || {}).length,
-          
           productive_content: summary.productiveContent || {},
           non_productive_content: summary.nonProductiveContent || {}
         };
-        
         setProductivityData(processedData);
-        
-        
         await checkProductivityAlerts(processedData.focus_score);
-        
         console.log('✅ Productivity data loaded:', processedData);
       } else {
         console.warn('⚠️ Failed to load productivity data');
@@ -104,11 +81,9 @@ const FocusAnalytics = () => {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     loadAnalyticsData();
   }, [user, selectedDate]);
-
   const formatTime = (seconds) => {
     if (!seconds || seconds < 60) return `${seconds || 0}s`;
     const minutes = Math.floor(seconds / 60);
@@ -118,8 +93,6 @@ const FocusAnalytics = () => {
     }
     return `${minutes}m`;
   };
-
-  
   useEffect(() => {
     return () => {
       if (alertTimer) {
@@ -127,37 +100,25 @@ const FocusAnalytics = () => {
       }
     };
   }, [alertTimer]);
-
   const formatPercentage = (value, total) => {
     if (!total) return '0%';
     return `${Math.round((value / total) * 100)}%`;
   };
-
-  
   const showBlockingAlert = (message, type, severity = 'medium', suggestions = null) => {
     console.log(`🚨 Showing ${type} alert:`, message);
-    
     setAlertMessage(message);
     setAlertType(type);
     setAlertSeverity(severity);
-    
     const isBlocking = type === 'is50' || type === 'is20';
     setIsBlockingAlert(isBlocking);
-    
-    
     const timerDuration = isBlocking ? 10 : 5;
     setTimeRemaining(timerDuration);
-    
-    
     if (alertTimer) {
       clearInterval(alertTimer);
     }
-    
-    
     const newTimer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
-          
           clearInterval(newTimer);
           setAlertMessage('');
           setIsBlockingAlert(false);
@@ -169,28 +130,21 @@ const FocusAnalytics = () => {
         return prev - 1;
       });
     }, 1000);
-    
     setAlertTimer(newTimer);
   };
-
-  
   const closeAlert = () => {
     if (alertTimer) {
       clearInterval(alertTimer);
       setAlertTimer(null);
     }
-    
     setAlertMessage('');
     setIsBlockingAlert(false);
     setAlertType('');
     setAlertSeverity('medium');
     setTimeRemaining(0);
   };
-
-  
   const fallbackAlertCheck = (focusScore) => {
     console.log('🔄 Using fallback alert check');
-    
     if (focusScore <= 20) {
       showBlockingAlert(
         `🚨 CRITICAL: Your focus score is ${focusScore}%. Immediate action required to improve productivity!`,
@@ -205,15 +159,10 @@ const FocusAnalytics = () => {
       );
     }
   };
-
-  
   const checkProductivityAlerts = async (focusScore) => {
     if (!user) return;
-
     try {
       console.log(`🔍 Checking productivity alerts for focus score: ${focusScore}`);
-      
-      
       const response = await fetch(`${API_BASE_URL}/api/alerts/check`, {
         method: 'POST',
         headers: {
@@ -222,12 +171,9 @@ const FocusAnalytics = () => {
         },
         body: JSON.stringify({ focusScore })
       });
-      
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Alert check response:', data);
-        
-        
         if (data.showAlert && data.alert) {
           const severity = data.alertType === 'is20' ? 'critical' : 'high';
           showBlockingAlert(data.alert, data.alertType, severity, data.suggestions);
@@ -238,22 +184,15 @@ const FocusAnalytics = () => {
         console.warn('⚠️ Server alert check failed, using fallback');
         const errorData = await response.json().catch(() => ({}));
         console.error('Server error:', errorData);
-        
-        
         fallbackAlertCheck(focusScore);
       }
     } catch (error) {
       console.error('❌ Error checking productivity alerts:', error);
-      
-      
       fallbackAlertCheck(focusScore);
     }
   };
-
-  
   const getAlertStyling = (severity, type) => {
     const baseClasses = "fixed top-0 left-0 right-0 z-50 w-full p-4 font-bold text-center flex justify-between items-center";
-    
     switch (severity) {
       case 'critical':
         return `${baseClasses} bg-red-600 text-white border-b-4 border-red-800 shadow-lg animate-pulse`;
@@ -265,24 +204,17 @@ const FocusAnalytics = () => {
         return `${baseClasses} bg-blue-500 text-white border-b-4 border-blue-600`;
     }
   };
-
-  
   const getAlertIcon = (severity, type) => {
     if (type === 'is20') return <Ban className="inline-block mr-2" size={24} />;
     if (type === 'is50') return <Shield className="inline-block mr-2" size={24} />;
     return <AlertCircle className="inline-block mr-2" size={20} />;
   };
-
-  
   const prepareProductivityChartData = () => {
     if (!productivityData) return { apps: [], categories: [] };
-    
-    
     const allApps = {
       ...productivityData.productive_content,
       ...productivityData.non_productive_content
     };
-    
     const appsData = Object.entries(allApps)
       .map(([app, duration]) => ({
         name: app.length > 15 ? app.substring(0, 15) + '...' : app,
@@ -293,8 +225,6 @@ const FocusAnalytics = () => {
       }))
       .sort((a, b) => b.duration - a.duration)
       .slice(0, 10);
-
-    
     const categoriesData = [
       {
         name: 'Productive',
@@ -307,12 +237,9 @@ const FocusAnalytics = () => {
         color: COLORS.nonProductive
       }
     ];
-
     return { apps: appsData, categories: categoriesData };
   };
-
   const chartData = prepareProductivityChartData();
-
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -330,7 +257,6 @@ const FocusAnalytics = () => {
       </DashboardLayout>
     );
   }
-
   if (error) {
     return (
       <DashboardLayout>
@@ -356,29 +282,25 @@ const FocusAnalytics = () => {
       </DashboardLayout>
     );
   }
-
   return (
     <DashboardLayout>
       {}
       {isBlockingAlert && alertMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {}
-          <div 
+          <div
             className="absolute inset-0 bg-black bg-opacity-75"
             onClick={closeAlert}
           />
-          
           {}
           <div className={`relative w-full max-w-2xl p-8 rounded-xl shadow-2xl ${
             alertType === 'is20' ? 'bg-red-600' : 'bg-orange-500'
           } text-white transform transition-all duration-300 scale-100`}>
-            
             {}
             <div className="absolute top-4 right-4 flex items-center gap-2 bg-black bg-opacity-30 rounded-full px-3 py-1">
               <Clock className="h-4 w-4" />
               <span className="text-sm font-bold">{timeRemaining}s</span>
             </div>
-            
             <div className="text-center">
               <div className="mb-6 text-6xl">
                 {alertType === 'is20' ? (
@@ -387,15 +309,12 @@ const FocusAnalytics = () => {
                   <Shield className="mx-auto h-20 w-20 text-white" />
                 )}
               </div>
-              
               <h2 className="text-3xl font-bold mb-4">
-                {alertType === 'is20' 
+                {alertType === 'is20'
                   ? 'Critical Alert!'
                   : 'Attention Needed!'}
               </h2>
-              
               <p className="text-xl mb-8">{alertMessage}</p>
-              
               <div className="flex flex-col space-y-4">
                 {alertType === 'is20' ? (
                   <>
@@ -419,7 +338,6 @@ const FocusAnalytics = () => {
                   </>
                 )}
               </div>
-              
               <button
                 onClick={() => {
                   setAlertMessage('');
@@ -427,8 +345,8 @@ const FocusAnalytics = () => {
                   setAlertType('');
                 }}
                 className={`mt-8 px-8 py-3 rounded-lg font-bold ${
-                  alertType === 'is20' 
-                    ? 'bg-white text-red-600 hover:bg-red-100' 
+                  alertType === 'is20'
+                    ? 'bg-white text-red-600 hover:bg-red-100'
                     : 'bg-white text-orange-600 hover:bg-orange-100'
                 } transition-colors duration-200`}
               >
@@ -438,7 +356,6 @@ const FocusAnalytics = () => {
           </div>
         </div>
       )}
-      
       {}
       {alertMessage && !isBlockingAlert && (
         <div className={`fixed top-0 left-0 right-0 z-50 w-full p-4 text-center font-bold ${
@@ -456,7 +373,7 @@ const FocusAnalytics = () => {
                 <span className="ml-4 text-sm opacity-80">({timeRemaining}s)</span>
               )}
             </div>
-            <button 
+            <button
               onClick={closeAlert}
               className="p-1 rounded-full hover:bg-white hover:bg-opacity-20"
               aria-label="Close alert"
@@ -466,7 +383,6 @@ const FocusAnalytics = () => {
           </div>
         </div>
       )}
-
       <div className={`p-6 space-y-6 ${isBlockingAlert ? 'pointer-events-none opacity-50' : ''}`}>
         {}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -479,7 +395,6 @@ const FocusAnalytics = () => {
               Deep insights into your productivity and focus patterns
             </p>
           </div>
-          
           <div className="flex items-center gap-2">
             <input
               type="date"
@@ -494,10 +409,9 @@ const FocusAnalytics = () => {
             </Button>
           </div>
         </div>
-
         {}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className={productivityData?.focus_score <= 20 ? 'border-red-500 bg-red-50' : 
+          <Card className={productivityData?.focus_score <= 20 ? 'border-red-500 bg-red-50' :
                           productivityData?.focus_score <= 50 ? 'border-orange-500 bg-orange-50' : ''}>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -519,7 +433,6 @@ const FocusAnalytics = () => {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -533,7 +446,6 @@ const FocusAnalytics = () => {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -547,7 +459,6 @@ const FocusAnalytics = () => {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -562,7 +473,6 @@ const FocusAnalytics = () => {
             </CardContent>
           </Card>
         </div>
-
         {}
         <Tabs defaultValue="productivity" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
@@ -571,7 +481,6 @@ const FocusAnalytics = () => {
             <TabsTrigger value="apps" disabled={isBlockingAlert}>Applications</TabsTrigger>
             <TabsTrigger value="insights" disabled={isBlockingAlert}>Insights</TabsTrigger>
           </TabsList>
-
           <TabsContent value="productivity" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {}
@@ -609,7 +518,6 @@ const FocusAnalytics = () => {
                   </div>
                 </CardContent>
               </Card>
-
               {}
               <Card>
                 <CardHeader>
@@ -622,19 +530,19 @@ const FocusAnalytics = () => {
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={chartData.apps}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="name" 
+                      <XAxis
+                        dataKey="name"
                         angle={-45}
                         textAnchor="end"
                         height={80}
                       />
                       <YAxis />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value, name) => [formatTime(value), 'Duration']}
                         labelFormatter={(label) => chartData.apps.find(app => app.name === label)?.fullName || label}
                       />
-                      <Bar 
-                        dataKey="duration" 
+                      <Bar
+                        dataKey="duration"
                         name="Duration"
                       >
                         {chartData.apps.map((entry, index) => (
@@ -647,7 +555,6 @@ const FocusAnalytics = () => {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="focus" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {}
@@ -660,7 +567,7 @@ const FocusAnalytics = () => {
                 </CardHeader>
                 <CardContent>
                   {productivityData ? (
-                    <FocusDistractionsChart 
+                    <FocusDistractionsChart
                       data={{
                         productiveContent: productivityData.productive_content || {},
                         nonProductiveContent: productivityData.non_productive_content || {}
@@ -672,7 +579,6 @@ const FocusAnalytics = () => {
                   )}
                 </CardContent>
               </Card>
-
               {}
               <Card>
                 <CardHeader>
@@ -691,7 +597,6 @@ const FocusAnalytics = () => {
                       {formatTime(productivityData?.total_productive_time || 0)}
                     </Badge>
                   </div>
-
                   <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
                     <div className="flex items-center gap-2">
                       <AlertCircle className="h-5 w-5 text-red-600" />
@@ -701,7 +606,6 @@ const FocusAnalytics = () => {
                       {formatTime(productivityData?.total_non_productive_time || 0)}
                     </Badge>
                   </div>
-
                   <div className={`flex items-center justify-between p-3 rounded-lg ${
                     (productivityData?.focus_score || 0) <= 20 ? 'bg-red-50' :
                     (productivityData?.focus_score || 0) <= 50 ? 'bg-orange-50' :
@@ -727,7 +631,6 @@ const FocusAnalytics = () => {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="apps" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {}
@@ -762,7 +665,6 @@ const FocusAnalytics = () => {
                   </div>
                 </CardContent>
               </Card>
-
               {}
               <Card>
                 <CardHeader>
@@ -797,7 +699,6 @@ const FocusAnalytics = () => {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="insights" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {}
@@ -818,14 +719,12 @@ const FocusAnalytics = () => {
                       <strong>{productivityData?.max_productive_app || 'N/A'}</strong> is your most productive application
                     </p>
                   </div>
-
                   <div className="p-4 bg-purple-50 rounded-lg">
                     <h4 className="font-semibold text-purple-900 mb-2">Overall Usage</h4>
                     <p className="text-sm text-purple-800">
                       You spent <strong>{formatTime(productivityData?.overall_total_usage || 0)}</strong> on applications today
                     </p>
                   </div>
-
                   <div className={`p-4 rounded-lg ${
                     (productivityData?.focus_score || 0) <= 20 ? 'bg-red-50' :
                     (productivityData?.focus_score || 0) <= 50 ? 'bg-orange-50' :
@@ -841,15 +740,14 @@ const FocusAnalytics = () => {
                       (productivityData?.focus_score || 0) <= 50 ? 'text-orange-800' :
                       'text-green-800'
                     }`}>
-                      Your focus score of <strong>{productivityData?.focus_score || 0}%</strong> shows 
-                      {(productivityData?.focus_score || 0) <= 20 ? ' critical need for improvement - immediate action required!' : 
-                       (productivityData?.focus_score || 0) <= 50 ? ' room for improvement - consider focusing strategies.' : 
+                      Your focus score of <strong>{productivityData?.focus_score || 0}%</strong> shows
+                      {(productivityData?.focus_score || 0) <= 20 ? ' critical need for improvement - immediate action required!' :
+                       (productivityData?.focus_score || 0) <= 50 ? ' room for improvement - consider focusing strategies.' :
                        (productivityData?.focus_score || 0) >= 70 ? ' excellent productivity!' : ' good productivity'}
                     </p>
                   </div>
                 </CardContent>
               </Card>
-
               {}
               <Card>
                 <CardHeader>
@@ -862,16 +760,16 @@ const FocusAnalytics = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AIRecommendations 
+                  <AIRecommendations
                     focusPercentage={productivityData?.focus_score || 0}
                     productiveApps={
-                      productivityData?.productive_content 
-                        ? Object.keys(productivityData.productive_content) 
+                      productivityData?.productive_content
+                        ? Object.keys(productivityData.productive_content)
                         : []
                     }
                     distractingApps={
-                      productivityData?.non_productive_content 
-                        ? Object.keys(productivityData.non_productive_content) 
+                      productivityData?.non_productive_content
+                        ? Object.keys(productivityData.non_productive_content)
                         : []
                     }
                     hasData={!!productivityData}
@@ -881,7 +779,6 @@ const FocusAnalytics = () => {
             </div>
           </TabsContent>
         </Tabs>
-
         {}
         {(productivityData?.focus_score || 0) <= 20 && (
           <Card className="border-red-500 bg-red-50">
@@ -918,7 +815,6 @@ const FocusAnalytics = () => {
             </CardContent>
           </Card>
         )}
-
         {}
         {(productivityData?.focus_score || 0) > 20 && (productivityData?.focus_score || 0) <= 50 && (
           <Card className="border-orange-500 bg-orange-50">
@@ -959,5 +855,4 @@ const FocusAnalytics = () => {
     </DashboardLayout>
   );
 };
-
 export default FocusAnalytics;

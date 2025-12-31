@@ -39,7 +39,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
-
 const Activities = () => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
@@ -47,45 +46,32 @@ const Activities = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activities, setActivities] = useState([]);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
-  const [filter, setFilter] = useState('all'); 
-  const [sortBy, setSortBy] = useState('time'); 
-  
-  
+  const [filter, setFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('time');
   const getAuthHeader = () => {
     const authToken = token || localStorage.getItem('token');
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   };
-
-  
   const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
   };
-
-  
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
-
-  
   const fetchActivities = async () => {
     try {
       setIsLoading(true);
       const headers = getAuthHeader();
-      
-      
       const appResponse = await axios.get('http://localhost:5001/api/user-data', {
         headers,
         params: { timeFrame: selectedTimeFrame }
       });
-      
-      
       const appActivities = (appResponse.data.appUsage || []).map(app => ({
         id: `app-${app._id || Math.random().toString(36)}`,
         type: 'App',
@@ -95,8 +81,6 @@ const Activities = () => {
         formattedDuration: formatDuration(app.duration || 0),
         formattedTime: formatTime(app.lastUpdated || new Date())
       }));
-      
-      
       const tabActivities = (appResponse.data.tabUsage || []).map(tab => ({
         id: `tab-${tab._id || Math.random().toString(36)}`,
         type: 'Tab',
@@ -108,20 +92,13 @@ const Activities = () => {
         formattedDuration: formatDuration(tab.duration || 0),
         formattedTime: formatTime(tab.timestamp || tab.lastUpdated || new Date())
       }));
-      
-      
       const allActivities = [...appActivities, ...tabActivities];
-      
-      
       sortActivities(allActivities, sortBy);
-      
       setActivities(allActivities);
-      
       toast({
         title: "Activities Loaded",
         description: `Showing ${allActivities.length} activities for ${selectedTimeFrame} view.`,
       });
-      
     } catch (error) {
       console.error('Error fetching activities:', error);
       toast({
@@ -133,8 +110,6 @@ const Activities = () => {
       setIsLoading(false);
     }
   };
-
-  
   const sortActivities = (activitiesArray, sortMethod) => {
     switch (sortMethod) {
       case 'time':
@@ -142,15 +117,13 @@ const Activities = () => {
       case 'name':
         return activitiesArray.sort((a, b) => a.name.localeCompare(b.name));
       case 'recent':
-        return activitiesArray.sort((a, b) => 
+        return activitiesArray.sort((a, b) =>
           new Date(b.timestamp) - new Date(a.timestamp)
         );
       default:
         return activitiesArray;
     }
   };
-
-  
   const getFilteredActivities = () => {
     if (filter === 'apps') {
       return activities.filter(activity => activity.type === 'App');
@@ -159,50 +132,38 @@ const Activities = () => {
     }
     return activities;
   };
-
-  
   const handleSort = (newSortBy) => {
     setSortBy(newSortBy);
     const sorted = [...activities];
     sortActivities(sorted, newSortBy);
     setActivities(sorted);
   };
-
-  
   useEffect(() => {
     if (user) {
       fetchActivities();
     }
   }, [user, selectedTimeFrame]);
-
-  
   const handleBackClick = () => {
     navigate('/');
   };
-
-  
   const handleRefresh = () => {
     fetchActivities();
   };
-
   const filteredActivities = getFilteredActivities();
-  
-  
   const timeFrameDisplays = {
     'daily': 'Today',
     'weekly': 'This Week',
     'monthly': 'This Month'
   };
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleBackClick} 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackClick}
               className="mr-2"
             >
               <ArrowLeft className="h-4 w-4 mr-1" /> Back
@@ -214,24 +175,22 @@ const Activities = () => {
               </p>
             </div>
           </div>
-          
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRefresh} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
               disabled={isLoading}
             >
-              <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? "animate-spin" : ""}`} /> 
+              <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? "animate-spin" : ""}`} />
               {isLoading ? "Loading..." : "Refresh"}
             </Button>
-            <TimeFrameSelector 
+            <TimeFrameSelector
               selectedTimeFrame={selectedTimeFrame}
               onTimeFrameChange={setSelectedTimeFrame}
             />
           </div>
         </div>
-
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -257,7 +216,6 @@ const Activities = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
@@ -279,7 +237,7 @@ const Activities = () => {
               </div>
             </div>
             <CardDescription>
-              {filter === 'all' ? 'All' : filter === 'apps' ? 'App' : 'Browser tab'} activity during {selectedTimeFrame === 'daily' ? 'today' : selectedTimeFrame === 'weekly' ? 'the past week' : 'the past month'}. 
+              {filter === 'all' ? 'All' : filter === 'apps' ? 'App' : 'Browser tab'} activity during {selectedTimeFrame === 'daily' ? 'today' : selectedTimeFrame === 'weekly' ? 'the past week' : 'the past month'}.
               Showing {filteredActivities.length} {filteredActivities.length === 1 ? 'activity' : 'activities'}.
             </CardDescription>
           </CardHeader>
@@ -331,7 +289,6 @@ const Activities = () => {
             )}
           </CardContent>
         </Card>
-        
         {}
         {!isLoading && filteredActivities.length > 0 && (
           <Card>
@@ -356,7 +313,6 @@ const Activities = () => {
                       .sort((a, b) => b.duration - a.duration)[0]?.formattedDuration || '0m'}
                   </div>
                 </div>
-                
                 <div className="p-4 bg-primary/5 rounded-lg">
                   <div className="text-sm font-medium text-muted-foreground mb-1">
                     Most Visited Website
@@ -372,7 +328,6 @@ const Activities = () => {
                       .sort((a, b) => b.duration - a.duration)[0]?.formattedDuration || '0m'}
                   </div>
                 </div>
-                
                 <div className="p-4 bg-primary/5 rounded-lg">
                   <div className="text-sm font-medium text-muted-foreground mb-1">
                     Total Active Time
@@ -392,5 +347,4 @@ const Activities = () => {
     </DashboardLayout>
   );
 };
-
 export default Activities;

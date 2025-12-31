@@ -2,45 +2,32 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
 interface CalendarProps {
   data?: Array<{
     date: string;
     score: number;
   }>;
 }
-
 const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-
-  
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
-
-  
   const getFirstDayOfMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
   };
-
-  
   const isLeapYear = (year: number) => {
     return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
   };
-
   const daysInMonth = getDaysInMonth(currentDate);
   const firstDay = getFirstDayOfMonth(currentDate);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
-
-  
   const getScoreForDate = (day: number) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const dayData = data.find(d => d.date === dateStr);
     return dayData ? dayData.score : 0;
   };
-
-  
   const getColorClass = (score: number) => {
     if (score === 0) return 'bg-muted/30 text-muted-foreground';
     if (score < 30) return 'bg-orange-100 dark:bg-orange-900/30 text-orange-900 dark:text-orange-200';
@@ -49,24 +36,18 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
     if (score < 85) return 'bg-emerald-500 dark:bg-emerald-600 text-white';
     return 'bg-emerald-700 dark:bg-emerald-500 text-white font-bold';
   };
-
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
-
   const nextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
-
   const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  
   const totalActive = days.filter(day => getScoreForDate(day) > 0).length;
-  const avgScore = data.length > 0 
+  const avgScore = data.length > 0
     ? Math.round(days.reduce((sum, day) => sum + getScoreForDate(day), 0) / days.length)
     : 0;
-
   return (
     <Card className="border-primary/10 shadow-sm overflow-hidden bg-gradient-to-br from-background to-muted/20">
       <CardHeader>
@@ -109,14 +90,12 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
               </div>
             ))}
           </div>
-
           {}
           <div className="grid grid-cols-7 gap-1">
             {}
             {emptyDays.map(i => (
               <div key={`empty-${i}`} className="aspect-square" />
             ))}
-
             {}
             {days.map(day => {
               const score = getScoreForDate(day);
@@ -134,7 +113,6 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
               );
             })}
           </div>
-
           {}
           <div className="space-y-3 pt-4 border-t">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -155,7 +133,6 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
                 <span>Excellent</span>
               </div>
             </div>
-
             {}
             <div className="grid grid-cols-3 gap-2 text-center p-2 bg-muted/50 rounded-lg">
               <div>
@@ -171,7 +148,6 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
                 <div className="text-xs text-muted-foreground">Avg Score</div>
               </div>
             </div>
-
             <p className="text-[11px] italic text-muted-foreground text-center">
               {isLeapYear(currentDate.getFullYear()) ? 'Leap Year' : ''} Keep your calendar filled to maintain focus!
             </p>
@@ -181,5 +157,4 @@ const MonthlyCalendar: React.FC<CalendarProps> = ({ data = [] }) => {
     </Card>
   );
 };
-
 export default MonthlyCalendar;

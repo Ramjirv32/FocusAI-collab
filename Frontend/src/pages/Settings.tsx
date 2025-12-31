@@ -35,7 +35,6 @@ import DashboardLayout from '@/components/Layout/DashboardLayout';
 import ChromeExtensionStatus from '@/components/Extension/ChromeExtensionStatus';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-
 const Settings = () => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
@@ -65,24 +64,17 @@ const Settings = () => {
       }
     }
   });
-
-  
   const getAuthHeader = useCallback(() => {
     const authToken = token || localStorage.getItem('token');
     return authToken ? { Authorization: `Bearer ${authToken}` } : {};
   }, [token]);
-
-  
   const fetchSettings = useCallback(async () => {
     try {
       setIsLoading(true);
       const headers = getAuthHeader();
-
       const response = await axios.get('http://localhost:5001/api/settings', {
         headers
       });
-
-      
       setSettings(prevSettings => ({
         ...prevSettings,
         notifications: {
@@ -109,17 +101,13 @@ const Settings = () => {
       setIsLoading(false);
     }
   }, [getAuthHeader, toast]);
-
-  
   const saveSettings = async () => {
     try {
       setIsSaving(true);
       const headers = getAuthHeader();
-
       await axios.put('http://localhost:5001/api/settings', settings, {
         headers
       });
-
       setHasChanges(false);
       toast({
         title: "Settings Saved",
@@ -136,8 +124,6 @@ const Settings = () => {
       setIsSaving(false);
     }
   };
-
-  
   const exportData = async () => {
     try {
       const headers = getAuthHeader();
@@ -145,7 +131,6 @@ const Settings = () => {
         headers,
         responseType: 'blob'
       });
-
       const blob = new Blob([response.data], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -153,7 +138,6 @@ const Settings = () => {
       link.download = `focusai-export-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       window.URL.revokeObjectURL(url);
-
       toast({
         title: "Success",
         description: "Tracking data exported to your downloads folder.",
@@ -167,22 +151,17 @@ const Settings = () => {
       });
     }
   };
-
-  
   const resetData = async (type: string) => {
     if (!confirm(`Are you sure you want to reset all your ${type} data? This cannot be undone.`)) return;
-
     try {
       const headers = getAuthHeader();
       await axios.post('http://localhost:5001/api/settings/reset-data', { type }, {
         headers
       });
-
       toast({
         title: "Data Reset",
         description: "Your history has been cleared.",
       });
-
       fetchSettings();
     } catch (error) {
       console.error('Error resetting data:', error);
@@ -192,13 +171,11 @@ const Settings = () => {
       });
     }
   };
-
   useEffect(() => {
     if (user) {
       fetchSettings();
     }
   }, [user, fetchSettings]);
-
   const updateSetting = (category: string, key: string, value: boolean | number | string) => {
     setSettings(prev => ({
       ...prev,
@@ -209,7 +186,6 @@ const Settings = () => {
     }));
     setHasChanges(true);
   };
-
   const updateNestedSetting = (category: string, subcategory: string, key: string, value: unknown) => {
     setSettings(prev => ({
       ...prev,
@@ -223,7 +199,6 @@ const Settings = () => {
     }));
     setHasChanges(true);
   };
-
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -233,7 +208,6 @@ const Settings = () => {
       </DashboardLayout>
     );
   }
-
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-8">
@@ -245,7 +219,6 @@ const Settings = () => {
               Manage your local FocusAI instance and tracking preferences.
             </p>
           </div>
-
           <div className="flex items-center gap-3">
             {hasChanges && (
               <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
@@ -263,7 +236,6 @@ const Settings = () => {
             </Button>
           </div>
         </div>
-
         <Tabs defaultValue="tracking" className="w-full">
           <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 mb-8 overflow-x-auto">
             <TabsTrigger value="tracking" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Usage Tracking</TabsTrigger>
@@ -271,7 +243,6 @@ const Settings = () => {
             <TabsTrigger value="gamification" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Goals</TabsTrigger>
             <TabsTrigger value="data" className="px-6 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">Data & Storage</TabsTrigger>
           </TabsList>
-
           {}
           <TabsContent value="tracking" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
@@ -298,7 +269,6 @@ const Settings = () => {
                       onCheckedChange={(checked) => updateSetting('tracking', 'autoTrack', checked)}
                     />
                   </div>
-
                   <div className="flex items-center justify-between p-4 bg-background rounded-xl border">
                     <div className="space-y-0.5">
                       <Label className="text-base font-semibold">Capture Private Tabs</Label>
@@ -312,7 +282,6 @@ const Settings = () => {
                     />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -326,7 +295,6 @@ const Settings = () => {
                     />
                     <p className="text-xs text-muted-foreground">How often data is saved to your local database.</p>
                   </div>
-
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <Label className="font-semibold">Min Session Filter</Label>
@@ -343,7 +311,6 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           {}
           <TabsContent value="notifications" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
@@ -380,7 +347,6 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           {}
           <TabsContent value="gamification" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
@@ -406,9 +372,7 @@ const Settings = () => {
                       max={600} min={60} step={30}
                     />
                   </div>
-
                   <Separator />
-
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <Label className="text-base font-semibold">Target Focus Score</Label>
@@ -424,7 +388,6 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           {}
           <TabsContent value="data" className="space-y-6 outline-none">
             <Card className="border-none shadow-sm bg-muted/30">
@@ -450,7 +413,6 @@ const Settings = () => {
                   </div>
                   <Button variant="outline" size="sm" onClick={exportData}>Download</Button>
                 </div>
-
                 <div className="flex items-center justify-between p-5 bg-background rounded-xl border group hover:border-red-200 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="p-2 bg-red-100 rounded-lg">
@@ -471,5 +433,4 @@ const Settings = () => {
     </DashboardLayout>
   );
 };
-
 export default Settings;

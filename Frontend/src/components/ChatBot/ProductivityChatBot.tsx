@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { MessageCircle, Send, X, Bot, User, Maximize2, Minimize2, Monitor, Clock, Check, BarChart3, AlertCircle } from 'lucide-react'
@@ -7,15 +6,12 @@ import axios from "axios"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { useNavigate } from 'react-router-dom';
-
-
 declare global {
   interface Window {
     toggleChatBot?: () => void
     processChatQuery?: (query: string) => void
   }
 }
-
 interface Message {
   id: number
   sender: "bot" | "user"
@@ -28,19 +24,16 @@ interface Message {
     distractionHours?: number
   }
 }
-
 interface AppUsageData {
   name: string
   duration: number
   category?: string
 }
-
 interface TabUsageData {
   domain: string
   duration: number
   category?: string
 }
-
 interface UsageSummary {
   productiveHours: number
   distractionHours: number
@@ -48,10 +41,8 @@ interface UsageSummary {
   totalActiveHours: number
   focusScore: number
 }
-
 const ProductivityChatBot = () => {
   const navigate = useNavigate();
-  
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
@@ -67,7 +58,6 @@ const ProductivityChatBot = () => {
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     window.toggleChatBot = () => setIsOpen((prev) => !prev)
     window.processChatQuery = (query) => {
@@ -75,26 +65,19 @@ const ProductivityChatBot = () => {
       setInputMessage(query)
       setTimeout(() => sendMessage(query), 300)
     }
-
     return () => {
       delete window.toggleChatBot
       delete window.processChatQuery
     }
   }, [])
-
-  
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
-
-  
   const formatDuration = (seconds: number) => {
     if (!seconds) return '0s'
-    
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     const remainingSeconds = seconds % 60
-    
     if (hours > 0) {
       return `${hours}h ${minutes}m`
     } else if (minutes > 0) {
@@ -103,8 +86,6 @@ const ProductivityChatBot = () => {
       return `${remainingSeconds}s`
     }
   }
-
-  
   const shouldUseExistingFlow = (query: string): boolean => {
     const lowerQuery = query.toLowerCase()
     return (
@@ -115,8 +96,6 @@ const ProductivityChatBot = () => {
       lowerQuery.includes('show my')
     )
   }
-
-  
   const getMockFocusData = () => {
     return {
       focusScore: 72,
@@ -124,7 +103,6 @@ const ProductivityChatBot = () => {
       distractionHours: 2.3
     }
   }
-
   const getMockAppUsage = () => {
     return [
       { name: "Visual Studio Code", duration: 7200, category: "productive" },
@@ -134,7 +112,6 @@ const ProductivityChatBot = () => {
       { name: "Terminal", duration: 1800, category: "productive" }
     ]
   }
-
   const getMockWebsiteUsage = () => {
     return [
       { name: "github.com", duration: 4200, category: "productive" },
@@ -144,10 +121,8 @@ const ProductivityChatBot = () => {
       { name: "reddit.com", duration: 1500, category: "distracting" }
     ]
   }
-
   const processExistingFlowQuery = (query: string) => {
     const lowerQuery = query.toLowerCase()
-    
     if (lowerQuery.includes('focus score')) {
       const focusData = getMockFocusData()
       const botMessage: Message = {
@@ -188,13 +163,9 @@ const ProductivityChatBot = () => {
       setMessages(prev => [...prev, botMessage])
     }
   }
-
   const processQuery = async (query: string) => {
     if (!query.trim()) return
-
     setIsLoading(true)
-
-    
     const userMessage: Message = {
       id: Date.now(),
       sender: "user",
@@ -203,33 +174,23 @@ const ProductivityChatBot = () => {
         text: query.trim(),
       },
     }
-
     setMessages((prev) => [...prev, userMessage])
-
     try {
-      
       if (shouldUseExistingFlow(query)) {
         processExistingFlowQuery(query)
         setIsLoading(false)
         return
       }
-
-      
       const token = localStorage.getItem('token')
       if (!token) {
         throw new Error('No authentication token found')
       }
-      
-      
       const tokenParts = token.split('.')
       if (tokenParts.length !== 3) {
         throw new Error('Invalid token format')
       }
-      
       const decoded = JSON.parse(atob(tokenParts[1]))
       const userId = decoded.userId
-      
-      
       const thinkingMessage: Message = {
         id: Date.now() + 0.5,
         sender: "bot",
@@ -239,20 +200,16 @@ const ProductivityChatBot = () => {
         },
       }
       setMessages(prev => [...prev, thinkingMessage])
-
-      
       const aiResponse = await axios.post(
         `http://0.0.0.0:8000/api/v1/chat/ask/${userId}?question=${encodeURIComponent(query)}`,
         {},
-        { 
-          headers: { 
+        {
+          headers: {
             'Content-Type': 'application/json'
           },
           withCredentials: false
         }
       )
-
-      
       setMessages(prev => {
         const filtered = prev.filter(msg => msg.id !== thinkingMessage.id)
         return [
@@ -267,15 +224,10 @@ const ProductivityChatBot = () => {
           },
         ]
       })
-
     } catch (error) {
       console.error('Error processing query:', error)
-      
-      
       setMessages(prev => prev.filter(msg => msg.content.text !== "Thinking..."))
-      
       let errorText = "Sorry, I encountered an error while processing your request."
-      
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNABORTED' || error.message.includes('Network Error')) {
           errorText = "Connection error. Please check if the server is running and try again."
@@ -287,7 +239,6 @@ const ProductivityChatBot = () => {
           errorText = "Server error. Please try again later."
         }
       }
-      
       const errorMessage: Message = {
         id: Date.now() + 1,
         sender: "bot",
@@ -301,24 +252,20 @@ const ProductivityChatBot = () => {
       setIsLoading(false)
     }
   }
-
-  
   const determineAppCategory = (appName: string): string => {
     const lowerName = appName.toLowerCase()
-    
     if (
-      lowerName.includes('code') || 
-      lowerName.includes('intellij') || 
+      lowerName.includes('code') ||
+      lowerName.includes('intellij') ||
       lowerName.includes('visual studio') ||
       lowerName.includes('terminal') ||
       lowerName.includes('git')
     ) {
       return 'productive'
     }
-    
     if (
-      lowerName.includes('slack') || 
-      lowerName.includes('teams') || 
+      lowerName.includes('slack') ||
+      lowerName.includes('teams') ||
       lowerName.includes('zoom') ||
       lowerName.includes('meet') ||
       lowerName.includes('outlook') ||
@@ -326,46 +273,39 @@ const ProductivityChatBot = () => {
     ) {
       return 'communication'
     }
-    
     if (
-      lowerName.includes('youtube') || 
-      lowerName.includes('netflix') || 
+      lowerName.includes('youtube') ||
+      lowerName.includes('netflix') ||
       lowerName.includes('game') ||
       lowerName.includes('spotify') ||
       lowerName.includes('music')
     ) {
       return 'distracting'
     }
-    
     return 'neutral'
   }
-  
-  
   const determineWebsiteCategory = (domain: string): string => {
     const lowerDomain = domain.toLowerCase()
-    
     if (
-      lowerDomain.includes('github') || 
-      lowerDomain.includes('stackoverflow') || 
+      lowerDomain.includes('github') ||
+      lowerDomain.includes('stackoverflow') ||
       lowerDomain.includes('docs') ||
       lowerDomain.includes('gitlab') ||
       lowerDomain.includes('jira')
     ) {
       return 'productive'
     }
-    
     if (
-      lowerDomain.includes('gmail') || 
-      lowerDomain.includes('outlook') || 
+      lowerDomain.includes('gmail') ||
+      lowerDomain.includes('outlook') ||
       lowerDomain.includes('slack') ||
       lowerDomain.includes('teams')
     ) {
       return 'communication'
     }
-    
     if (
-      lowerDomain.includes('youtube') || 
-      lowerDomain.includes('facebook') || 
+      lowerDomain.includes('youtube') ||
+      lowerDomain.includes('facebook') ||
       lowerDomain.includes('instagram') ||
       lowerDomain.includes('netflix') ||
       lowerDomain.includes('twitter') ||
@@ -373,11 +313,8 @@ const ProductivityChatBot = () => {
     ) {
       return 'distracting'
     }
-    
     return 'neutral'
   }
-  
-  
   const getCategoryColor = (category?: string): string => {
     switch (category) {
       case 'productive':
@@ -391,24 +328,19 @@ const ProductivityChatBot = () => {
         return 'bg-gray-500'
     }
   }
-
   const sendMessage = async (customMessage?: string) => {
     const message = customMessage || inputMessage.trim()
     if (!message) return
     setInputMessage("")
     await processQuery(message)
   }
-
-  
   const suggestedQuestions = [
     "Show my focus score",
     "What apps am I using most?",
     "Show my website usage",
     "How productive was I today?"
   ]
-
   if (!isOpen) {
-    
     return (
       <div className="fixed bottom-6 right-6 z-50">
         <Button
@@ -421,8 +353,6 @@ const ProductivityChatBot = () => {
       </div>
     )
   }
-
-  
   return (
     <div
       className={`fixed z-50 transition-all duration-300 ease-in-out ${
@@ -459,7 +389,6 @@ const ProductivityChatBot = () => {
             </Button>
           </div>
         </div>
-
         {}
         <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gradient-to-b from-blue-50 to-white">
           {messages.map((message) => (
@@ -482,7 +411,6 @@ const ProductivityChatBot = () => {
                       <div className="p-3 border-b border-blue-50">
                         <p className="font-medium text-blue-800">{message.content.text}</p>
                       </div>
-
                       <div className="p-3">
                         <div className="space-y-3">
                           {message.content.usageData?.map((item, index) => (
@@ -505,22 +433,20 @@ const ProductivityChatBot = () => {
                       <div className="p-3 border-b border-blue-50">
                         <p className="font-medium text-blue-800">{message.content.text}</p>
                       </div>
-
                       <div className="p-4">
                         <div className="flex justify-center mb-4">
                           <div className="relative w-24 h-24 flex items-center justify-center">
                             <div className="absolute inset-0 border-8 border-blue-100 rounded-full"></div>
-                            <div 
+                            <div
                               className="absolute inset-0 border-8 border-transparent rounded-full"
-                              style={{ 
+                              style={{
                                 borderTopColor: `${message.content.focusScore! > 75 ? '#22c55e' : message.content.focusScore! > 50 ? '#eab308' : '#ef4444'}`,
-                                transform: `rotate(${45 + (message.content.focusScore! / 100) * 360}deg)` 
+                                transform: `rotate(${45 + (message.content.focusScore! / 100) * 360}deg)`
                               }}
                             ></div>
                             <div className="text-2xl font-bold">{message.content.focusScore!.toFixed(0)}%</div>
                           </div>
                         </div>
-                        
                         <div className="grid grid-cols-2 gap-3 mt-2">
                           <Card className="bg-green-50">
                             <CardContent className="p-3 text-center">
@@ -547,7 +473,6 @@ const ProductivityChatBot = () => {
               </div>
             </div>
           ))}
-
           {isLoading && (
             <div className="flex items-start mr-12 animate-fadeIn">
               <div className="bg-blue-600 text-white p-1.5 rounded-full mr-3">
@@ -571,10 +496,8 @@ const ProductivityChatBot = () => {
               </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
-
         {}
         {messages.length < 3 && (
           <div className="p-3 bg-blue-50 border-t border-blue-100">
@@ -595,7 +518,6 @@ const ProductivityChatBot = () => {
             </div>
           </div>
         )}
-
         {}
         <div className="p-4 border-t bg-white shrink-0">
           <div className="flex items-end space-x-2">
@@ -627,5 +549,4 @@ const ProductivityChatBot = () => {
     </div>
   )
 }
-
 export default ProductivityChatBot

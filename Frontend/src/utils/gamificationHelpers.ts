@@ -1,6 +1,3 @@
-
-
-
 export const getBadgeColor = (type) => {
   const colors = {
     bronze: 'bg-amber-200 text-amber-800',
@@ -13,8 +10,6 @@ export const getBadgeColor = (type) => {
   };
   return colors[type] || colors.bronze;
 };
-
-
 export const getBadgeVariant = (type) => {
   const variants = {
     bronze: 'bg-amber-100 text-amber-800 hover:bg-amber-200',
@@ -27,13 +22,11 @@ export const getBadgeVariant = (type) => {
   };
   return variants[type] || variants.bronze;
 };
-
-
 export const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', { 
-    month: 'short', 
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
     day: 'numeric',
     year: 'numeric'
   }).format(date);

@@ -11,7 +11,6 @@ import Diagnostics from './pages/Diagnostics';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import ApplicationAnalytics from './pages/ApplicationAnalytics';
-
 const router = createBrowserRouter([
   {
     path: '/',
@@ -58,5 +57,4 @@ const router = createBrowserRouter([
     element: <NotFound />,
   }
 ]);
-
 export default router;

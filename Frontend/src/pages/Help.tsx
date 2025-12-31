@@ -4,10 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, HelpCircle, Book, MessageCircle, Mail, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/Layout/MainLayout';
-
 const Help = () => {
   const navigate = useNavigate();
-
   const helpCategories = [
     {
       title: 'Getting Started',
@@ -43,7 +41,6 @@ const Help = () => {
       ]
     }
   ];
-
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -68,7 +65,6 @@ const Help = () => {
             </p>
           </div>
         </div>
-
         {}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {helpCategories.map((category, index) => (
@@ -98,7 +94,6 @@ const Help = () => {
             </Card>
           ))}
         </div>
-
         {}
         <Card>
           <CardHeader>
@@ -136,7 +131,6 @@ const Help = () => {
             </div>
           </CardContent>
         </Card>
-
         {}
         <Card>
           <CardHeader>
@@ -167,5 +161,4 @@ const Help = () => {
     </MainLayout>
   );
 };
-
 export default Help;

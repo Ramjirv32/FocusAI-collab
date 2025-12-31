@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-
 const RegisterForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -14,14 +13,10 @@ const RegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-
   const fetchUserInfoAndSendToExtension = async () => {
     try {
-
       const response = await axios.get('http://localhost:5001/api/user'); 
       const user = response.data.user;
-
-      
       if (window.chrome && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage('jjjokkpobnafkfomfojdnhgndanjihpl', {
           action: 'userInfo',
@@ -30,17 +25,13 @@ const RegisterForm = () => {
           token: user.token,
         });
       }
-
       console.log('Sent user info to extension:', { id: user.id, email: user.email, token: user.token });
     } catch (error) {
       console.error('Error fetching user info:', error);
     }
   };
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (password.length < 6) {
       toast({
         variant: "destructive",
@@ -49,7 +40,6 @@ const RegisterForm = () => {
       });
       return;
     }
-
     if (password !== confirmPassword) {
       toast({
         variant: "destructive",
@@ -58,17 +48,12 @@ const RegisterForm = () => {
       });
       return;
     }
-
     setIsLoading(true);
-
     try {
       const response = await axios.post('http://localhost:5001/api/register', {
         name, email, password
       });
-
       const { token, user } = response.data;
-
-      
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
       fetchUserInfoAndSendToExtension();
@@ -76,8 +61,6 @@ const RegisterForm = () => {
         title: "Registration successful",
         description: `Welcome to FocuAI, ${name || email}!`,
       });
-
-      
       navigate('/');
     } catch (error) {
       console.error('Registration error:', error);
@@ -90,7 +73,6 @@ const RegisterForm = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -181,5 +163,4 @@ const RegisterForm = () => {
     </Card>
   );
 };
-
 export default RegisterForm;

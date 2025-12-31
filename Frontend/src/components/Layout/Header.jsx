@@ -13,37 +13,27 @@ import DiagnosticInfo from '@/components/DiagnosticInfo';
 import UserMenu from './UserMenu';
 import AIModelManager from '@/components/AIModelManager';
 import { useNavigate } from 'react-router-dom';
-
 const Header = ({ toggleSidebar, isMobile }) => {
   const [showVoiceMeetingDialog, setShowVoiceMeetingDialog] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  
   const startVoiceMeeting = () => {
     setShowVoiceMeetingDialog(false);
     navigate('/voice-meeting');
   };
-
   const [restartPending, setRestartPending] = useState(false);
-
   useEffect(() => {
     const checkRestartPending = () => {
       setRestartPending(localStorage.getItem('focusai_restart_pending') === 'true');
     };
-
     checkRestartPending();
-    
     window.addEventListener('storage', checkRestartPending);
-    
     const interval = setInterval(checkRestartPending, 2000);
-
     return () => {
       window.removeEventListener('storage', checkRestartPending);
       clearInterval(interval);
     };
   }, []);
-
   return (
     <>
       {restartPending && (
@@ -57,7 +47,6 @@ const Header = ({ toggleSidebar, isMobile }) => {
             variant="outline"
             className="h-7 text-xs border-yellow-300 bg-yellow-50 hover:bg-yellow-100"
             onClick={() => {
-              
               localStorage.removeItem('focusai_restart_pending');
               setRestartPending(false);
               window.location.reload();
@@ -89,7 +78,6 @@ const Header = ({ toggleSidebar, isMobile }) => {
             </div>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           {}
           <Dialog open={showVoiceMeetingDialog} onOpenChange={setShowVoiceMeetingDialog}>
@@ -136,7 +124,6 @@ const Header = ({ toggleSidebar, isMobile }) => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
           {}
           <Button
             variant="ghost"
@@ -145,10 +132,8 @@ const Header = ({ toggleSidebar, isMobile }) => {
           >
             <BellRing className="h-5 w-5" />
           </Button>
-
           {}
           <AIModelManager />
-
           {}
           <UserMenu />
         </div>
@@ -156,5 +141,4 @@ const Header = ({ toggleSidebar, isMobile }) => {
     </>
   );
 };
-
 export default Header;

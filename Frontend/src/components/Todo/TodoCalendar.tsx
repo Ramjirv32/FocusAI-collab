@@ -5,22 +5,18 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Calendar, Clock, AlertTriangle } from 'lucide-react';
 import { todoService, Todo, CalendarTodos } from '@/services/todoService';
 import { toast } from '@/hooks/use-toast';
-
 interface TodoCalendarProps {
   onTodoSelect?: (todo: Todo) => void;
 }
-
 const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarTodos, setCalendarTodos] = useState<CalendarTodos>({});
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-
   const loadCalendarTodos = async () => {
     try {
       setLoading(true);
@@ -41,11 +37,9 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     loadCalendarTodos();
   }, [currentDate]);
-
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
       const newDate = new Date(prev);
@@ -57,11 +51,9 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
       return newDate;
     });
   };
-
   const goToToday = () => {
     setCurrentDate(new Date());
   };
-
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -69,24 +61,16 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-
     const days = [];
-    
-    
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push({ day: null, key: `empty-${i}` });
     }
-
-    
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({ day: i, key: `day-${i}` });
     }
-
     return days;
   };
-
   const formatDateKey = (day: number) => {
-    
     const year = currentDate.getFullYear();
     const month = String(currentDate.getMonth() + 1).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
@@ -94,26 +78,22 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
     console.log('Frontend date key for day', day, ':', dateKey);
     return dateKey;
   };
-
   const getTodosForDate = (day: number) => {
     const dateKey = formatDateKey(day);
     const todos = calendarTodos[dateKey] || [];
     console.log('Todos for', dateKey, ':', todos.length);
     return todos;
   };
-
   const isToday = (day: number) => {
     const today = new Date();
     return today.getDate() === day &&
            today.getMonth() === currentDate.getMonth() &&
            today.getFullYear() === currentDate.getFullYear();
   };
-
   const isOverdue = (todo: Todo) => {
     if (!todo.dueDate || todo.completed) return false;
     return new Date(todo.dueDate) < new Date();
   };
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-500';
@@ -122,9 +102,7 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
       default: return 'bg-gray-500';
     }
   };
-
   const days = getDaysInMonth(currentDate);
-
   return (
     <div className="space-y-4">
       {}
@@ -147,12 +125,10 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
           </Button>
         </div>
       </div>
-
       {}
       <div className="text-xs text-muted-foreground">
         Available dates: {Object.keys(calendarTodos).join(', ')}
       </div>
-
       {}
       <Card>
         <CardContent className="p-4">
@@ -164,19 +140,16 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
               </div>
             ))}
           </div>
-
           {}
           <div className="grid grid-cols-7 gap-2">
             {days.map(({ day, key }) => {
               if (!day) {
                 return <div key={key} className="h-24" />;
               }
-
               const todosForDay = getTodosForDate(day);
               const dateKey = formatDateKey(day);
               const isSelected = selectedDate === dateKey;
               const isTodayDate = isToday(day);
-
               return (
                 <div
                   key={key}
@@ -228,17 +201,16 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
           </div>
         </CardContent>
       </Card>
-
       {}
       {selectedDate && calendarTodos[selectedDate] && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              Tasks for {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              Tasks for {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </CardTitle>
           </CardHeader>
@@ -268,9 +240,9 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
                     {todo.dueDate && (
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        {new Date(todo.dueDate).toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit' 
+                        {new Date(todo.dueDate).toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit'
                         })}
                       </div>
                     )}
@@ -290,5 +262,4 @@ const TodoCalendar: React.FC<TodoCalendarProps> = ({ onTodoSelect }) => {
     </div>
   );
 };
-
 export default TodoCalendar;

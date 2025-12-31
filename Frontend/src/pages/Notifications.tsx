@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-
 const Notifications = () => {
   const { toast } = useToast();
   const [preferences, setPreferences] = useState({
@@ -17,25 +16,21 @@ const Notifications = () => {
     distraction: false,
     dailySummary: true
   });
-
   useEffect(() => {
     const saved = localStorage.getItem('focusai_notification_prefs');
     if (saved) {
       setPreferences(JSON.parse(saved));
     }
   }, []);
-
   const togglePreference = (key: string) => {
     const newPrefs = { ...preferences, [key]: !preferences[key] };
     setPreferences(newPrefs);
     localStorage.setItem('focusai_notification_prefs', JSON.stringify(newPrefs));
-
     toast({
       title: "Preference Updated",
       description: "Your notification settings have been saved locally.",
     });
   };
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -53,14 +48,12 @@ const Notifications = () => {
             </Button>
           </div>
         </div>
-
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
             <TabsTrigger value="all">All Alerts</TabsTrigger>
             <TabsTrigger value="focus">Focus Score</TabsTrigger>
             <TabsTrigger value="achievements">Achievements</TabsTrigger>
           </TabsList>
-
           <TabsContent value="all" className="space-y-4 mt-6">
             <div className="space-y-3">
               <Card className="relative border-l-4 border-l-blue-500 hover:bg-muted/30 transition-colors">
@@ -91,7 +84,6 @@ const Notifications = () => {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="relative border-l-4 border-l-green-500 hover:bg-muted/30 transition-colors">
                 <CardHeader className="pb-2">
                   <div className="flex items-start gap-3">
@@ -118,7 +110,6 @@ const Notifications = () => {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="focus">
             <div className="pt-4">
               <Card className="relative border-l-4 border-l-blue-500">
@@ -136,14 +127,12 @@ const Notifications = () => {
               </Card>
             </div>
           </TabsContent>
-
           <TabsContent value="achievements">
             <div className="pt-4 text-center py-10 text-muted-foreground border rounded-lg border-dashed">
               No new achievements to show.
             </div>
           </TabsContent>
         </Tabs>
-
         {}
         <Card className="mt-8">
           <CardHeader>
@@ -204,5 +193,4 @@ const Notifications = () => {
     </DashboardLayout>
   );
 };
-
 export default Notifications;

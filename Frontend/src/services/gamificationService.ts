@@ -1,13 +1,9 @@
 import axios from 'axios';
-
 const API_URL = 'http://localhost:5001/api';
-
-
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
-
 export const fetchGamificationData = async () => {
   try {
     const headers = getAuthHeader();
@@ -18,7 +14,6 @@ export const fetchGamificationData = async () => {
     throw error;
   }
 };
-
 export const fetchAchievements = async () => {
   try {
     const headers = getAuthHeader();
@@ -29,7 +24,6 @@ export const fetchAchievements = async () => {
     throw error;
   }
 };
-
 export const fetchChallenges = async () => {
   try {
     const headers = getAuthHeader();
@@ -40,7 +34,6 @@ export const fetchChallenges = async () => {
     throw error;
   }
 };
-
 export const completeChallenge = async (challengeId) => {
   try {
     const headers = getAuthHeader();
@@ -51,7 +44,6 @@ export const completeChallenge = async (challengeId) => {
     throw error;
   }
 };
-
 export const fetchLeaderboard = async (timeFrame = 'weekly', limit = 10) => {
   try {
     const headers = getAuthHeader();

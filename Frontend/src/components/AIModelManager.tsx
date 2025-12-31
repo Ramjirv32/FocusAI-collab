@@ -7,9 +7,7 @@ import { Cloud, Eye, EyeOff, CheckCircle, XCircle, Loader2, Database, Cpu, Setti
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-
 const AIModelManager = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [config, setConfig] = useState({
@@ -23,14 +21,11 @@ const AIModelManager = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [showKey, setShowKey] = useState(false);
     const [status, setStatus] = useState({ type: 'idle', message: '' });
-
-
     useEffect(() => {
         if (isOpen) {
             fetchConfig();
         }
     }, [isOpen]);
-
     const fetchConfig = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/settings/ai-config`, {
@@ -38,12 +33,9 @@ const AIModelManager = () => {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
-
             if (response.ok) {
                 const data = await response.json();
                 setConfig(data);
-
-
                 if (data.provider === 'ollama') {
                     fetchOllamaModels();
                 }
@@ -52,7 +44,6 @@ const AIModelManager = () => {
             console.error('Error fetching AI config:', error);
         }
     };
-
     const fetchOllamaModels = async () => {
         setIsLoadingModels(true);
         try {
@@ -61,7 +52,6 @@ const AIModelManager = () => {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
-
             if (response.ok) {
                 const data = await response.json();
                 setOllamaModels(data.models || []);
@@ -72,31 +62,24 @@ const AIModelManager = () => {
             setIsLoadingModels(false);
         }
     };
-
     const handleSave = async () => {
-
         if (config.provider === 'groq' && !config.groqKey) {
             setStatus({ type: 'error', message: 'Please enter a Groq API key' });
             return;
         }
-
         if (config.provider === 'ollama' && !config.ollamaModel) {
             setStatus({ type: 'error', message: 'Please select an Ollama model' });
             return;
         }
-
         setIsSaving(true);
         setStatus({ type: 'loading', message: 'Saving configuration...' });
-
         try {
-
             const configToSave = {
                 provider: config.provider,
                 groqKey: config.provider === 'groq' ? config.groqKey : '',
                 ollamaModel: config.provider === 'ollama' ? config.ollamaModel : '',
                 ollamaUrl: config.provider === 'ollama' ? config.ollamaUrl : ''
             };
-
             const response = await fetch(`${API_BASE_URL}/api/settings/ai-config`, {
                 method: 'PUT',
                 headers: {
@@ -105,15 +88,12 @@ const AIModelManager = () => {
                 },
                 body: JSON.stringify(configToSave)
             });
-
             const data = await response.json();
-
             if (response.ok && data.success) {
                 setStatus({
                     type: 'success',
                     message: data.message
                 });
-
                 if (data.autoRestarted) {
                     localStorage.removeItem('focusai_restart_pending');
                 } else {
@@ -128,13 +108,11 @@ const AIModelManager = () => {
             setIsSaving(false);
         }
     };
-
     const maskKey = (key: string) => {
         if (!key) return '';
         if (key.length <= 8) return '••••••••';
         return `${key.substring(0, 4)}${'•'.repeat(Math.max(0, key.length - 8))}${key.substring(key.length - 4)}`;
     };
-
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
@@ -152,7 +130,6 @@ const AIModelManager = () => {
                         Choose between Cloud (Groq) or Local (Ollama) AI engines.
                     </DialogDescription>
                 </DialogHeader>
-
                 <Tabs value={config.provider} onValueChange={(v) => {
                     if (v === 'ollama' && ollamaModels.length === 0) fetchOllamaModels();
                 }} className="w-full">
@@ -166,7 +143,6 @@ const AIModelManager = () => {
                             {config.provider === 'ollama' && <span className="ml-1 h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>}
                         </TabsTrigger>
                     </TabsList>
-
                     <TabsContent value="groq" className="space-y-4 py-4">
                         <div className="flex items-center justify-between mb-2">
                             <Label className="text-sm font-semibold">Cloud Configuration</Label>
@@ -211,7 +187,6 @@ const AIModelManager = () => {
                             </AlertDescription>
                         </Alert>
                     </TabsContent>
-
                     <TabsContent value="ollama" className="space-y-4 py-4">
                         <div className="flex items-center justify-between mb-2">
                             <Label className="text-sm font-semibold">Local Configuration</Label>
@@ -283,7 +258,6 @@ const AIModelManager = () => {
                         </Alert>
                     </TabsContent>
                 </Tabs>
-
                 {status.type !== 'idle' && (
                     <Alert variant={status.type === 'error' ? 'destructive' : 'default'} className="mt-2">
                         <div className="flex items-center gap-2">
@@ -294,7 +268,6 @@ const AIModelManager = () => {
                         </div>
                     </Alert>
                 )}
-
                 <DialogFooter className="mt-4">
                     <Button variant="outline" onClick={() => setIsOpen(false)}>Close</Button>
                     <Button onClick={handleSave} disabled={isSaving}>
@@ -306,5 +279,4 @@ const AIModelManager = () => {
         </Dialog>
     );
 };
-
 export default AIModelManager;

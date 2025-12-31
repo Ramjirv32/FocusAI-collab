@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -8,9 +7,7 @@ import { EnhancedCalendar } from "@/components/Gamifications/enhanced-calendar"
 import { UsageStats } from "@/components/Gamifications/usage-stats"
 import { Trophy, Calendar, BarChart3, Target, AlertCircle } from 'lucide-react'
 import { toast } from "sonner"
-
 const API_BASE_URL = "http://localhost:5001"
-
 export default function FocusAIDashboard() {
   const [user, setUser] = useState({ id: "user123", name: "John Doe" })
   const [gamificationData, setGamificationData] = useState(null)
@@ -18,15 +15,12 @@ export default function FocusAIDashboard() {
   const [calendarEvents, setCalendarEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   useEffect(() => {
     initializeData()
   }, [])
-
   const initializeData = async () => {
     setLoading(true)
     setError(null)
-    
     try {
       await Promise.all([
         fetchGamificationData(),
@@ -40,7 +34,6 @@ export default function FocusAIDashboard() {
       setLoading(false)
     }
   }
-
   const fetchGamificationData = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/gamification/${user.id}`)
@@ -54,7 +47,6 @@ export default function FocusAIDashboard() {
       throw error
     }
   }
-
   const fetchUsageData = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/usage/${user.id}?limit=7`)
@@ -68,14 +60,12 @@ export default function FocusAIDashboard() {
       throw error
     }
   }
-
   const fetchCalendarEvents = async () => {
     try {
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 7)
       const endDate = new Date()
       endDate.setDate(endDate.getDate() + 30)
-      
       const response = await fetch(
         `${API_BASE_URL}/api/calendar/events/${user.id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
       )
@@ -89,7 +79,6 @@ export default function FocusAIDashboard() {
       throw error
     }
   }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -104,7 +93,6 @@ export default function FocusAIDashboard() {
       </div>
     )
   }
-
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -128,7 +116,6 @@ export default function FocusAIDashboard() {
       </div>
     )
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
@@ -139,7 +126,6 @@ export default function FocusAIDashboard() {
             Connected to: {API_BASE_URL}
           </div>
         </header>
-
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
@@ -159,40 +145,36 @@ export default function FocusAIDashboard() {
               Challenges
             </TabsTrigger>
           </TabsList>
-
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <UsageStats usageData={usageData} />
               </div>
               <div>
-                <GamificationDashboard 
-                  gamificationData={gamificationData} 
+                <GamificationDashboard
+                  gamificationData={gamificationData}
                   compact={true}
                   apiBaseUrl={API_BASE_URL}
                 />
               </div>
             </div>
           </TabsContent>
-
           <TabsContent value="gamification">
-            <GamificationDashboard 
-              gamificationData={gamificationData} 
+            <GamificationDashboard
+              gamificationData={gamificationData}
               onDataUpdate={fetchGamificationData}
               apiBaseUrl={API_BASE_URL}
             />
           </TabsContent>
-
           <TabsContent value="calendar">
-            <EnhancedCalendar 
-              events={calendarEvents} 
-              usageData={usageData} 
+            <EnhancedCalendar
+              events={calendarEvents}
+              usageData={usageData}
               onEventUpdate={fetchCalendarEvents}
               userId={user.id}
               apiBaseUrl={API_BASE_URL}
             />
           </TabsContent>
-
           <TabsContent value="challenges">
             <Card>
               <CardHeader>
@@ -212,8 +194,8 @@ export default function FocusAIDashboard() {
                             <span>{challenge.progress}/{challenge.target}</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full" 
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
                               style={{ width: `${Math.min((challenge.progress / challenge.target) * 100, 100)}%` }}
                             ></div>
                           </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import MainLayout from './MainLayout';
-
 const DashboardLayout = ({ children }) => {
   return (
     <MainLayout>
@@ -8,5 +7,4 @@ const DashboardLayout = ({ children }) => {
     </MainLayout>
   );
 };
-
 export default DashboardLayout;

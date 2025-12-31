@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Clock, 
-  X, 
-  CheckCircle2, 
+import {
+  Clock,
+  X,
+  CheckCircle2,
   Calendar,
   AlertTriangle,
   Bell,
@@ -14,21 +14,16 @@ import {
 import { TodoAlert as TodoAlertType } from '@/services/todoAlertService';
 import { todoService } from '@/services/todoService';
 import { toast } from '@/hooks/use-toast';
-
 interface TodoAlertProps {
   alert: TodoAlertType;
   onDismiss: () => void;
   onComplete: () => void;
   onSnooze: (minutes: number) => void;
 }
-
 const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onSnooze }) => {
-  const [timeRemaining, setTimeRemaining] = useState(10); 
+  const [timeRemaining, setTimeRemaining] = useState(10);
   const [isVisible, setIsVisible] = useState(true);
-
   const { todo, minutesUntilDue, severity } = alert;
-
-  
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
@@ -40,10 +35,8 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [onDismiss]);
-
   const handleComplete = async () => {
     try {
       await todoService.updateTodo(todo._id, { completed: true });
@@ -61,7 +54,6 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
       });
     }
   };
-
   const handleSnooze = (minutes: number) => {
     onSnooze(minutes);
     toast({
@@ -69,7 +61,6 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
       description: `"${todo.title}" reminder snoozed for ${minutes} minutes.`,
     });
   };
-
   const getSeverityConfig = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -101,25 +92,19 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
         };
     }
   };
-
   const config = getSeverityConfig(severity);
-
   if (!isVisible) return null;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {}
       <div className="absolute inset-0 bg-black bg-opacity-75" />
-      
       {}
       <div className={`relative w-full max-w-2xl p-8 rounded-xl shadow-2xl ${config.bgColor} ${config.borderColor} border-4 text-white transform transition-all duration-300 scale-100`}>
-        
         {}
         <div className="absolute top-4 right-4 flex items-center gap-2 bg-black bg-opacity-30 rounded-full px-3 py-1">
           <Clock className="h-4 w-4" />
           <span className="text-sm font-bold">{timeRemaining}s</span>
         </div>
-
         {}
         <button
           onClick={onDismiss}
@@ -128,18 +113,15 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
         >
           <X className="h-5 w-5" />
         </button>
-        
         <div className="text-center">
           {}
           <div className="mb-6">
             {config.icon}
           </div>
-          
           {}
           <h2 className="text-3xl font-bold mb-4">
             {config.title}
           </h2>
-          
           {}
           <div className="mb-6 space-y-2">
             <p className="text-xl font-semibold">"{todo.title}"</p>
@@ -158,7 +140,6 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
               )}
             </div>
           </div>
-          
           {}
           <div className="mb-8 p-4 bg-black bg-opacity-20 rounded-lg">
             <div className="flex items-center justify-center gap-2 text-lg">
@@ -166,7 +147,6 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
               <span>Due: {new Date(todo.dueDate!).toLocaleString()}</span>
             </div>
           </div>
-          
           {}
           <div className="flex flex-col space-y-4">
             {}
@@ -178,7 +158,6 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
                 <CheckCircle2 className="h-5 w-5" />
                 Mark as Complete
               </button>
-              
               <button
                 onClick={onDismiss}
                 className={`px-6 py-3 rounded-lg font-bold ${config.buttonColor} transition-colors duration-200`}
@@ -186,7 +165,6 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
                 I'm working on it
               </button>
             </div>
-            
             {}
             <div className="flex gap-2 justify-center text-sm">
               <span className="opacity-80">Snooze for:</span>
@@ -212,7 +190,6 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
               </button>
             </div>
           </div>
-
           {}
           {severity === 'critical' && (
             <div className="mt-6 p-4 bg-black bg-opacity-20 rounded-lg text-sm">
@@ -229,5 +206,4 @@ const TodoAlert: React.FC<TodoAlertProps> = ({ alert, onDismiss, onComplete, onS
     </div>
   );
 };
-
 export default TodoAlert;

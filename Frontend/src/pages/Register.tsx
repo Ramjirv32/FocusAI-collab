@@ -1,6 +1,5 @@
 import React from 'react';
 import RegisterForm from '@/components/Auth/RegisterForm';
-
 const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
@@ -14,5 +13,4 @@ const Register = () => {
     </div>
   );
 };
-
 export default Register;
