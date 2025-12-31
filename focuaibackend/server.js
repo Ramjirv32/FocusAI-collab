@@ -823,6 +823,34 @@ app.post('/api/heartbeat', auth, async (req, res) => {
   }
 });
 
+app.get('/api/internal/user-data', async (req, res) => {
+  try {
+    const { userId, email, date } = req.query;
+    if (!userId || !email) {
+      return res.status(400).json({ error: 'userId and email are required' });
+    }
+
+    const currentDate = date || new Date().toISOString().slice(0, 10);
+    console.log(`📊 [Internal] Fetching user data for ${email} on ${currentDate}`);
+
+    const [appUsage, tabUsage] = await Promise.all([
+      AppUsage.find({ userId, email, date: currentDate }),
+      TabUsage.find({ userId, email, date: currentDate })
+    ]);
+
+    res.json({
+      userId,
+      email,
+      date: currentDate,
+      appUsage,
+      tabUsage
+    });
+  } catch (error) {
+    console.error('Internal user data fetch error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/api/user-data', auth, async (req, res) => {
   try {
     const { date, timeFrame } = req.query;
@@ -1289,7 +1317,7 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
 
         if (duration > 0 && !isBrowser) {
           const classification = classifyApp(appName);
-          summary.updateProductivityData(appName, duration, classification === 'productive');
+          summary.updateProductivityData(appName, duration, classification);
         }
       }
     }
@@ -1301,10 +1329,8 @@ app.post('/api/productivity-summary', auth, async (req, res) => {
         const duration = parseInt(tab.duration) || 0;
 
         if (duration > 0) {
-
           const classification = classifyApp(domain);
-          summary.updateProductivityData(`Browser - ${domain}`, duration, classification === 'productive');
-
+          summary.updateProductivityData(`Browser - ${domain}`, duration, classification);
 
           if (!summary.mostVisitedTab || duration > (summary.nonProductiveContent.get(summary.mostVisitedTab) || 0)) {
             summary.mostVisitedTab = domain;
@@ -1346,8 +1372,8 @@ app.post('/api/internal/productivity-summary', async (req, res) => {
   try {
     const {
       userId, email, date,
-      productiveContent, nonProductiveContent, neutralContent,
-      totalProductiveTime, totalNonProductiveTime, totalNeutralTime,
+      productiveContent, nonProductiveContent,
+      totalProductiveTime, totalNonProductiveTime,
       overallTotalUsage, focusScore, mostUsedApp, maxProductiveApp
     } = req.body;
 
@@ -1394,22 +1420,12 @@ app.post('/api/internal/productivity-summary', async (req, res) => {
         }
       }
 
-
-      if (neutralContent) {
-        summary.neutralContent = new Map();
-        for (const [app, time] of Object.entries(neutralContent)) {
-          const sanitized = app.replace(/\./g, '_');
-          summary.neutralContent.set(sanitized, time);
-        }
-      }
-
-      if (totalProductiveTime !== undefined) summary.totalProductiveTime = totalProductiveTime;
-      if (totalNonProductiveTime !== undefined) summary.totalNonProductiveTime = totalNonProductiveTime;
-      if (totalNeutralTime !== undefined) summary.totalNeutralTime = totalNeutralTime;
-      if (overallTotalUsage !== undefined) summary.overallTotalUsage = overallTotalUsage;
-      if (focusScore !== undefined) summary.focusScore = focusScore;
-      if (mostUsedApp !== undefined) summary.mostUsedApp = mostUsedApp;
-      if (maxProductiveApp !== undefined) summary.maxProductiveApp = maxProductiveApp;
+      summary.totalProductiveTime = totalProductiveTime || 0;
+      summary.totalNonProductiveTime = totalNonProductiveTime || 0;
+      summary.overallTotalUsage = overallTotalUsage || (summary.totalProductiveTime + summary.totalNonProductiveTime);
+      summary.focusScore = focusScore || summary.calculateFocusScore();
+      if (maxProductiveApp) summary.maxProductiveApp = maxProductiveApp;
+      if (mostUsedApp) summary.mostUsedApp = mostUsedApp;
 
     } else {
       const { appUsageData, tabUsageData } = req.body;
@@ -1454,8 +1470,6 @@ app.post('/api/internal/productivity-summary', async (req, res) => {
         maxProductiveApp: summary.maxProductiveApp,
         totalProductiveTime: summary.totalProductiveTime,
         totalNonProductiveTime: summary.totalNonProductiveTime,
-        totalNeutralTime: summary.totalNeutralTime || 0,
-        neutralContent: Object.fromEntries(summary.neutralContent || new Map()),
         overallTotalUsage: summary.overallTotalUsage,
         focusScore: summary.focusScore,
         mostVisitedTab: summary.mostVisitedTab,
@@ -1545,8 +1559,6 @@ app.get('/api/productivity-summary', auth, async (req, res) => {
       maxProductiveApp: summary.maxProductiveApp,
       totalProductiveTime: summary.totalProductiveTime,
       totalNonProductiveTime: summary.totalNonProductiveTime,
-      totalNeutralTime: summary.totalNeutralTime || 0,
-      neutralContent: Object.fromEntries(summary.neutralContent || new Map()),
       overallTotalUsage: summary.overallTotalUsage,
       focusScore: summary.focusScore,
       mostVisitedTab: summary.mostVisitedTab,
@@ -1745,10 +1757,8 @@ async function updateProductivitySummaryForUser(userId, email, date) {
     // Fallback legacy logic
     summary.productiveContent.clear();
     summary.nonProductiveContent.clear();
-    summary.neutralContent.clear();
     summary.totalProductiveTime = 0;
     summary.totalNonProductiveTime = 0;
-    summary.totalNeutralTime = 0;
     summary.overallTotalUsage = 0;
 
 

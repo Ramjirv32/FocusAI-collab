@@ -32,50 +32,75 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
     return Math.ceil((pastDaysOfYear + getDayOfWeek(firstDay)) / 7);
   };
 
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getScoreForDate = (date: Date) => {
-    const dateStr = date.toISOString().slice(0, 10);
+    const dateStr = formatDate(date);
     const dayData = data.find(d => d.date === dateStr);
     return dayData ? dayData.score : 0;
   };
 
   const getColorClass = (score: number) => {
     if (score === 0) return 'bg-slate-200 dark:bg-slate-700';
-    if (score < 20) return 'bg-emerald-200 dark:bg-emerald-800';
-    if (score < 40) return 'bg-emerald-300 dark:bg-emerald-700';
-    if (score < 60) return 'bg-emerald-400 dark:bg-emerald-600';
-    if (score < 80) return 'bg-emerald-500 dark:bg-emerald-500';
-    return 'bg-emerald-600 dark:bg-emerald-400';
+    if (score < 20) return 'bg-emerald-100 dark:bg-emerald-900/30';
+    if (score < 40) return 'bg-emerald-200 dark:bg-emerald-800/50';
+    if (score < 60) return 'bg-emerald-300 dark:bg-emerald-700/70';
+    if (score < 80) return 'bg-emerald-400 dark:bg-emerald-600/90';
+    return 'bg-emerald-500 dark:bg-emerald-500';
   };
 
 
-  const heatmapWeeks: { [key: number]: Date[] } = {};
-  const currentDate = new Date(startDate);
+  // Correctly organize days into weeks where each day aligns with its day of the week (Sun-Sat)
+  const weeks: (Date | null)[][] = [];
+  let currentWeek: (Date | null)[] = Array(7).fill(null);
 
+  const tempDate = new Date(startDate);
+  tempDate.setHours(0, 0, 0, 0);
 
-  for (let i = 0; i < 364; i++) {
-    const weekNumber = getWeekNumber(currentDate);
-    if (!heatmapWeeks[weekNumber]) {
-      heatmapWeeks[weekNumber] = [];
+  for (let i = 0; i < 366; i++) {
+    const dayOfWeek = tempDate.getDay();
+    currentWeek[dayOfWeek] = new Date(tempDate);
+
+    if (dayOfWeek === 6) {
+      weeks.push([...currentWeek]);
+      currentWeek = Array(7).fill(null);
     }
-    heatmapWeeks[weekNumber].push(new Date(currentDate));
-    currentDate.setDate(currentDate.getDate() + 1);
+
+    const nextDate = new Date(tempDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    // Handle end of year
+    if (nextDate.getFullYear() !== startDate.getFullYear()) {
+      if (dayOfWeek !== 6) {
+        weeks.push([...currentWeek]);
+      }
+      break;
+    }
+    tempDate.setDate(tempDate.getDate() + 1);
   }
 
-  const weeks = Object.values(heatmapWeeks);
   const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthLabels = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
 
-
   const monthStarts: { [key: number]: number } = {};
   let lastMonth = -1;
   weeks.forEach((week, weekIndex) => {
-    const month = week[0].getMonth();
-    if (month !== lastMonth) {
-      monthStarts[weekIndex] = month;
-      lastMonth = month;
+    // Find first non-null date in week to determine the month
+    const firstValidDate = week.find(d => d !== null);
+    if (firstValidDate) {
+      const month = firstValidDate.getMonth();
+      if (month !== lastMonth) {
+        monthStarts[weekIndex] = month;
+        lastMonth = month;
+      }
     }
   });
 
@@ -175,13 +200,21 @@ const LeetCodeStyleHeatmap: React.FC<LeetCodeStyleHeatmapProps> = ({
                       className={`flex flex-col gap-1 ${isNewMonth ? 'pl-2' : ''}`}
                     >
                       {week.map((date, dayIndex) => {
+                        if (!date) {
+                          return (
+                            <div
+                              key={`empty-${weekIndex}-${dayIndex}`}
+                              className="h-4 w-4 bg-transparent"
+                            />
+                          );
+                        }
+
                         const score = getScoreForDate(date);
                         const colorClass = getColorClass(score);
-                        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        const dateStr = formatDate(date);
                         const now = new Date();
-                        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                        const today = formatDate(now);
                         const isToday = dateStr === today;
-
 
                         const monthName = date.toLocaleString('en-US', { month: 'short' });
                         const day = date.getDate();

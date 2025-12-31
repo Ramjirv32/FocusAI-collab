@@ -39,15 +39,6 @@ const ProductivitySummarySchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  neutralContent: {
-    type: Map,
-    of: Number,
-    default: new Map()
-  },
-  totalNeutralTime: {
-    type: Number,
-    default: 0
-  },
   overallTotalUsage: {
     type: Number,
     default: 0
@@ -81,9 +72,7 @@ ProductivitySummarySchema.index({ userId: 1, email: 1, date: 1 }, { unique: true
 
 ProductivitySummarySchema.methods.calculateFocusScore = function () {
   if (this.overallTotalUsage === 0) return 0;
-  // Give neutral activities 50% productive weight for a more intuitive score
-  const effectiveProductiveTime = this.totalProductiveTime + (this.totalNeutralTime * 0.5);
-  return Math.round((effectiveProductiveTime / this.overallTotalUsage) * 100);
+  return Math.round((this.totalProductiveTime / this.overallTotalUsage) * 100);
 };
 
 ProductivitySummarySchema.statics.sanitizeAppName = function (appName) {
@@ -106,7 +95,6 @@ ProductivitySummarySchema.methods.getFormattedContent = function () {
   return {
     productiveContent: restoreMap(this.productiveContent),
     nonProductiveContent: restoreMap(this.nonProductiveContent),
-    neutralContent: restoreMap(this.neutralContent || new Map()),
     distractionApps: restoreMap(this.distractionApps)
   };
 };
@@ -114,19 +102,15 @@ ProductivitySummarySchema.methods.getFormattedContent = function () {
 ProductivitySummarySchema.methods.updateProductivityData = function (appName, duration, classification) {
   const sanitizedAppName = appName.replace(/\./g, '_');
 
-  if (classification === 'productive') {
-    const currentValue = this.productiveContent.get(sanitizedAppName) || 0;
-    this.productiveContent.set(sanitizedAppName, currentValue + duration);
-    this.totalProductiveTime += duration;
-  } else if (classification === 'non-productive') {
+  if (classification === 'non-productive') {
     const currentValue = this.nonProductiveContent.get(sanitizedAppName) || 0;
     this.nonProductiveContent.set(sanitizedAppName, currentValue + duration);
     this.totalNonProductiveTime += duration;
   } else {
-    // Handle neutral classification
-    const currentValue = this.neutralContent.get(sanitizedAppName) || 0;
-    this.neutralContent.set(sanitizedAppName, currentValue + duration);
-    this.totalNeutralTime += duration;
+    // Default to productive for everything else
+    const currentValue = this.productiveContent.get(sanitizedAppName) || 0;
+    this.productiveContent.set(sanitizedAppName, currentValue + duration);
+    this.totalProductiveTime += duration;
   }
 
   this.overallTotalUsage += duration;

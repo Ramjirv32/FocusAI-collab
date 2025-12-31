@@ -219,59 +219,10 @@ class ProductivitySummaryResponse(BaseModel):
     most_used_app: str
     distraction_apps: Dict[str, int]
 
-def predict_with_xgboost(app_name, tab_name, duration):
-    global model, vectorizer, metadata
-    
-    app_low = str(app_name or "").lower()
-    tab_low = str(tab_name or "").lower()
-    
-    # Combine app and tab/title for maximum context. 
-    # This prevents missing keywords when app name is generic (like "Browser" or "Terminal")
-    # or when tab title is just a URL.
-    text_to_predict = f"{app_low} {tab_low}".strip()
-    
-    # If the combined text is too short or empty, provide a fallback
-    if len(text_to_predict) < 2:
-        text_to_predict = "none"
-    
-    # 1. FAST keyword-based classification (O(1) average)
-    result, confidence, matches = smart_keyword_match(text_to_predict)
-    
-    if result:
-        print(f"🎯 [KEYWORD HIT] '{text_to_predict}' -> {result} (Matches: {matches})")
-        return {
-            "label": result,
-            "confidence": float(confidence),
-            "matches": matches,
-            "method": "keyword"
-        }
-    
-    # 2. Context-based rules (fast heuristics)
-    # YouTube: educational if long duration
-    if "youtube.com/watch" in text_to_predict and duration >= 1800:
-        return {"label": "Productive", "confidence": 0.90, "method": "context"}
-    
-    # Localhost/development
-    if any(x in text_to_predict for x in ["localhost", "127.0.0.1", ":3000", ":8080", ":5000"]):
-        return {"label": "Productive", "confidence": 0.95, "method": "context"}
-    
-    # Common productivity patterns
-    if any(x in text_to_predict for x in ["github.com", "stackoverflow", "docs.", "/api/", "/documentation"]):
-        return {"label": "Productive", "confidence": 0.92, "method": "context"}
-    
-    # Common distraction patterns  
-    if any(x in text_to_predict for x in ["/feed", "/shorts", "/reels", "tiktok", "instagram.com"]):
-        return {"label": "Non-Productive", "confidence": 0.92, "method": "context"}
-    
-    # Utility apps - duration-based
-    UTILITY_APPS = {"calculator", "notepad", "settings", "control panel", "task manager"}
-    if any(u in text_to_predict for u in UTILITY_APPS):
-        # User requested no neutral: utilities are productive
-        return {"label": "Productive", "confidence": 0.70, "method": "utility"}
-    
-    # 3. ML Model prediction (fallback for unknown items)
+def _get_ml_prediction(text, duration):
+    """Internal helper for ML model inference"""
+    global model, vectorizer
     if model is None or vectorizer is None:
-        print(f"⚠️ [DEFAULT] '{text_to_predict}' -> Productive (Model missing, defaulting as requested)")
         return {"label": "Productive", "confidence": 0.5, "method": "default"}
 
     try:
@@ -279,8 +230,7 @@ def predict_with_xgboost(app_name, tab_name, duration):
         current_hour = now.hour
         is_weekend = 1 if now.weekday() >= 5 else 0
         
-        # Prepare features exactly as trained: [X_text, duration, hour, is_weekend]
-        X_text = vectorizer.transform([text_to_predict])
+        X_text = vectorizer.transform([text])
         X_num = np.array([[duration, current_hour, is_weekend]])
         X = hstack([X_text, X_num]).tocsr()
 
@@ -293,19 +243,60 @@ def predict_with_xgboost(app_name, tab_name, duration):
             label = "Non-Productive"
             confidence = float(1.0 - prob)
         else:
-            # User requested no neutral: map middle-range to Productive
+            # Default to Productive for middle-range
             label = "Productive"
             confidence = float(max(prob, 1.0 - prob))
-
-        print(f"🤖 [ML] '{text_to_predict}' -> {label} (Prob: {prob:.2f})")
-        return {
-            "label": label,
-            "confidence": confidence,
-            "method": "ml_model"
-        }
+            
+        return {"label": label, "confidence": confidence, "method": "ml_model", "prob": prob}
     except Exception as e:
-        print(f"❌ Error in XGBoost prediction: {e}")
-        return {"label": "Neutral", "confidence": 0.5, "method": "error"}
+        print(f"❌ ML Prediction Error: {e}")
+        return {"label": "Productive", "confidence": 0.5, "method": "error"}
+
+def predict_with_xgboost(app_name, tab_name, duration):
+    """
+    Hybrid Prediction Logic:
+    1. Predict using ML Model
+    2. Check against Keyword JSONs (Ground Truth)
+    3. Cross-reference: Keyword overrides ML if present, otherwise use ML.
+    """
+    app_low = str(app_name or "").lower()
+    tab_low = str(tab_name or "").lower()
+    text_to_predict = f"{app_low} {tab_low}".strip()
+    
+    if len(text_to_predict) < 2:
+        text_to_predict = "none"
+
+    # Step 1: Predict with ML model first
+    ml_res = _get_ml_prediction(text_to_predict, duration)
+    
+    # Step 2: Check for keyword matches in JSON sets (FORCE_PROD_SET, FORCE_UNPROD_SET)
+    kw_label, kw_conf, kw_matches = smart_keyword_match(text_to_predict)
+    
+    # Step 3: Integrate results based on user requirements
+    if kw_label:
+        # If it exists in the JSON, it is the Ground Truth
+        if kw_label == ml_res['label']:
+            # AI and JSON match
+            print(f"✅ [STABLE] '{text_to_predict}' -> {kw_label} (AI & JSON Agree)")
+            return {
+                "label": kw_label,
+                "confidence": max(kw_conf, ml_res['confidence']),
+                "matches": kw_matches,
+                "method": "ai_plus_json"
+            }
+        else:
+            # Conflict: AI thought one thing, JSON says another. JSON WINS.
+            print(f"🔄 [OVERRIDE] '{text_to_predict}' -> {kw_label} (JSON overrides AI: {ml_res['label']})")
+            return {
+                "label": kw_label,
+                "confidence": kw_conf,
+                "matches": kw_matches,
+                "method": "json_override"
+            }
+    
+    # Step 4: If not exists in JSON, use the ML output as requested
+    print(f"🤖 [ML ONLY] '{text_to_predict}' -> {ml_res['label']} (Not in JSON)")
+    return ml_res
 
 def process_user_data(user_data):
     try:
@@ -313,10 +304,8 @@ def process_user_data(user_data):
         tab_usage = user_data.get("tabUsage", [])
         productive_content = {}
         non_productive_content = {}
-        neutral_content = {}
         total_productive_time = 0
         total_non_productive_time = 0
-        total_neutral_time = 0
         
         browsers = ["browser", "chrome", "firefox", "chromium", "brave", "edge", "safari", "opera", "vivaldi", "google-chrome"]
         
@@ -350,17 +339,15 @@ def process_user_data(user_data):
             # Use name (which is title for tabs) as storage key for display
             storage_key = name
             
-            if prediction['label'] == 'Productive':
-                productive_content[storage_key] = productive_content.get(storage_key, 0) + duration
-                total_productive_time += duration
-            elif prediction['label'] == 'Non-Productive':
+            if prediction['label'] == 'Non-Productive':
                 non_productive_content[storage_key] = non_productive_content.get(storage_key, 0) + duration
                 total_non_productive_time += duration
             else:
-                neutral_content[storage_key] = neutral_content.get(storage_key, 0) + duration
-                total_neutral_time += duration
+                # Default to productive as requested (No Neutral)
+                productive_content[storage_key] = productive_content.get(storage_key, 0) + duration
+                total_productive_time += duration
         
-        overall_total_usage = total_productive_time + total_non_productive_time + total_neutral_time
+        overall_total_usage = total_productive_time + total_non_productive_time
         
         # Focus Score calculation: 
         # Binary focus score (No Neutral as requested)
@@ -372,17 +359,15 @@ def process_user_data(user_data):
         distraction_score = int((total_non_productive_time / overall_total_usage * 100) if overall_total_usage > 0 else 0)
         
         max_productive_app = max(productive_content.items(), key=lambda x: x[1])[0] if productive_content else ""
-        all_apps = {**productive_content, **non_productive_content, **neutral_content}
+        all_apps = {**productive_content, **non_productive_content}
         most_used_app = max(all_apps.items(), key=lambda x: x[1])[0] if all_apps else ""
-        
+
         return {
             "productive_content": productive_content,
             "non_productive_content": non_productive_content,
-            "neutral_content": neutral_content,
             "max_productive_app": max_productive_app,
             "total_productive_time": total_productive_time,
             "total_non_productive_time": total_non_productive_time,
-            "total_neutral_time": total_neutral_time,
             "overall_total_usage": overall_total_usage,
             "focus_score": focus_score,
             "distraction_score": distraction_score,
@@ -445,10 +430,8 @@ async def update_backend_productivity_summary(user_id, email, date, metrics):
             "date": date,
             "productiveContent": metrics["productive_content"],
             "nonProductiveContent": metrics["non_productive_content"],
-            "neutralContent": metrics.get("neutral_content", {}),
             "totalProductiveTime": metrics["total_productive_time"],
             "totalNonProductiveTime": metrics["total_non_productive_time"],
-            "totalNeutralTime": metrics.get("total_neutral_time", 0),
             "overallTotalUsage": metrics["overall_total_usage"],
             "focusScore": metrics["focus_score"],
             "maxProductiveApp": metrics["max_productive_app"],
@@ -463,7 +446,7 @@ async def update_backend_productivity_summary(user_id, email, date, metrics):
 
 async def fetch_real_mongodb_data(user_id=None, email=None, date=None):
     params = {"userId": user_id, "email": email, "date": date}
-    endpoints = [f"{BACKEND_URL}/api/user-data", f"{BACKEND_URL}/g"]
+    endpoints = [f"{BACKEND_URL}/api/internal/user-data", f"{BACKEND_URL}/api/user-data"]
     for ep in endpoints:
         try:
             res = requests.get(ep, params=params, timeout=10)
@@ -587,15 +570,13 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
     # Simple aggregation for the response
     p_apps = [a.app_name for a in activities if a.predicted_label == "Focused"]
     d_apps = [a.app_name for a in activities if a.predicted_label == "Distracted"]
-    n_apps = [a.app_name for a in activities if a.predicted_label == "Neutral"]
     
     p_dur = sum(a.duration for a in activities if a.predicted_label == "Focused")
     d_dur = sum(a.duration for a in activities if a.predicted_label == "Distracted")
-    n_dur = sum(a.duration for a in activities if a.predicted_label == "Neutral")
     
-    total = p_dur + d_dur + n_dur
+    total = p_dur + d_dur
     if total > 0:
-        score = int(((p_dur + (n_dur * 0.5)) / total) * 100)
+        score = int((p_dur / total) * 100)
     else:
         score = 0
     
@@ -606,7 +587,7 @@ async def get_productivity_analysis(user_id: str, date: Optional[str] = None, em
         total_duration=total,
         focus_areas=[AppCategoryItem(category="Work", total_duration=p_dur, activity_count=len(p_apps), apps=list(set(p_apps)), avg_confidence=0.9)],
         distraction_areas=[AppCategoryItem(category="Entertainment", total_duration=d_dur, activity_count=len(d_apps), apps=list(set(d_apps)), avg_confidence=0.9)],
-        neutral_areas=[AppCategoryItem(category="Neutral", total_duration=n_dur, activity_count=len(n_apps), apps=list(set(n_apps)), avg_confidence=0.9)],
+        neutral_areas=[],
         detailed_activities=activities,
         summary=FocusSummary(
             productivity_score=score,
@@ -627,13 +608,12 @@ async def get_user_quick_stats(user_id: str, date: Optional[str] = None):
     
     p_dur = sum(a.duration for a in activities if a.predicted_label == "Focused")
     d_dur = sum(a.duration for a in activities if a.predicted_label == "Distracted")
-    n_dur = sum(a.duration for a in activities if a.predicted_label == "Neutral")
     
-    total = p_dur + d_dur + n_dur
+    total = p_dur + d_dur
     
     # Match the formula used in process_user_data
     if total > 0:
-        score = int(((p_dur + (n_dur * 0.5)) / total) * 100)
+        score = int((p_dur / total) * 100)
     else:
         score = 0
         
